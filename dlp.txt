@@ -1,4 +1,4 @@
-
+ 
 hm1="/opt/tomcat8_instance1/logs/hm.log"
 hm2="/opt/tomcat8_instance2/logs/hm.log"
 hm3="/opt/tomcat8_instance3/logs/hm.log"
