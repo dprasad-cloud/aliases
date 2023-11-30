@@ -1,0 +1,152 @@
+#Run the below line on AIO to get the aliases installed. Remove # before executing
+
+#wget -O main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o main.zip; source aliases-main/dlp-cloud.txt
+
+#OR You can copy paste the whole contents of this file on the AIO CLI to get the aliases.
+
+
+alias hactail="unset pid; pid=\$(k get pods | grep hacr-0 | awk '{print \$1}') ; echo \$pid; k exec -it \$pid -- tail -n 200 -f /opt/hacr/logs/hac.log"
+alias hacvi="unset pid; pid=\$(k get pods | grep hacr-0 |  awk '{print \$1}') ; echo \$pid; k exec -it \$pid -- vi /opt/hacr/logs/hac.log"
+alias haccat="unset pid; pid=\$(k get pods | grep hacr-0 |  awk '{print \$1}') ; echo \$pid; k exec -it \$pid -- cat /opt/hacr/logs/hac.log"
+
+alias ccstail="unset pid; pid=\$(k get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; k exec -it \$pid -- tail -n 200 -f \$ccs"
+alias ccsvi="unset pid; pid=\$(k get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/device-connector/logs/device-connector.log"
+alias ccscat="unset pid; pid=\$(k get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/device-connector/logs/device-connector.log"
+
+alias ccscon="k exec -it default-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server default-kafka:9092 --topic device-connect-events'"
+alias ccsconbeg="k exec -it default-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server default-kafka:9092 --from-beginning --topic device-connect-events'"
+
+alias tec1tail="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias tec1vi="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias tec1cat="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+
+alias tec2tail="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias tec2vi="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias tec2cat="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+
+alias tealltail="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias teallvi="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias teallcat="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+
+alias hmweb1tail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias hmweb1vi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias hmweb1cat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+
+alias hmweb2tail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias hmweb2vi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias hmweb2cat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+
+
+dash=" -- "
+alias pod='echo "k exec -it $pid -- bash"; k exec -it $pid -- bash'
+ex () { ex="k exec -it $pid $dash"; echo $ex $@ ; ex="$ex $@";echo -e '\n' ---------------------------------------------------------------------------------- '\n' ; k exec -it $pid $dash $@;}
+alias cmd="echo \$ex"
+
+ccs="/opt/device-connector/logs/device-connector.log"
+hac="/opt/hacr/logs/hac.log"
+hmweb1="/opt/tomcat/logs/hm.log"
+hmweb2="/opt/tomcat/logs/hm.log"
+tec1="/opt/tomcat/logs/hm.log"
+tec2="/opt/tomcat/logs/hm.log"
+teall="/opt/tomcat/logs/hm.log"
+afsweb="/opt/tomcat/logs/hm.log"
+
+hacconf="/aerohive_app/etc/hac.properties"
+nmsconf="/aerohive_app/etc/nms-app.properties"
+appconf="/aerohive_app/etc/application.properties"
+ccsconf="/aerohive_app/etc/application.properties"
+cdosconf="/aerohive_app/etc/application.properties"
+
+# set context
+alias hac="unset pid; pid=\$(k get pods | grep hacr-0 | awk '{print \$1}') ; echo \$pid;"
+alias tec1="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias tec2="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
+alias teall="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias hmweb1="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias hmweb2="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
+alias kafka1="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias kafka2="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
+alias kafka3="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 3 {print \$1}') ; echo \$pid;"
+alias afsweb="unset pid; pid=\$(k get pods | grep afsweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias ccs="unset pid; pid=\$(k get pods | grep device-connector | awk '{print \$1}') ; echo \$pid;"
+
+alias nmsconf="ex cat \$nmsconf"
+alias appconf="ex cat \$appconf"
+alias hacconf="hac ex cat \$hacconf"
+alias ccsconf="ccs ex cat \$appconf"
+alias cdosconf="cdos ex cat \$appconf"
+
+alias nmsconfvi="ex vi \$nmsconf"
+alias appconfvi="ex vi \$appconf"
+alias hacconfvi="hac ex vi \$hacconf"
+alias ccsconfvi="ccs ex vi \$appconf"
+alias cdosconfvi="cdos ex vi \$appconf"
+
+alias hacpod="hac pod"
+alias ccspod="ccs pod"
+alias tec1pod="tec1 pod"
+alias tec2pod="tec2 pod"
+alias hmweb1pod="hmweb1 pod"
+alias hmweb2pod="hmweb2 pod"
+alias afswebpod="afsweb pod"
+
+alias afswebtail="afsweb ex tail -n 200 -f \$afsweb"
+alias afswebvi="afsweb ex vi \$afsweb"
+alias afswebcat="afsweb ex cat \$afsweb"
+
+#loop ccsgrep Register
+loop () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
+
+ccsgrep () { eval ccs; foo=$@ ; ex grep -iE "${foo// /.*}" $ccs ;}
+hacgrep () { eval hac; foo=$@ ; ex grep -iE "${foo// /.*}" $hac;}
+tec1grep () { eval tec1; foo=$@ ; ex grep -iE "${foo// /.*}" $tec1;}
+tec2grep () { eval tec2; foo=$@ ; ex grep -iE "${foo// /.*}" $tec2;}
+teallgrep () { eval teall; foo=$@ ; ex grep -iE "${foo// /.*}" $teall;}
+hmweb1grep () { eval hmweb1; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb1;}
+hmweb2grep () { eval hmweb2; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb2;}
+afswebgrep () { eval afsweb; foo=$@ ; ex grep -iE "${foo// /.*}" $afsweb;}
+
+ccsex () { eval ccs; ex $@ ;}
+hacex () { eval hac; ex $@ ;}
+hmweb1ex () { eval hmweb1; ex $@ ;}
+hmweb2ex () { eval hmweb2; ex $@ ;}
+tec1ex () { eval tec1; ex $@ ;}
+tec2ex () { eval tec2; ex $@ ;}
+teallex () { eval teall; ex $@ ;}
+afswebex () { eval afsweb; ex $@ ;}
+
+#cdc
+cdc="/opt/xcloud-device-mgmt-cdc/logs/spring.log"
+cdcconf="/aerohive_app/etc/device-mgmt-cdc.properties"
+alias cdc="unset pid; pid=\$(k get pods | grep xcloud-device-mgmt-cdc | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias cdcconf="cdc ex cat \$cdcconf"
+alias cdcconfvi="cdc ex vi \$cdcconf"
+alias cdcpod="cdc pod"
+alias cdctail="cdc ex tail -n 200 -f \$cdc"
+alias cdcvi="cdc ex vi \$cdc"
+alias cdccat="cdc ex cat \$cdc"
+cdcgrep () { eval cdc; foo=$@ ; ex grep -iE "${foo// /.*}" $cdc;}
+cdcex () { eval cdc; ex $@ ;}
+
+alias ccsdb="psqldcsdb"
+ccsklog () { eval ccs; k logs -f $pid ;}
+
+### cdos
+# variables
+cdosname="common-assets-device-onboarding"
+cdos="/tmp/logs/xcloud-device-mgmt-assets.log"
+cdosconf="/aerohive_app/etc/application.properties"
+
+# commands
+alias cdos="unset pid; pid=\$(k get pods | grep \$cdosname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias cdosconf="cdos ex cat \$cdosconf"
+alias cdosconfvi="cdos ex vi \$cdosconf"
+alias cdospod="cdos pod"
+alias cdostail="cdos ex tail -n 200 -f \$cdos"
+alias cdosvi="cdos ex vi \$cdos"
+alias cdoscat="cdos ex cat \$cdos"
+alias cdosdb="psqlassetsdb"
+cdosgrep () { eval cdos; foo=$@ ; ex grep -iE "${foo// /.*}" $cdos;}
+cdosex () { eval cdos; ex $@ ;}
+cdosklog () { eval cdos; k logs -f $pid ;}
+
