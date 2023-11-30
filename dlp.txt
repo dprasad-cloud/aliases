@@ -1,0 +1,76 @@
+
+hm1="/opt/tomcat8_instance1/logs/hm.log"
+hm2="/opt/tomcat8_instance2/logs/hm.log"
+hm3="/opt/tomcat8_instance3/logs/hm.log"
+hac="/opt/tomcat8_instance4/logs/hac.log"
+cdos="/opt/cdos/logs/xcloud-device-mgmt.log"
+ccs="/opt/inlets/logs/xcloud-device-connect.log"
+api="/opt/xcloudiq-api/log/xcloudiq-api-gateway.log"
+all="/opt/tomcat8_instance*/logs/hm.log"
+ccsconf="/opt/inlets/conf/application.properties"
+cdosconf="/opt/cdos/conf/application.properties"
+hacconf="/aerohive_app/etc/hac.properties"
+nmsconf="/aerohive_app/etc/nms-app.properties"
+
+alias cmd="echo \$ex"
+hacgrep () { ex="grep $@ $hac" ; grep $@ $hac;}
+ccsgrep () { ex="grep $@ $ccs" ; grep $@ $ccs;}
+cdosgrep () { ex="grep $@ $cdos" ; grep $@ $cdos;}
+hm1grep () { ex="grep $@ $hm1" ; grep $@ $hm1;}
+hm2grep () { ex="grep $@ $hm2" ; grep $@ $hm2;}
+hm3grep () { ex="grep $@ $hm3" ; grep $@ $hm3;}
+apigrep () { ex="grep $@ $api" ; grep $@ $api;}
+allgrep () { ex="grep $@ $all" ; grep $@ $all;}
+
+alias haccat="cat \$hac"
+alias ccscat="cat \$ccs"
+alias cdoscat="cat \$cdos"
+alias apicat="cat \$api"
+alias ccsconf="cat \$ccsconf"
+alias cdosconf="cat \$cdosconf"
+alias hacconf="cat \$hacconf"
+alias nmsconf="cat \$nmsconf"
+
+alias tall="tail -n 200 -f /opt/tomcat*/logs/hm.log"
+alias catall="cat /opt/tomcat*/logs/hm.log"
+
+alias ccstail="tail -n 200 -f /opt/inlets/logs/xcloud-device-connect.log"
+alias hactail="tail -n 200 -f /opt/tomcat8_instance4/logs/hac.log"
+alias hm1tail="tail -n 200 -f /opt/tomcat8_instance1/logs/hm.log"
+alias hm2tail="tail -n 200 -f /opt/tomcat8_instance2/logs/hm.log"
+alias hm3tail="tail -n 200 -f /opt/tomcat8_instance3/logs/hm.log"
+alias cdostail="tail -n 200 -f /opt/cdos/logs/xcloud-device-mgmt.log"
+alias apitail="tail -n 200 -f \$api"
+
+alias ccsvi="vi /opt/inlets/logs/xcloud-device-connect.log"
+alias hacvi="vi /opt/tomcat8_instance4/logs/hac.log"
+alias cdosvi="vi /opt/cdos/logs/xcloud-device-mgmt.log"
+
+alias cdosdb="psql \"host=localhost port=5432 user=devicemanagementuser password=aerohive dbname=devicemanagementdb\""
+alias ccsdb="psql \"host=localhost port=5432 user=postgres password=aerohive dbname=postgres\""
+alias systemdb="psql \"host=localhost port=5432 user=postgres password=aerohive dbname=systemdb\""
+alias configdb="psql \"host=localhost port=5432 user=postgres password=aerohive dbname=configdb_1\""
+
+alias ccscon="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --topic device-connect-events"
+alias ccsconbeg="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --from-beginning --topic device-connect-events"
+alias cdoscon="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --topic device-management-event"
+alias cdosconbeg="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --from-beginning --topic device-management-event"
+
+#loop free -m
+loop () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
+
+alias ccsstatus="service xcloudiq-device-connect status"
+alias ccsstop="service xcloudiq-device-connect stop"
+alias ccsstart="service xcloudiq-device-connect start"
+alias ccsrestart="service xcloudiq-device-connect restart"
+
+alias cdosstatus="service xcloud-device-mgmt-webapp status"
+alias cdosstop="service xcloud-device-mgmt-webapp stop"
+alias cdosstart="service xcloud-device-mgmt-webapp start"
+alias cdosrestart="service xcloud-device-mgmt-webapp restart"
+
+alias hacstatus="service tomcat8_4 status"
+alias hacstop="service tomcat8_4 stop"
+alias hacstart="service tomcat8_4 start"
+alias hacrestart="service tomcat8_4 restart"
+
