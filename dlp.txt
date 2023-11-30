@@ -1,4 +1,5 @@
-#Run this on AIO to get the aliases installed
+#Run the bewlow line on AIO to get the aliases installed. Remove # before executing
+#OR You can copy pase the whole contents of this file on AIO CLI to get the aliases.
 #wget -O main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o main.zip; source aliases-main/dlp.txt
  
 hm1="/opt/tomcat8_instance1/logs/hm.log"
