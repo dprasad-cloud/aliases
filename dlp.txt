@@ -1,3 +1,5 @@
+#Run this on AIO to get the aliases installed
+#wget -O main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o main.zip; source aliases-main/dlp.txt
  
 hm1="/opt/tomcat8_instance1/logs/hm.log"
 hm2="/opt/tomcat8_instance2/logs/hm.log"
