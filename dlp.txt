@@ -1,6 +1,6 @@
 #Run the below line on AIO to get the aliases installed. Remove # before executing
 
-#wget -O main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o main.zip; source aliases-main/dlp.txt
+#cd /root ; wget -O main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o main.zip; source aliases-main/dlp.txt
 
 #OR You can copy paste the whole contents of this file on the AIO CLI to get the aliases.
 
