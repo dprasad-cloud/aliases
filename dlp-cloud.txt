@@ -34,8 +34,8 @@ alias ccstail="unset pid; pid=\$(kc get pods | grep device-connector | awk '{pri
 alias ccsvi="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- vi /opt/device-connector/logs/device-connector.log"
 alias ccscat="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- cat /opt/device-connector/logs/device-connector.log"
 
-alias ccscon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server default-kafka:9092 --topic device-connect-events'"
-alias ccsconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server default-kafka:9092 --from-beginning --topic device-connect-events'"
+alias ccscon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --topic device-connect-events'"
+alias ccsconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic device-connect-events'"
 
 
 dash=" -- "
