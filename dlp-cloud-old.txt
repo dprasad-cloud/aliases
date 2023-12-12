@@ -151,3 +151,34 @@ cdosgrep () { eval cdos; foo=$@ ; ex grep -iE "${foo// /.*}" $cdos;}
 cdosex () { eval cdos; ex $@ ;}
 cdosklog () { eval cdos; k logs -f $pid ;}
 
+
+### lic
+# variables
+licname="xcloudiq-license-mgmt"
+lic="/opt/xcloudiq-license-mgmt/logs/license-mgmt.log"
+licconf="/aerohive_app/etc/application.properties"
+
+# commands
+alias lic="unset pid; pid=\$(k get pods | grep \$licname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias licconf="lic ex cat \$licconf"
+alias licconfvi="lic ex vi \$licconf"
+alias licpod="lic pod"
+alias lictail="lic ex tail -n 200 -f \$lic"
+alias licvi="lic ex vi \$lic"
+alias liccat="lic ex cat \$lic"
+alias licdb="psqlaccountdb"
+licgrep () { eval lic; foo=$@ ; ex grep -iE "${foo// /.*}" $lic;}
+licex () { eval lic; ex $@ ;}
+licklog () { eval lic; k logs -f $pid ;}
+
+# commands pod2
+alias lic2="unset pid; pid=\$(k get pods | grep \$licname | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
+alias lic2conf="lic2 ex cat \$licconf"
+alias lic2confvi="lic2 ex vi \$licconf"
+alias lic2pod="lic2 pod"
+alias lic2tail="lic2 ex tail -n 200 -f \$lic"
+alias lic2vi="lic2 ex vi \$lic"
+alias lic2cat="lic2 ex cat \$lic"
+lic2grep () { eval lic2; foo=$@ ; ex grep -iE "${foo// /.*}" $lic;}
+lic2ex () { eval lic2; ex $@ ;}
+lic2klog () { eval lic2; k logs -f $pid ;}

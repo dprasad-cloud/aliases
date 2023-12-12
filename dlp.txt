@@ -80,3 +80,17 @@ alias hacstop="service tomcat8_4 stop"
 alias hacstart="service tomcat8_4 start"
 alias hacrestart="service tomcat8_4 restart"
 
+#
+lic="/opt/xcloudiq-license-mgmt/logs/xiq-license.log"
+licconf="/opt/xcloudiq-license-mgmt/conf/application.properties"
+licgrep () { ex="grep $@ $lic" ; grep $@ $lic;}
+alias liccat="cat \$lic"
+alias licconf="cat \$licconf"
+alias lictail="tail -n 200 -f \$lic"
+alias licvi="vi \$lic"
+
+alias licstatus="service xcloudiq-license-mgmt status"
+alias licstop="service xcloudiq-license-mgmt stop"
+alias licstart="service xcloudiq-license-mgmt start"
+alias licrestart="service xcloudiq-license-mgmt restart"
+#
