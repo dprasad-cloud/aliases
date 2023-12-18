@@ -151,6 +151,11 @@ cdosgrep () { eval cdos; foo=$@ ; ex grep -iE "${foo// /.*}" $cdos;}
 cdosex () { eval cdos; ex $@ ;}
 cdosklog () { eval cdos; k logs -f $pid ;}
 
+##find versions
+alias ccsversion="id=device-connector; echo \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias cdosversion="id=common-assets-device-onboarding; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias hmwebversion="id=hmweb; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+
 
 ### lic
 # variables
