@@ -1,6 +1,6 @@
 #Run the below line on AIO to get the aliases installed. Remove # before executing
 
-# if alias kc >/dev/null 2>&1; then file=cloud.txt; elif alias k >/dev/null 2>&1; then file=cloud.txt; else file=aio.txt; fi  ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file
+# if alias kc >/dev/null 2>&1; then file=cloud.txt; elif alias k >/dev/null 2>&1; then file=cloud-old.txt; else file=aio.txt; fi  ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file
 
 #OR You can copy paste the whole contents of this file on the AIO CLI to get the aliases.
 
