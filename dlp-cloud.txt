@@ -57,7 +57,7 @@ tec2="/opt/tomcat/logs/hm.log"
 teall="/opt/tomcat/logs/hm.log"
 afsweb="/opt/tomcat/logs/hm.log"
 
-hacconf="/aerohive_app/etc/hac.properties"
+hacconf="/aerohive_app/etc/application.properties"
 nmsconf="/aerohive_app/etc/nms-app.properties"
 appconf="/aerohive_app/etc/application.properties"
 ccsconf="/aerohive_app/etc/application.properties"
