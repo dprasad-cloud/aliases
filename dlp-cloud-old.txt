@@ -21,9 +21,9 @@ alias tealltail="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && 
 alias teallvi="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
 alias teallcat="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
 
-alias hmweb1tail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
-alias hmweb1vi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
-alias hmweb1cat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+alias hmwebtail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias hmwebvi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias hmwebcat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
 
 alias hmweb2tail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
 alias hmweb2vi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
@@ -45,7 +45,7 @@ alias cmd="echo \$ex"
 
 ccs="/opt/device-connector/logs/device-connector.log"
 hac="/opt/hacr/logs/hac.log"
-hmweb1="/opt/tomcat/logs/hm.log"
+hmweb="/opt/tomcat/logs/hm.log"
 hmweb2="/opt/tomcat/logs/hm.log"
 tec1="/opt/tomcat/logs/hm.log"
 tec2="/opt/tomcat/logs/hm.log"
@@ -63,7 +63,7 @@ alias hac="unset pid; pid=\$(k get pods | grep hacr-0 | awk '{print \$1}') ; ech
 alias tec1="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias tec2="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
 alias teall="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
-alias hmweb1="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias hmweb="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias hmweb2="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
 alias kafka1="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias kafka2="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
@@ -87,7 +87,7 @@ alias hacpod="hac pod"
 alias ccspod="ccs pod"
 alias tec1pod="tec1 pod"
 alias tec2pod="tec2 pod"
-alias hmweb1pod="hmweb1 pod"
+alias hmwebpod="hmweb pod"
 alias hmweb2pod="hmweb2 pod"
 alias afswebpod="afsweb pod"
 
@@ -103,13 +103,13 @@ hacgrep () { eval hac; foo=$@ ; ex grep -iE "${foo// /.*}" $hac;}
 tec1grep () { eval tec1; foo=$@ ; ex grep -iE "${foo// /.*}" $tec1;}
 tec2grep () { eval tec2; foo=$@ ; ex grep -iE "${foo// /.*}" $tec2;}
 teallgrep () { eval teall; foo=$@ ; ex grep -iE "${foo// /.*}" $teall;}
-hmweb1grep () { eval hmweb1; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb1;}
+hmwebgrep () { eval hmweb; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb;}
 hmweb2grep () { eval hmweb2; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb2;}
 afswebgrep () { eval afsweb; foo=$@ ; ex grep -iE "${foo// /.*}" $afsweb;}
 
 ccsex () { eval ccs; ex $@ ;}
 hacex () { eval hac; ex $@ ;}
-hmweb1ex () { eval hmweb1; ex $@ ;}
+hmwebex () { eval hmweb; ex $@ ;}
 hmweb2ex () { eval hmweb2; ex $@ ;}
 tec1ex () { eval tec1; ex $@ ;}
 tec2ex () { eval tec2; ex $@ ;}
@@ -156,6 +156,11 @@ alias ccsversion="id=device-connector; echo Looking for \$id; k get deployments 
 alias cdosversion="id=common-assets-device-onboarding; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
 alias hmwebversion="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
 alias hacversion="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+
+alias hmwebmeta="hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF"
+alias hacmeta="hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF"
+alias ccsmeta="ccs ex unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
+alias cdosmeta="cdos ex unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF"
 
 
 ### lic
