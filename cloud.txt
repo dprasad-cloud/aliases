@@ -29,15 +29,6 @@ alias hmweb2tail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 &&
 alias hmweb2vi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
 alias hmweb2cat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
 
-#common namespace
-alias ccstail="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; kc exec -it \$pid -- tail -n 200 -f \$ccs"
-alias ccsvi="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- vi /opt/device-connector/logs/device-connector.log"
-alias ccscat="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- cat /opt/device-connector/logs/device-connector.log"
-
-alias ccscon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --topic device-connect-events'"
-alias ccsconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic device-connect-events'"
-
-
 dash=" -- "
 alias pod='echo "k exec -it $pid -- bash"; k exec -it $pid -- bash'
 alias podkc='echo "kc exec -it $pid -- bash"; kc exec -it $pid -- bash'
@@ -63,6 +54,38 @@ appconf="/aerohive_app/etc/application.properties"
 ccsconf="/aerohive_app/etc/application.properties"
 cdosconf="/aerohive_app/etc/application.properties"
 
+
+#common namespace
+alias ccscon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --topic device-connect-events'"
+alias ccsconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic device-connect-events'"
+alias ccsversion="id=device-connector; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
+alias ccsdb="psqldcsdb"
+
+alias ccstail="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; kc exec -it \$pid -- tail -n 200 -f \$ccs"
+alias ccsvi="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- vi /opt/device-connector/logs/device-connector.log"
+alias ccscat="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- cat /opt/device-connector/logs/device-connector.log"
+alias ccs="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid;"
+alias ccsconf="ccs exkc cat \$appconf"
+alias ccsconfvi="ccs exkc vi \$appconf"
+alias ccspod="ccs podkc"
+ccsgrep () { eval ccs; foo=$@ ; exkc grep -iE "${foo// /.*}" $ccs ;}
+ccsex () { eval ccs; exkc $@ ;}
+ccsklog () { eval ccs; kc logs -f $pid ;}
+alias ccsmeta="ccs exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
+
+#ccs2
+alias ccs2="unset pid; pid=\$(kc get pods | grep device-connector | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
+alias ccs2tail="ccs2 exkc tail -n 200 -f \$ccs"
+alias ccs2conf="ccs2 exkc cat \$ccsconf"
+alias ccs2confvi="ccs2 exkc vi \$ccsconf"
+alias ccs2pod="ccs2 podkc"
+alias ccs2vi="ccs2 exkc vi \$ccs"
+alias ccs2cat="ccs2 exkc cat \$ccs"
+ccs2grep () { eval ccs2; foo=$@ ; exkc grep -iE "${foo// /.*}" $ccs;}
+ccs2ex () { eval ccs2; exkc $@ ;}
+alias ccs2meta="ccs2 exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
+
+
 # set context
 alias hac="unset pid; pid=\$(k get pods | grep hacr-0 | awk '{print \$1}') ; echo \$pid;"
 alias tec1="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
@@ -74,22 +97,18 @@ alias kafka1="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$
 alias kafka2="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
 alias kafka3="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 3 {print \$1}') ; echo \$pid;"
 alias afsweb="unset pid; pid=\$(k get pods | grep afsweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
-alias ccs="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid;"
 
 alias nmsconf="ex cat \$nmsconf"
 alias appconf="ex cat \$appconf"
 alias hacconf="hac ex cat \$hacconf"
-alias ccsconf="ccs exkc cat \$appconf"
 alias cdosconf="cdos exkc cat \$appconf"
 
 alias nmsconfvi="ex vi \$nmsconf"
 alias appconfvi="ex vi \$appconf"
 alias hacconfvi="hac ex vi \$hacconf"
-alias ccsconfvi="ccs exkc vi \$appconf"
 alias cdosconfvi="cdos exkc vi \$appconf"
 
 alias hacpod="hac pod"
-alias ccspod="ccs podkc"
 alias tec1pod="tec1 pod"
 alias tec2pod="tec2 pod"
 alias hmwebpod="hmweb pod"
@@ -104,7 +123,6 @@ alias afswebcat="afsweb ex cat \$afsweb"
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
 loopkc () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
 
-ccsgrep () { eval ccs; foo=$@ ; exkc grep -iE "${foo// /.*}" $ccs ;}
 hacgrep () { eval hac; foo=$@ ; ex grep -iE "${foo// /.*}" $hac;}
 tec1grep () { eval tec1; foo=$@ ; ex grep -iE "${foo// /.*}" $tec1;}
 tec2grep () { eval tec2; foo=$@ ; ex grep -iE "${foo// /.*}" $tec2;}
@@ -113,7 +131,6 @@ hmwebgrep () { eval hmweb; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb;}
 hmweb2grep () { eval hmweb2; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb2;}
 afswebgrep () { eval afsweb; foo=$@ ; ex grep -iE "${foo// /.*}" $afsweb;}
 
-ccsex () { eval ccs; exkc $@ ;}
 hacex () { eval hac; ex $@ ;}
 hmwebex () { eval hmweb; ex $@ ;}
 hmweb2ex () { eval hmweb2; ex $@ ;}
@@ -135,8 +152,6 @@ alias cdccat="cdc exkc cat \$cdc"
 cdcgrep () { eval cdc; foo=$@ ; exkc grep -iE "${foo// /.*}" $cdc;}
 cdcex () { eval cdc; exkc $@ ;}
 
-alias ccsdb="psqldcsdb"
-ccsklog () { eval ccs; kc logs -f $pid ;}
 
 ### cdos
 # variables
@@ -160,12 +175,10 @@ cdosklog () { eval cdos; kc logs -f $pid ;}
 ##find versions
 alias hmwebversion="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
 alias hacversion="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias ccsversion="id=device-connector; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
 alias cdosversion="id=common-assets-device-onboarding; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
 
 alias hmwebmeta="hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF"
 alias hacmeta="hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF"
-alias ccsmeta="ccs exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
 alias cdosmeta="cdos exkc unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF"
 
 ### lic
