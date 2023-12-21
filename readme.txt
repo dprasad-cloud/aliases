@@ -1,7 +1,14 @@
-#For aliases, remember to be inside the aliases module and then run below commands for git push
 
-git status
+Usually the aliases work automatically after running the script.
 
-git add -A
-git commit -m "work stuff"
-git push origin main
+But in case any service is still in the process of migration
+(example assets service is still not moved to common namespace)
+
+Then use below commands based on the current namespace of the service
+If the service is still in the default namespace use cloud-old.txt
+
+source /root/aliases-main/cloud-old.txt
+
+Note that other aliases may stop working with above change.
+
+
