@@ -151,16 +151,16 @@ cdosgrep () { eval cdos; foo=$@ ; ex grep -iE "${foo// /.*}" $cdos;}
 cdosex () { eval cdos; ex $@ ;}
 cdosklog () { eval cdos; k logs -f $pid ;}
 
-##find versions
-alias ccsversion="id=device-connector; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias cdosversion="id=common-assets-device-onboarding; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias hmwebversion="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias hacversion="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+##find infos
+alias ccsinfo="id=device-connector; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias cdosinfo="id=common-assets-device-onboarding; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias hmwebinfo="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias hacinfo="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
 
-alias hmwebmeta="hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF"
-alias hacmeta="hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF"
-alias ccsmeta="ccs ex unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
-alias cdosmeta="cdos ex unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF"
+alias hmwebversion"hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF ; hmwebinfo"
+alias hacversion"hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF ; hacinfo"
+alias ccsversion"ccs ex unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF ; ccsinfo"
+alias cdosversion"cdos ex unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF ; cdosinfo"
 
 
 ### lic

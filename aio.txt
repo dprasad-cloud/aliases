@@ -45,6 +45,7 @@ alias hactail="tail -n 200 -f /opt/tomcat8_instance4/logs/hac.log"
 alias hm1tail="tail -n 200 -f /opt/tomcat8_instance1/logs/hm.log"
 alias hm2tail="tail -n 200 -f /opt/tomcat8_instance2/logs/hm.log"
 alias hm3tail="tail -n 200 -f /opt/tomcat8_instance3/logs/hm.log"
+alias hm4tail="tail -n 200 -f /opt/tomcat8_instance4/logs/hm.log"
 alias cdostail="tail -n 200 -f /opt/cdos/logs/xcloud-device-mgmt.log"
 alias apitail="tail -n 200 -f \$api"
 
@@ -81,6 +82,15 @@ alias hacstart="service tomcat8_4 start"
 alias hacrestart="service tomcat8_4 restart"
 
 #
+alias ccsversion="unzip -p /opt/inlets/xcloudiq-device-connect.jar META-INF/MANIFEST.MF"
+alias cdosversion="unzip -p /opt/cdos/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF"
+alias hacversion="unzip -p /opt/tomcat8_instance4/webapps/hac-webapp.war META-INF/MANIFEST.MF"
+alias hm1version="unzip -p /opt/tomcat8_instance1/webapps/\*.war META-INF/MANIFEST.MF"
+alias hm2version="unzip -p /opt/tomcat8_instance2/webapps/\*.war META-INF/MANIFEST.MF"
+alias hm3version="unzip -p /opt/tomcat8_instance3/webapps/\*.war META-INF/MANIFEST.MF"
+alias hm4version="unzip -p /opt/tomcat8_instance4/webapps/\*.war META-INF/MANIFEST.MF"
+
+#
 lic="/opt/xcloudiq-license-mgmt/logs/xiq-license.log"
 licconf="/opt/xcloudiq-license-mgmt/conf/application.properties"
 licgrep () { ex="grep $@ $lic" ; grep $@ $lic;}
@@ -88,6 +98,7 @@ alias liccat="cat \$lic"
 alias licconf="cat \$licconf"
 alias lictail="tail -n 200 -f \$lic"
 alias licvi="vi \$lic"
+alias licversion="unzip -p /opt/xcloudiq-license-mgmt/xcloudiq-license-mgmt.jar META-INF/MANIFEST.MF"
 
 alias licstatus="service xcloudiq-license-mgmt status"
 alias licstop="service xcloudiq-license-mgmt stop"

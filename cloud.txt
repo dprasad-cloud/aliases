@@ -58,7 +58,7 @@ cdosconf="/aerohive_app/etc/application.properties"
 #common namespace
 alias ccscon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --topic device-connect-events'"
 alias ccsconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic device-connect-events'"
-alias ccsversion="id=device-connector; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
+alias ccsinfo="id=device-connector; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
 alias ccsdb="psqldcsdb"
 
 alias ccstail="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; kc exec -it \$pid -- tail -n 200 -f \$ccs"
@@ -71,7 +71,7 @@ alias ccspod="ccs podkc"
 ccsgrep () { eval ccs; foo=$@ ; exkc grep -iE "${foo// /.*}" $ccs ;}
 ccsex () { eval ccs; exkc $@ ;}
 ccsklog () { eval ccs; kc logs -f $pid ;}
-alias ccsmeta="ccs exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
+alias ccsversion="ccs exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF; ccsinfo"
 
 #ccs2
 alias ccs2="unset pid; pid=\$(kc get pods | grep device-connector | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
@@ -83,7 +83,7 @@ alias ccs2vi="ccs2 exkc vi \$ccs"
 alias ccs2cat="ccs2 exkc cat \$ccs"
 ccs2grep () { eval ccs2; foo=$@ ; exkc grep -iE "${foo// /.*}" $ccs;}
 ccs2ex () { eval ccs2; exkc $@ ;}
-alias ccs2meta="ccs2 exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF"
+alias ccs2version="ccs2 exkc unzip -p /opt/xcloud-device-connect/xcloud-device-connect.jar META-INF/MANIFEST.MF; ccsinfo"
 
 
 # set context
@@ -172,14 +172,14 @@ cdosgrep () { eval cdos; foo=$@ ; exkc grep -iE "${foo// /.*}" $cdos;}
 cdosex () { eval cdos; exkc $@ ;}
 cdosklog () { eval cdos; kc logs -f $pid ;}
 
-##find versions
-alias hmwebversion="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias hacversion="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias cdosversion="id=common-assets-device-onboarding; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
+##find info
+alias hmwebinfo="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias hacinfo="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias cdosinfo="id=common-assets-device-onboarding; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
 
-alias hmwebmeta="hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF"
-alias hacmeta="hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF"
-alias cdosmeta="cdos exkc unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF"
+alias hmwebversion="hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF ; hmwebinfo"
+alias hacversion="hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF ; hacinfo"
+alias cdosversion="cdos exkc unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF ; cdosinfo"
 
 ### lic
 # variables
