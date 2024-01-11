@@ -141,7 +141,7 @@ afswebex () { eval afsweb; ex $@ ;}
 
 #cdc
 cdc="/opt/xcloud-device-mgmt-cdc/logs/spring.log"
-cdcconf="/aerohive_app/etc/device-mgmt-cdc.properties"
+cdcconf="/aerohive_app/etc/application.properties"
 cdcjar="/opt/xcloud-device-mgmt-cdc/xcloud-device-mgmt-cdc.jar"
 cdcname="xcloud-device-mgmt-cdc"
 
