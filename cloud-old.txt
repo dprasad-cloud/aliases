@@ -116,9 +116,15 @@ tec2ex () { eval tec2; ex $@ ;}
 teallex () { eval teall; ex $@ ;}
 afswebex () { eval afsweb; ex $@ ;}
 
+alias ccsdb="psqldcsdb"
+ccsklog () { eval ccs; k logs -f $pid ;}
+
 #cdc
 cdc="/opt/xcloud-device-mgmt-cdc/logs/spring.log"
 cdcconf="/aerohive_app/etc/device-mgmt-cdc.properties"
+cdcjar="/opt/xcloud-device-mgmt-cdc/xcloud-device-mgmt-cdc.jar"
+cdcname="xcloud-device-mgmt-cdc"
+
 alias cdc="unset pid; pid=\$(k get pods | grep xcloud-device-mgmt-cdc | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias cdcconf="cdc ex cat \$cdcconf"
 alias cdcconfvi="cdc ex vi \$cdcconf"
@@ -128,9 +134,8 @@ alias cdcvi="cdc ex vi \$cdc"
 alias cdccat="cdc ex cat \$cdc"
 cdcgrep () { eval cdc; foo=$@ ; ex grep -iE "${foo// /.*}" $cdc;}
 cdcex () { eval cdc; ex $@ ;}
-
-alias ccsdb="psqldcsdb"
-ccsklog () { eval ccs; k logs -f $pid ;}
+alias cdcinfo="id=\$cdcname; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
+alias cdcversion="cdc ex unzip -p $cdcjar META-INF/MANIFEST.MF ; cdcinfo"
 
 ### cdos
 # variables

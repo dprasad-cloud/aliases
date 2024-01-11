@@ -142,6 +142,9 @@ afswebex () { eval afsweb; ex $@ ;}
 #cdc
 cdc="/opt/xcloud-device-mgmt-cdc/logs/spring.log"
 cdcconf="/aerohive_app/etc/device-mgmt-cdc.properties"
+cdcjar="/opt/xcloud-device-mgmt-cdc/xcloud-device-mgmt-cdc.jar"
+cdcname="xcloud-device-mgmt-cdc"
+
 alias cdc="unset pid; pid=\$(kc get pods | grep xcloud-device-mgmt-cdc | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias cdcconf="cdc exkc cat \$cdcconf"
 alias cdcconfvi="cdc exkc vi \$cdcconf"
@@ -151,6 +154,8 @@ alias cdcvi="cdc exkc vi \$cdc"
 alias cdccat="cdc exkc cat \$cdc"
 cdcgrep () { eval cdc; foo=$@ ; exkc grep -iE "${foo// /.*}" $cdc;}
 cdcex () { eval cdc; exkc $@ ;}
+alias cdcinfo="id=\$cdcname; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
+alias cdcversion="cdc exkc unzip -p $cdcjar META-INF/MANIFEST.MF ; cdcinfo"
 
 
 ### cdos
@@ -158,6 +163,7 @@ cdcex () { eval cdc; exkc $@ ;}
 cdosname="common-assets-device-onboarding"
 cdos="/tmp/logs/xcloud-device-mgmt-assets.log"
 cdosconf="/aerohive_app/etc/application.properties"
+cdosjar="/opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar"
 
 # commands
 alias cdos="unset pid; pid=\$(kc get pods | grep \$cdosname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
@@ -171,15 +177,15 @@ alias cdosdb="psqlassetsdb"
 cdosgrep () { eval cdos; foo=$@ ; exkc grep -iE "${foo// /.*}" $cdos;}
 cdosex () { eval cdos; exkc $@ ;}
 cdosklog () { eval cdos; kc logs -f $pid ;}
+alias cdosinfo="id=\$cdosname; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
+alias cdosversion="cdos exkc unzip -p $cdosjar META-INF/MANIFEST.MF ; cdosinfo"
 
 ##find info
 alias hmwebinfo="id=hmweb; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
 alias hacinfo="id=hacr; echo Looking for \$id; k get deployments -o wide | grep \$id ; k describe pods | grep \"Image:\" | grep \$id"
-alias cdosinfo="id=common-assets-device-onboarding; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
 
 alias hmwebversion="hmweb ex unzip -p /opt/tomcat/webapps/hm-webapp.war META-INF/MANIFEST.MF ; hmwebinfo"
 alias hacversion="hac ex unzip -p /opt/hacr/hac-webapp.war META-INF/MANIFEST.MF ; hacinfo"
-alias cdosversion="cdos exkc unzip -p /opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar META-INF/MANIFEST.MF ; cdosinfo"
 
 ### lic
 # variables
