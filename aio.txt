@@ -37,6 +37,11 @@ alias cdosconf="cat \$cdosconf"
 alias hacconf="cat \$hacconf"
 alias nmsconf="cat \$nmsconf"
 
+alias ccsconfvi="vi \$ccsconf"
+alias cdosconfvi="vi \$cdosconf"
+alias hacconfvi="vi \$hacconf"
+alias nmsconfvi="vi \$nmsconf"
+
 alias tall="tail -n 200 -f /opt/tomcat*/logs/hm.log"
 alias catall="cat /opt/tomcat*/logs/hm.log"
 
@@ -58,10 +63,8 @@ alias ccsdb="psql \"host=localhost port=5432 user=postgres password=aerohive dbn
 alias systemdb="psql \"host=localhost port=5432 user=postgres password=aerohive dbname=systemdb\""
 alias configdb="psql \"host=localhost port=5432 user=postgres password=aerohive dbname=configdb_1\""
 
-alias ccscon="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --topic device-connect-events"
-alias ccsconbeg="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --from-beginning --topic device-connect-events"
-alias cdoscon="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --topic device-management-event"
-alias cdosconbeg="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --from-beginning --topic device-management-event"
+alias ccs_kafcon="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --topic device-connect-events"
+alias ccs_kafconbeg="/opt/kafka/bin/kafka-console-consumer.sh -bootstrap-server localhost:9092 --from-beginning --topic device-connect-events"
 
 #loop free -m
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
@@ -96,6 +99,7 @@ licconf="/opt/xcloudiq-license-mgmt/conf/application.properties"
 licgrep () { ex="grep $@ $lic" ; grep $@ $lic;}
 alias liccat="cat \$lic"
 alias licconf="cat \$licconf"
+alias licconfvi="vi \$licconf"
 alias lictail="tail -n 200 -f \$lic"
 alias licvi="vi \$lic"
 alias licversion="unzip -p /opt/xcloudiq-license-mgmt/xcloudiq-license-mgmt.jar META-INF/MANIFEST.MF"
@@ -112,6 +116,7 @@ cdcconf="/opt/cdmc//conf/application.properties"
 cdcgrep () { ex="grep $@ $cdc" ; grep $@ $cdc;}
 alias cdccat="cat \$cdc"
 alias cdcconf="cat \$cdcconf"
+alias cdcconfvi="vi \$cdcconf"
 alias cdctail="tail -n 200 -f \$cdc"
 alias cdcvi="vi \$cdc"
 alias cdcversion="unzip -p /opt/cdmc/xcloud-device-mgmt-cdc.jar META-INF/MANIFEST.MF"

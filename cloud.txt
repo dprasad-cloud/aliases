@@ -56,8 +56,8 @@ cdosconf="/aerohive_app/etc/application.properties"
 
 
 #common namespace
-alias ccscon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --topic device-connect-events'"
-alias ccsconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic device-connect-events'"
+alias ccs_kafcon="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --topic device-connect-events'"
+alias ccs_kafconbeg="kc exec -it common-kafka-0 -- bash -c 'unset JMX_PORT source; /opt/bitnami/kafka/bin/kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic device-connect-events'"
 alias ccsinfo="id=device-connector; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
 alias ccsdb="psqldcsdb"
 
