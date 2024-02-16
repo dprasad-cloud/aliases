@@ -9,9 +9,9 @@ alias hactail="unset pid; pid=\$(k get pods | grep hacr-0 | awk '{print \$1}') ;
 alias hacvi="unset pid; pid=\$(k get pods | grep hacr-0 |  awk '{print \$1}') ; echo \$pid; k exec -it \$pid -- vi /opt/hacr/logs/hac.log"
 alias haccat="unset pid; pid=\$(k get pods | grep hacr-0 |  awk '{print \$1}') ; echo \$pid; k exec -it \$pid -- cat /opt/hacr/logs/hac.log"
 
-alias tec1tail="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
-alias tec1vi="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
-alias tec1cat="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
+alias tectail="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
+alias tecvi="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
+alias teccat="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
 
 alias tec2tail="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
 alias tec2vi="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
@@ -43,7 +43,7 @@ ccs="/opt/device-connector/logs/device-connector.log"
 hac="/opt/hacr/logs/hac.log"
 hmweb="/opt/tomcat/logs/hm.log"
 hmweb2="/opt/tomcat/logs/hm.log"
-tec1="/opt/tomcat/logs/hm.log"
+tec="/opt/tomcat/logs/hm.log"
 tec2="/opt/tomcat/logs/hm.log"
 teall="/opt/tomcat/logs/hm.log"
 afsweb="/opt/tomcat/logs/hm.log"
@@ -64,7 +64,9 @@ alias ccsdb="psqldcsdb"
 alias ccstail="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; kc exec -it \$pid -- tail -n 200 -f \$ccs"
 alias ccsvi="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- vi /opt/device-connector/logs/device-connector.log"
 alias ccscat="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid; sleep 1; kc exec -it \$pid -- cat /opt/device-connector/logs/device-connector.log"
-alias ccs="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid;"
+
+alias ccspods="unset pid; pid=\$(kc get pods | grep device-connector | awk '{print \$1}') ; echo \$pid;"
+alias ccs="unset pid; pid=\$(kc get pods | grep device-connector | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias ccsconf="ccs exkc cat \$appconf"
 alias ccsconfvi="ccs exkc vi \$appconf"
 alias ccspod="ccs podkc"
@@ -87,10 +89,16 @@ alias ccs2version="ccs2 exkc unzip -p /opt/xcloud-device-connect/xcloud-device-c
 
 
 # set context
+alias hacpods="unset pid; pid=\$(k get pods | grep hacr | awk '{print \$1}') ; echo \$pid;"
 alias hac="unset pid; pid=\$(k get pods | grep hacr-0 | awk '{print \$1}') ; echo \$pid;"
-alias tec1="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+
+alias tecpods="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '{print \$1}') ; echo \$pid;"
+alias tec="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias tec2="unset pid; pid=\$(k get pods | grep teconfig | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
+
+alias teallpods="unset pid; pid=\$(k get pods | grep teall | sort | awk '{print \$1}') ; echo \$pid;"
 alias teall="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias hmwebpods="unset pid; pid=\$(k get pods | grep hmweb | sort |  awk '{print \$1}') ; echo \$pid;"
 alias hmweb="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias hmweb2="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 2 {print \$1}') ; echo \$pid;"
 alias kafka1="unset pid; pid=\$(k get pods | grep default-kafka | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
@@ -109,7 +117,7 @@ alias hacconfvi="hac ex vi \$hacconf"
 alias cdosconfvi="cdos exkc vi \$appconf"
 
 alias hacpod="hac pod"
-alias tec1pod="tec1 pod"
+alias tecpod="tec pod"
 alias tec2pod="tec2 pod"
 alias hmwebpod="hmweb pod"
 alias hmweb2pod="hmweb2 pod"
@@ -124,7 +132,7 @@ loop () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
 loopkc () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
 
 hacgrep () { eval hac; foo=$@ ; ex grep -iE "${foo// /.*}" $hac;}
-tec1grep () { eval tec1; foo=$@ ; ex grep -iE "${foo// /.*}" $tec1;}
+tecgrep () { eval tec; foo=$@ ; ex grep -iE "${foo// /.*}" $tec;}
 tec2grep () { eval tec2; foo=$@ ; ex grep -iE "${foo// /.*}" $tec2;}
 teallgrep () { eval teall; foo=$@ ; ex grep -iE "${foo// /.*}" $teall;}
 hmwebgrep () { eval hmweb; foo=$@ ; ex grep -iE "${foo// /.*}" $hmweb;}
@@ -134,7 +142,7 @@ afswebgrep () { eval afsweb; foo=$@ ; ex grep -iE "${foo// /.*}" $afsweb;}
 hacex () { eval hac; ex $@ ;}
 hmwebex () { eval hmweb; ex $@ ;}
 hmweb2ex () { eval hmweb2; ex $@ ;}
-tec1ex () { eval tec1; ex $@ ;}
+tecex () { eval tec; ex $@ ;}
 tec2ex () { eval tec2; ex $@ ;}
 teallex () { eval teall; ex $@ ;}
 afswebex () { eval afsweb; ex $@ ;}
@@ -145,6 +153,7 @@ cdcconf="/aerohive_app/etc/application.properties"
 cdcjar="/opt/xcloud-device-mgmt-cdc/xcloud-device-mgmt-cdc.jar"
 cdcname="xcloud-device-mgmt-cdc"
 
+alias cdcpods="unset pid; pid=\$(kc get pods | grep xcloud-device-mgmt-cdc | sort | awk '{print \$1}') ; echo \$pid;"
 alias cdc="unset pid; pid=\$(kc get pods | grep xcloud-device-mgmt-cdc | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias cdcconf="cdc exkc cat \$cdcconf"
 alias cdcconfvi="cdc exkc vi \$cdcconf"
@@ -166,6 +175,7 @@ cdosconf="/aerohive_app/etc/application.properties"
 cdosjar="/opt/xcloud-device-mgmt-webapp/xcloud-device-mgmt-webapp.jar"
 
 # commands
+alias cdospods="unset pid; pid=\$(kc get pods | grep \$cdosname | sort | awk '{print \$1}') ; echo \$pid;"
 alias cdos="unset pid; pid=\$(kc get pods | grep \$cdosname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias cdosconf="cdos exkc cat \$cdosconf"
 alias cdosconfvi="cdos exkc vi \$cdosconf"
@@ -194,6 +204,7 @@ lic="/opt/xcloudiq-license-mgmt/logs/license-mgmt.log"
 licconf="/aerohive_app/etc/application.properties"
 
 # commands
+alias licpods="unset pid; pid=\$(k get pods | grep \$licname | sort | awk '{print \$1}') ; echo \$pid;"
 alias lic="unset pid; pid=\$(k get pods | grep \$licname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 alias licconf="lic ex cat \$licconf"
 alias licconfvi="lic ex vi \$licconf"
