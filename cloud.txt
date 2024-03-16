@@ -21,6 +21,7 @@ alias tealltail="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && 
 alias teallvi="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
 alias teallcat="unset pid; pid=\$(k get pods | grep teall | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
 
+alias hmtail="echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
 alias hmwebtail="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- tail -n 200 -f /opt/tomcat/logs/hm.log"
 alias hmwebvi="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- vi /opt/tomcat/logs/hm.log"
 alias hmwebcat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid; sleep 1; k exec -it \$pid -- cat /opt/tomcat/logs/hm.log"
