@@ -239,6 +239,9 @@ cisconf="/aerohive_app/etc/application.yml"
 # commands
 alias cispods="unset pid; pid=\$(kc get pods | grep \$cisname | sort | awk '{print \$1}') ; echo \$pid;"
 alias cis="unset pid; pid=\$(kc get pods | grep \$cisname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
+alias cisinfo="id=cis-service; echo Looking for \$id; kc get deployments -o wide | grep \$id ; kc describe pods | grep \"Image:\" | grep \$id"
+alias cisversion="cis exkc unzip -p /opt/cis/cis.jar META-INF/MANIFEST.MF; cisinfo"
+
 alias cisconf="cis exkc cat \$cisconf"
 alias cisconfvi="cis exkc vi \$cisconf"
 alias cispod="cis podkc"
