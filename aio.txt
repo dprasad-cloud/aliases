@@ -126,3 +126,16 @@ alias cdcstop="service xcloud-device-mgmt-cdc stop"
 alias cdcstart="service xcloud-device-mgmt-cdc start"
 alias cdcrestart="service xcloud-device-mgmt-cdc restart"
 #
+
+#cis
+cis="/opt/cis/logs/cis.log"
+cisconf="/opt/cis/conf/application.yml"
+cisgrep () { ex="grep $@ $cis" ; grep $@ $cis;}
+alias ciscat="cat \$cis"
+alias cisconf="cat \$cisconf"
+alias cisconfvi="vi \$cisconf"
+alias cistail="tail -n 200 -f \$cis"
+alias cisvi="vi \$cis"
+alias cisversion="unzip -p /opt/cis/cis-service.jar META-INF/MANIFEST.MF"
+
+#

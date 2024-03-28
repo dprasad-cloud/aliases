@@ -1,5 +1,11 @@
 
 Usually the aliases work automatically after running the script.
+Just type prefix and press tab to see full list of aliases available:
+ccs
+cdos
+cdc
+hmweb
+hac
 
 But in case any service is still in the process of migration...
 (example assets service is still not moved to common namespace)
