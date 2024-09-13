@@ -263,6 +263,7 @@ sanconf="/aerohive_app/etc/application.yml"
 
 # commands
 alias sanpods="unset pid; pid=\$(kai get pods | grep \$sanname | sort | awk '{print \$1}') ; echo \$pid;"
+alias san="unset pid; pid=\$(kai get pods | grep \$sanname | sort | awk '\$1 && FNR == 1 {print \$1}') ; echo \$pid;"
 #alias saninfo="id=cis-service; echo Looking for \$id; kai get deployments -o wide | grep \$id ; kai describe pods | grep \"Image:\" | grep \$id"
 #alias sanversion="cis exkai unzip -p /opt/cis/cis.jar META-INF/MANIFEST.MF; cisinfo"
 

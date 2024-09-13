@@ -17,3 +17,7 @@ Note that other aliases (like ccs cdc) may stop working with above change.
 aliases related to default namespace will always work irrespective of the changes.
 
 
+
+if alias kc >/dev/null 2>&1; then file=cloud.txt; elif alias k >/dev/null 2>&1; then file=cloud.txt; else file=aio.txt; fi  ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file
+
+
