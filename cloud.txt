@@ -33,9 +33,11 @@ alias hmweb2cat="unset pid; pid=\$(k get pods | grep hmweb | sort | awk '\$1 && 
 dash=" -- "
 alias pod='echo "k exec -it $pid -- bash"; k exec -it $pid -- bash'
 alias podkc='echo "kc exec -it $pid -- bash"; kc exec -it $pid -- bash'
+alias podkai='echo "kai exec -it $pid -- bash"; kai exec -it $pid -- bash'
 
 ex () { ex="k exec -it $pid $dash"; echo $ex $@ ; ex="$ex $@";echo -e '\n' ---------------------------------------------------------------------------------- '\n' ; k exec -it $pid $dash $@;}
 exkc () { exkc="kc exec -it $pid $dash"; echo $exkc $@ ; ex="$exkc $@";echo -e '\n' ---------------------------------------------------------------------------------- '\n' ; kc exec -it $pid $dash $@;}
+exkai () { exkc="kai exec -it $pid $dash"; echo $exkai $@ ; ex="$exkai $@";echo -e '\n' ---------------------------------------------------------------------------------- '\n' ; kai exec -it $pid $dash $@;}
 
 alias cmd="echo \$ex"
 alias cmdkc="echo \$exkc"
@@ -252,3 +254,25 @@ alias cisdb="psqlaccountdb"
 cisgrep () { eval cis; foo=$@ ; exkc grep -iE "${foo// /.*}" $cis;}
 cisexkc () { eval cis; exkc $@ ;}
 cisklog () { eval cis; kc logs -f $pid ;}
+
+### san
+# variables
+sanname="san"
+san="/tmp/logs/san.log"
+sanconf="/aerohive_app/etc/application.yml"
+
+# commands
+alias sanpods="unset pid; pid=\$(kai get pods | grep \$sanname | sort | awk '{print \$1}') ; echo \$pid;"
+#alias saninfo="id=cis-service; echo Looking for \$id; kai get deployments -o wide | grep \$id ; kai describe pods | grep \"Image:\" | grep \$id"
+#alias sanversion="cis exkai unzip -p /opt/cis/cis.jar META-INF/MANIFEST.MF; cisinfo"
+
+#alias cisconf="san exkai cat \$cisconf"
+#alias cisconfvi="cis exkai vi \$cisconf"
+alias sanpod="san podkai"
+#alias cistail="cis exkai tail -n 200 -f \$cis"
+#alias cisvi="cis exkai vi \$cis"
+#alias ciscat="cis exkai cat \$cis"
+#alias cisdb="psqlaccountdb"
+#cisgrep () { eval cis; foo=$@ ; exkai grep -iE "${foo// /.*}" $cis;}
+sanexkai () { eval san; exkai $@ ;}
+sanklog () { eval san; kai logs -f $pid ;}
