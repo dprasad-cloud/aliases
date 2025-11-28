@@ -4,6 +4,7 @@
 alias findpod='kubectl get pods -A | grep '
 alias findsvc='kubectl get svc -A | grep '
 alias finding='kubectl get ing -A | grep '
+alias findcm='kubectl get cm -A | grep '
 
 chmod +x /root/aliases-main/desc.sh
 alias desc='/root/aliases-main/desc.sh'
@@ -25,6 +26,7 @@ echo -e "\n "
 echo -e "\t findpod <search_key>        : Find pod across all namespaces"
 echo -e "\t findsvc <search_key>        : Find service across all namespaces"
 echo -e "\t finding <search_key>        : Find ingress across all namespaces"
+echo -e "\t findcm <search_key>         : Find configmap across all namespaces"
 echo -e "\n "
 echo -e "\t desc <search_key>          : Find the pod across all namespaces and get description"
 echo -e "\t cm <search_key>            : Find the configmap across all namespaces and get properties"
