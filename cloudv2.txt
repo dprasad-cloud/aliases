@@ -11,6 +11,9 @@ alias desc='/root/aliases-main/desc.sh'
 chmod +x /root/aliases-main/configmap.sh
 alias cm='/root/aliases-main/configmap.sh'
 
+chmod +x /root/aliases-main/logs.sh
+alias logs='/root/aliases-main/logs.sh'
+
 chmod +x /root/aliases-main/podbash.sh
 alias podbash='/root/aliases-main/podbash.sh'
 
