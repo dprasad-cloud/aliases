@@ -31,7 +31,7 @@ kubectl get cm -A | grep "$SEARCH_TERM" | awk '
         print "========================================================"
 
         # Execute the kubectl get command with the Go template to show key=value pairs
-        system("kubectl get configmap " configmap_name " -n " namespace " -o go-template=\047{{range \$k, \$v := .data}}{{printf \"%s=%s\\n\" \$k \$v}}{{end}}\047")
+        system("kubectl get configmap " configmap_name " -n " namespace " -o go-template=\047{{range $k, $v := .data}}{{printf \"%s=%s\\n\" $k $v}}{{end}}\047")
         # NOTE: The template is escaped with '\\x27' (single quote) to ensure AWK passes it correctly.
     }
 }
