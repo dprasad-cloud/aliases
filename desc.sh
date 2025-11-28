@@ -12,12 +12,12 @@ if [ -z "$SEARCH_TERM" ]; then
     exit 1
 fi
 
-echo "--- Searching for the FIRST pod containing '$SEARCH_TERM' ---"
+echo "--- Searching for the pod containing '$SEARCH_TERM' ---"
 
 # Use 'kubectl get pod -A' to list all pods across all namespaces.
 # Pipe to 'grep' for the search term.
 # Pipe to 'head -n 1' to select only the first data line (excluding the header).
-kubectl get pod -A | grep "$SEARCH_TERM" | head -n 1 | awk '
+kubectl get pod -A | grep "$SEARCH_TERM" | awk '
 {
     namespace = $1;
     pod_name = $2;
