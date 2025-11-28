@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generic Pod Logs Display Script
-# This script finds the first RUNNING pod matching the search term
+# This script finds the first pod matching the search term
 # and prints its standard logs (kubectl logs).
 
 # $1 is the search term (e.g., 'teconfig')
@@ -12,15 +12,15 @@ if [ -z "$SEARCH_TERM" ]; then
     exit 1
 fi
 
-echo "--- Searching for the FIRST RUNNING pod containing '$SEARCH_TERM' ---"
+echo "--- Searching for the FIRST pod containing '$SEARCH_TERM' ---"
 
 # Use 'kubectl get pod -A' to list all pods across all namespaces.
-# Filter by the search term, then filter again to ensure it is 'Running',
+# Filter by the search term
 # and finally use 'head -n 1' to select only the first result.
 POD_INFO=$(kubectl get pod -A | grep "$SEARCH_TERM" | head -n 1)
 
 if [ -z "$POD_INFO" ]; then
-    echo "ERROR: No RUNNING pod found matching '$SEARCH_TERM'."
+    echo "ERROR: No pod found matching '$SEARCH_TERM'."
     exit 1
 fi
 
@@ -39,7 +39,6 @@ echo "--------------------------------------------------------"
 echo "SELECTED POD: $POD_NAME"
 echo "BASE APPLICATION: $BASE_NAME"
 echo "NAMESPACE: $NAMESPACE"
-echo "STATUS: Running"
 echo "--------------------------------------------------------"
 echo "Executing: kubectl logs $POD_NAME -n $NAMESPACE"
 echo "--------------------------------------------------------"
