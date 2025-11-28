@@ -50,4 +50,4 @@ sleep 1
 # Execute the kubectl logs command
 kubectl logs "$POD_NAME" -n "$NAMESPACE"
 
-echo "--- Pod logs displayed ---"
+echo "\n--- Pod logs displayed ---"
