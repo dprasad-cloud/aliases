@@ -29,6 +29,7 @@ echo -e "\t podbash <search_key>       : Find and bash shell into the pod"
 echo -e "\t podsh <search_key>         : Find and sh shell into the pod"
 echo -e "\n "
 echo -e "\n Future Shortcuts (exec, catlog, taillog, greplog, etc)"
+echo -e "\n "
 echo -e "\t Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
 echo -e "\n "
 
