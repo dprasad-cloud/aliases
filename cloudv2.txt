@@ -14,7 +14,8 @@ alias cm='/root/aliases-main/configmap.sh'
 chmod +x /root/aliases-main/podbash.sh
 alias podbash='/root/aliases-main/podbash.sh'
 
-TODO podsh
+chmod +x /root/aliases-main/podbash.sh
+alias podbash='/root/aliases-main/podbash.sh'
 
-
+#TODO podexec
 
