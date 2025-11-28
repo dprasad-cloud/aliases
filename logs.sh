@@ -50,8 +50,4 @@ sleep 1
 # Execute the kubectl logs command
 kubectl logs "$POD_NAME" -n "$NAMESPACE"
 
-# Display future feature ideas and contact info with tab indentation
-echo -e "\t To be added in the future... podexec catlog taillog greplog etc"
-echo -e "\t Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
-
 echo "--- Pod logs displayed ---"
