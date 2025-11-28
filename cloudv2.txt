@@ -17,5 +17,5 @@ alias podbash='/root/aliases-main/podbash.sh'
 chmod +x /root/aliases-main/podsh.sh
 alias podsh='/root/aliases-main/podsh.sh'
 
-#TODO podexec
+#TODO podexec catlog taillog greplog etc
 
