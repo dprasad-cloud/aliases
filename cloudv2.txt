@@ -4,5 +4,8 @@
 chmod +x /root/aliases-main/desc.sh
 alias desc='/root/aliases-main/desc.sh'
 
+chmod +x /root/aliases-main/configmap.sh
+alias configmap='/root/aliases-main/configmap.sh'
+
 
 
