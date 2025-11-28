@@ -39,4 +39,4 @@ kubectl get pod -A | grep "$SEARCH_TERM" | awk '
 }
 '
 
-echo "--- Description complete ---"
+echo -e "\n--- Description complete ---"
