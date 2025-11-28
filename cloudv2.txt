@@ -17,5 +17,17 @@ alias podbash='/root/aliases-main/podbash.sh'
 chmod +x /root/aliases-main/podsh.sh
 alias podsh='/root/aliases-main/podsh.sh'
 
-#TODO podexec catlog taillog greplog etc
+echo -e "\n Available Aliases"
+echo -e "\t findpod <string>        : Find pod across all namespaces"
+echo -e "\t findsvc <string>        : Find service across all namespaces"
+echo -e "\t finding <string>        : Find ingress across all namespaces"
+echo -e "\t desc <podname>          : Find and Describe pod across all namespaces"
+echo -e "\t cm <configmapname>      : Find and Get configmap details across all namespaces"
+echo -e "\t podbash <podname>       : Find and bash shell into the pod"
+echo -e "\t podsh <podname>         : Find and sh shell into the pod"
+echo -e "\n "
+echo -e "\n Future Aliases"
+echo -e "\t podexec catlog taillog greplog etc"
+echo -e "\t Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
+
 
