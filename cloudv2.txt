@@ -1,5 +1,5 @@
 #Run the below line on AIO to get the aliases installed. Remove # before executing
-#file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file
+# file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file
 
 alias findpod='kubectl get pods -A | grep '
 alias findsvc='kubectl get svc -A | grep '
