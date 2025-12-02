@@ -7,6 +7,7 @@
 
          desc <search_key>          : Find the pod across all namespaces and get description
          cm <search_key>            : Find the configmap across all namespaces and get properties
+
          logs <search_key>          : Find the pod across all namespaces and get logs
          logsf <search_key>         : Find the pod across all namespaces and follow logs
 
