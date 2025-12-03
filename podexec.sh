@@ -68,7 +68,7 @@ sleep 1
 
 # Execute the kubectl exec command
 # FIX: $COMMAND MUST be double-quoted here to prevent word splitting by the host shell.
-kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- "$COMMAND"
+kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- $COMMAND
 
 
 echo -e "\n--- Pod execute command finished ---"
