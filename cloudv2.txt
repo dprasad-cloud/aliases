@@ -27,6 +27,12 @@ alias podsh='/root/aliases-main/podsh.sh'
 chmod +x /root/aliases-main/podexec.sh
 alias podexec='/root/aliases-main/podexec.sh'
 
+hmlogvi () {
+  # Pass the user's search term ($1) as the first argument to podexec,
+  # and the fixed command (vi /opt/tomcat/logs/hm.log) as the subsequent arguments.
+  podexec "$1" vi /opt/tomcat/logs/hm.log
+}
+
 echo -e "\n Available Shortcuts - Feel free to use flags like -i as in grep command: findpod -i error"
 echo -e "\n "
 echo -e "\t findpod <search_key>        : Find pod across all namespaces"
