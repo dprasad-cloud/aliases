@@ -6,17 +6,29 @@
 
 # $1 is the search term (e.g., 'temon')
 SEARCH_TERM="$1"
-# FIX: Capture all arguments from the second position onwards as the command.
-# This allows the user to type multi-word commands (like 'ls -l /tmp')
-# without needing to wrap them in quotes.
-COMMAND="${@:2}"
 
-if [ -z "$SEARCH_TERM" ] || [ -z "$COMMAND" ]; then
+# --- FIX: Use 'shift' to robustly capture all remaining arguments as the command ---
+# 1. Check if SEARCH_TERM is provided.
+if [ -z "$SEARCH_TERM" ]; then
+    echo "Usage: podexec <search_term> <command>"
+    echo "Example: podexec temon ls -l /var/log"
+    exit 1
+fi
+
+# 2. Shift positionals: Discard $1 (the SEARCH_TERM). Arguments $2, $3, etc. become $1, $2, etc.
+shift
+
+# 3. Capture all remaining arguments (now $@) into the COMMAND variable.
+# The double-quotes here ensure spaces are preserved, resulting in a single string.
+COMMAND="$@"
+
+if [ -z "$COMMAND" ]; then
     echo "Usage: podexec <search_term> <command>"
     echo "Example: podexec temon ls -l /var/log"
     echo "Example: podexec teconfig cat /etc/config/app.conf"
     exit 1
 fi
+# ----------------------------------------------------------------------------------
 
 echo "--- Searching for the FIRST RUNNING pod containing '$SEARCH_TERM' (Case-Insensitive Regex) ---"
 
@@ -58,8 +70,5 @@ sleep 1
 # FIX: $COMMAND MUST be double-quoted here to prevent word splitting by the host shell.
 kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- "$COMMAND"
 
-# Display future feature ideas and contact info with tab indentation
-echo -e "\t To be added in the future... podexec catlog taillog greplog etc"
-echo -e "\t Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
 
-echo "--- Pod execute command finished ---"
+echo -e "\n--- Pod execute command finished ---"
