@@ -47,6 +47,7 @@ echo "BASE APPLICATION: $BASE_NAME"
 echo "NAMESPACE: $NAMESPACE"
 echo "STATUS: Running"
 echo "--------------------------------------------------------"
+# The execution line is now fixed to use double quotes around $COMMAND
 echo "Executing: kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
 echo "--------------------------------------------------------"
 
@@ -54,9 +55,8 @@ echo "--------------------------------------------------------"
 sleep 1
 
 # Execute the kubectl exec command
-# IMPORTANT: The $COMMAND is now double-quoted to ensure the entire collected string
-# (which might contain spaces) is passed as a single command argument to kubectl.
-kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- $COMMAND
+# FIX: $COMMAND MUST be double-quoted here to prevent word splitting by the host shell.
+kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- "$COMMAND"
 
 # Display future feature ideas and contact info with tab indentation
 echo -e "\t To be added in the future... podexec catlog taillog greplog etc"
