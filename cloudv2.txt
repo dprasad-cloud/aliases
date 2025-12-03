@@ -73,6 +73,8 @@ echo -e "\t hmvi <search_key>       : Find the pod across all namespaces and run
 echo -e "\t hmcat <search_key>      : Find the pod across all namespaces and run command cat /opt/tomcat/logs/hm.log"
 echo -e "\t hmtail <search_key>     : Find the pod across all namespaces and run command tail -f /opt/tomcat/logs/hm.log"
 echo -e "\n "
+echo -e "\t ups   : Update the aliases to latest version from github, also show this help"
+echo -e "\n "
 echo -e "\n Future Shortcuts (exec, applog etc)"
 echo -e "\n "
 echo -e "\t Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
