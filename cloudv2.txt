@@ -37,6 +37,21 @@ hmtail () {
   podexec "$1" tail -f /opt/tomcat/logs/hm.log
 }
 
+ups () {
+    # Define the target file name inside the extracted directory
+    local file="cloudv2.txt"
+
+    # 1. Download the repository archive and save it to /root/main.zip
+    wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip
+
+    # 2. Unzip the archive to /root, overwriting existing files (-o)
+    unzip -o /root/main.zip -d /root
+
+    # 3. Source the specific file (cloudv2.txt) from the extracted folder (aliases-main)
+    # This executes the commands/aliases defined in cloudv2.txt in the current shell session.
+    source /root/aliases-main/$file
+}
+
 echo -e "\n Available Shortcuts - Feel free to use flags like -i as in grep command: findpod -i error"
 echo -e "\n "
 echo -e "\t findpod <search_key>        : Find pod across all namespaces"
