@@ -28,6 +28,8 @@ fi
 NAMESPACE=$(echo "$POD_INFO" | awk '{print $1}')
 POD_NAME=$(echo "$POD_INFO" | awk '{print $2}')
 
+POD_NAME=$(echo "POD_NAME" | sed -E 's/-[a-z0-9]{5}$//' | sed -E 's/-[a-f0-9]{9,10}$//' | sed -E 's/-[0-9]+$//')
+
 echo "--------------------------------------------------------"
 echo "SELECTED POD: $POD_NAME"
 echo "NAMESPACE: $NAMESPACE"
