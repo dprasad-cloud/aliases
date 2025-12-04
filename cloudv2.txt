@@ -27,6 +27,9 @@ alias podsh='/root/aliases-main/podsh.sh'
 chmod +x /root/aliases-main/podexec.sh
 alias podexec='/root/aliases-main/podexec.sh'
 
+chmod +x /root/aliases-main/kedit.sh
+alias kedit='/root/aliases-main/kedit.sh'
+
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
 }
@@ -68,6 +71,7 @@ echo -e "\n "
 echo -e "\t podbash <search_key>       : Find the pod across all namespaces and bash into the pod"
 echo -e "\t podsh <search_key>         : Find the pod across all namespaces and sh into the pod"
 echo -e "\t podexec <search_key> <cmd> : Find the pod across all namespaces and run the cmd"
+echo -e "\t kedit <search_key>         : Find the pod across all namespaces and run the kubectl edit deployment..."
 echo -e "\n "
 echo -e "\t hmvi <search_key>       : Find the pod across all namespaces and run command vi /opt/tomcat/logs/hm.log"
 echo -e "\t hmcat <search_key>      : Find the pod across all namespaces and run command cat /opt/tomcat/logs/hm.log"
