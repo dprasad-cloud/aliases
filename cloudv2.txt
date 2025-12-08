@@ -82,9 +82,8 @@ echo -e "\t hmtail <search_key>     : Find the pod across all namespaces and run
 echo -e "\n "
 echo -e "\t loop <command>          : loop the provided command every 15 seconds"
 echo -e "\t ups                     : Update the aliases to latest version from github, also show this help"
-echo -e "\n Future Shortcuts (applog, errors etc)"
 echo -e "\n "
-echo -e "\t Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
+echo -e "Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
 echo -e "\n "
 
 
