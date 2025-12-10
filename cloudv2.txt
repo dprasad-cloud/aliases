@@ -1,6 +1,6 @@
 #Run the below line on AIO to get the aliases installed. Remove # before executing
 # sudo yum install unzip # if unzip is not installed
-# file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file
+# file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file;
 
 alias findpod='kubectl get pods -A | grep '
 alias findsvc='kubectl get svc -A | grep '
@@ -57,6 +57,8 @@ ups () {
     # This executes the commands/aliases defined in cloudv2.txt in the current shell session.
     source /root/aliases-main/$file
 }
+
+clear;
 
 echo -e "\n Available Shortcuts - Feel free to use flags like -i as in grep command: findpod -i error"
 echo -e "\n "
