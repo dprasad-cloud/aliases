@@ -40,7 +40,7 @@ echo "SELECTED POD: $POD_NAME"
 echo "BASE APPLICATION: $BASE_NAME"
 echo "NAMESPACE: $NAMESPACE"
 echo "--------------------------------------------------------"
-echo "Executing: kubectl logs $POD_NAME -n $NAMESPACE"
+echo "Executing: kubectl logs -f $POD_NAME -n $NAMESPACE"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation
