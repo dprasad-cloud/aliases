@@ -1,8 +1,7 @@
 #!/bin/bash
 
-# Generic Pod Description Script (Single Pod Mode)
-# This script finds the first pod matching the search term, displays its name,
-# pauses for one second, and then runs 'kubectl describe pod' for that single result.
+# Generic Pod Description Script (Multi-Pod Mode)
+# This script finds ALL pods matching the search term and runs 'kubectl describe pod' for each.
 
 # $1 is the search term (e.g., 'network')
 SEARCH_TERM="$1"
@@ -12,38 +11,52 @@ if [ -z "$SEARCH_TERM" ]; then
     exit 1
 fi
 
-echo "--- Searching for the pod containing '$SEARCH_TERM' ---"
+echo "--- Searching for ALL pods containing '$SEARCH_TERM' ---"
 
-# 1. Use 'kubectl' and 'grep' to find the pod line.
-# 2. Use 'head -n 1' to get only the first result (excluding the header).
-POD_LINE=$(kubectl get pod -A | grep "$SEARCH_TERM" | grep -v 'NAME' | head -n 1)
+# Variable to store ALL executed commands for printing at the end
+ALL_EXEC_COMMANDS=""
+PODS_FOUND=0
 
-if [ -z "$POD_LINE" ]; then
-    echo "Error: No pod found matching '$SEARCH_TERM'."
-    exit 1
-fi
+# Use Process Substitution to feed the output to the while loop
+# This ensures the loop runs in the current shell, preserving variable scope.
+while read NAMESPACE POD_NAME REST; do
 
-# 2. Extract Namespace and Pod Name using 'awk' from the selected line
-NAMESPACE=$(echo "$POD_LINE" | awk '{print $1}')
-POD_NAME=$(echo "$POD_LINE" | awk '{print $2}')
+    # Skip empty lines or the header row
+    if [ -z "$POD_NAME" ] || [ "$POD_NAME" = "NAME" ]; then
+        continue
+    fi
 
-# 3. Construct the final execution command
-EXEC_COMMAND="kubectl describe pod $POD_NAME -n $NAMESPACE"
+    PODS_FOUND=$((PODS_FOUND + 1))
 
-# Print Selection Info
-echo "--------------------------------------------------------"
-echo "SELECTED POD: $POD_NAME"
-echo "NAMESPACE: $NAMESPACE"
-echo "--------------------------------------------------------"
-echo "Starting kubectl describe in 1 second..."
+    # 1. Construct the final execution command
+    CURRENT_EXEC_COMMAND="kubectl describe pod $POD_NAME -n $NAMESPACE"
 
-# Introduce a 1-second pause
-sleep 1
+    # 2. Append the current command to the list, followed by a newline
+    ALL_EXEC_COMMANDS+="$CURRENT_EXEC_COMMAND"$'\n'
 
-# 4. Execute the command
-eval "$EXEC_COMMAND"
+    # Print Selection Info
+    echo -e "\n========================================================"
+    echo "PROCESSING POD #$PODS_FOUND: $POD_NAME"
+    echo "NAMESPACE: $NAMESPACE"
+    echo "========================================================"
+    echo "Starting kubectl describe in 1 second..."
+
+    # Introduce a 1-second pause before each describe
+    sleep 1
+
+    # 3. Execute the command
+    eval "$CURRENT_EXEC_COMMAND"
+
+done < <(kubectl get pod -A | grep "$SEARCH_TERM" | grep -v 'NAME')
 
 # Print Summary at the end
-echo -e "\n--- Description complete ---"
-echo -e "\n Executed: $EXEC_COMMAND"
+echo -e "\n--- Description complete ($PODS_FOUND pods processed) ---"
+
+if [ -n "$ALL_EXEC_COMMANDS" ]; then
+    echo -e "\nExecuted commands:"
+    # Print the concatenated commands.
+    echo "$ALL_EXEC_COMMANDS"
+else
+    echo -e "\nNo pods were found matching '$SEARCH_TERM'."
+fi
 echo -e "\n"
