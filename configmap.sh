@@ -19,25 +19,25 @@ SEARCH_TERM=$(echo "$SEARCH_TERM" | sed -E 's/-[a-z0-9]{5}$//' | sed -E 's/-[a-f
 echo "--- Searching for ConfigMaps containing '$SEARCH_TERM' and displaying properties ---"
 
 # Variable to store ALL executed commands for printing at the end
+# Must be defined in the main shell environment
 ALL_EXEC_COMMANDS=""
 
 # Go Template to extract key=value pairs from the .data section
 GO_TEMPLATE='{{range $k, $v := .data}}{{printf "%s=%s\n" $k $v}}{{end}}'
 
-# Use 'kubectl get cm -A' to list all ConfigMaps across all namespaces, then grep.
-# Process the output line by line using while/read loop.
-kubectl get cm -A | grep "$SEARCH_TERM" | grep -v 'NAME' | while read NAMESPACE CONFIGMAP_NAME REST; do
+# Use Process Substitution to feed the output to the while loop
+# This ensures the loop runs in the current shell, preserving variable scope.
+while read NAMESPACE CONFIGMAP_NAME REST; do
 
-    # Skip empty lines or unexpected output
-    if [ -z "$CONFIGMAP_NAME" ]; then
+    # Skip empty lines or the header row
+    if [ -z "$CONFIGMAP_NAME" ] || [ "$CONFIGMAP_NAME" = "NAME" ]; then
         continue
     fi
 
     # 1. Construct the final execution command
     CURRENT_EXEC_COMMAND="kubectl get configmap $CONFIGMAP_NAME -n $NAMESPACE -o go-template='$GO_TEMPLATE'"
 
-    # 2. Append the current command to the list, preceded by a newline
-    # This is the key change to capture ALL commands.
+    # 2. Append the current command to the list, followed by a newline
     ALL_EXEC_COMMANDS+="$CURRENT_EXEC_COMMAND"$'\n'
 
     # Print Selection Info
@@ -49,7 +49,7 @@ kubectl get cm -A | grep "$SEARCH_TERM" | grep -v 'NAME' | while read NAMESPACE 
     # 3. Execute the command
     eval "$CURRENT_EXEC_COMMAND"
 
-done
+done < <(kubectl get cm -A | grep "$SEARCH_TERM")
 
 # Print Summary at the end
 echo -e "\n--- Description complete ---"
