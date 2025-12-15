@@ -2,8 +2,7 @@
 
 # Generic ConfigMap Description Script (Multiple Results)
 # This script searches for all ConfigMaps matching the search term,
-# and runs 'kubectl get' with a Go template to display properties (key=value)
-# for each one found.
+# and displays their properties.
 
 # $1 is the search term (e.g., 'tereport')
 SEARCH_TERM="$1"
@@ -14,34 +13,51 @@ if [ -z "$SEARCH_TERM" ]; then
 fi
 
 echo "--- Strip unwanted strings at the end of search string"
-
+# Remove common hash/number suffixes from the search term
 SEARCH_TERM=$(echo "$SEARCH_TERM" | sed -E 's/-[a-z0-9]{5}$//' | sed -E 's/-[a-f0-9]{9,10}$//' | sed -E 's/-[0-9]+$//')
 
 echo "--- Searching for ConfigMaps containing '$SEARCH_TERM' and displaying properties ---"
-command = ""
-# Use 'kubectl get cm -A' to list all ConfigMaps across all namespaces.
-# Pipe to 'grep' for the search term.
-# Pipe to 'awk' to parse the output and execute the new command for each result.
-kubectl get cm -A | grep "$SEARCH_TERM" | awk '
-{
-    namespace = $1;
-    configmap_name = $2;
 
-    # Skip the header row if it matches the search term
-    if (configmap_name != "NAME") {
-        print "\n========================================================"
-        print "PROPERTIES FOR: " configmap_name
-        print "NAMESPACE: " namespace
-        print "========================================================"
+# Variable to store ALL executed commands for printing at the end
+ALL_EXEC_COMMANDS=""
 
-        # Execute the kubectl get command with the Go template to show key=value pairs
-        system("kubectl get configmap " configmap_name " -n " namespace " -o go-template=\047{{range $k, $v := .data}}{{printf \"%s=%s\\n\" $k $v}}{{end}}\047")
-        # NOTE: The template is escaped with '\\x27' (single quote) to ensure AWK passes it correctly.
-        command = "kubectl get configmap " configmap_name " -n " namespace " -o go-template='{{range $k, $v := .data}}{{printf \"%s=%s\\n\" $k $v}}{{end}}'"
-    }
-}
-'
+# Go Template to extract key=value pairs from the .data section
+GO_TEMPLATE='{{range $k, $v := .data}}{{printf "%s=%s\n" $k $v}}{{end}}'
 
+# Use 'kubectl get cm -A' to list all ConfigMaps across all namespaces, then grep.
+# Process the output line by line using while/read loop.
+kubectl get cm -A | grep "$SEARCH_TERM" | grep -v 'NAME' | while read NAMESPACE CONFIGMAP_NAME REST; do
+
+    # Skip empty lines or unexpected output
+    if [ -z "$CONFIGMAP_NAME" ]; then
+        continue
+    fi
+
+    # 1. Construct the final execution command
+    CURRENT_EXEC_COMMAND="kubectl get configmap $CONFIGMAP_NAME -n $NAMESPACE -o go-template='$GO_TEMPLATE'"
+
+    # 2. Append the current command to the list, preceded by a newline
+    # This is the key change to capture ALL commands.
+    ALL_EXEC_COMMANDS+="$CURRENT_EXEC_COMMAND"$'\n'
+
+    # Print Selection Info
+    echo -e "\n========================================================"
+    echo "PROPERTIES FOR: $CONFIGMAP_NAME"
+    echo "NAMESPACE: $NAMESPACE"
+    echo "========================================================"
+
+    # 3. Execute the command
+    eval "$CURRENT_EXEC_COMMAND"
+
+done
+
+# Print Summary at the end
 echo -e "\n--- Description complete ---"
-echo -e "\n Executed : $command"
+if [ -n "$ALL_EXEC_COMMANDS" ]; then
+    echo -e "\nExecuted commands:"
+    # Print the concatenated commands.
+    echo "$ALL_EXEC_COMMANDS"
+else
+    echo -e "\nNo ConfigMaps were found or processed."
+fi
 echo -e "\n"
