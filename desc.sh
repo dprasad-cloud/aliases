@@ -13,7 +13,7 @@ if [ -z "$SEARCH_TERM" ]; then
 fi
 
 echo "--- Searching for the pod containing '$SEARCH_TERM' ---"
-
+command = ""
 # Use 'kubectl get pod -A' to list all pods across all namespaces.
 # Pipe to 'grep' for the search term.
 # Pipe to 'head -n 1' to select only the first data line (excluding the header).
@@ -35,8 +35,11 @@ kubectl get pod -A | grep "$SEARCH_TERM" | awk '
 
         # Execute the kubectl describe command
         system("kubectl describe pod " pod_name " -n " namespace)
+        command = "kubectl describe pod " pod_name " -n " namespace
     }
 }
 '
 
 echo -e "\n--- Description complete ---"
+echo -e "\n Executed : $command"
+echo -e "\n"

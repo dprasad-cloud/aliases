@@ -18,7 +18,7 @@ echo "--- Strip unwanted strings at the end of search string"
 SEARCH_TERM=$(echo "$SEARCH_TERM" | sed -E 's/-[a-z0-9]{5}$//' | sed -E 's/-[a-f0-9]{9,10}$//' | sed -E 's/-[0-9]+$//')
 
 echo "--- Searching for ConfigMaps containing '$SEARCH_TERM' and displaying properties ---"
-
+command = ""
 # Use 'kubectl get cm -A' to list all ConfigMaps across all namespaces.
 # Pipe to 'grep' for the search term.
 # Pipe to 'awk' to parse the output and execute the new command for each result.
@@ -37,8 +37,11 @@ kubectl get cm -A | grep "$SEARCH_TERM" | awk '
         # Execute the kubectl get command with the Go template to show key=value pairs
         system("kubectl get configmap " configmap_name " -n " namespace " -o go-template=\047{{range $k, $v := .data}}{{printf \"%s=%s\\n\" $k $v}}{{end}}\047")
         # NOTE: The template is escaped with '\\x27' (single quote) to ensure AWK passes it correctly.
+        command = "kubectl get configmap " configmap_name " -n " namespace " -o go-template='{{range $k, $v := .data}}{{printf \"%s=%s\\n\" $k $v}}{{end}}'"
     }
 }
 '
 
 echo -e "\n--- Description complete ---"
+echo -e "\n Executed : $command"
+echo -e "\n"
