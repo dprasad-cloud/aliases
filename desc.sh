@@ -13,33 +13,37 @@ if [ -z "$SEARCH_TERM" ]; then
 fi
 
 echo "--- Searching for the pod containing '$SEARCH_TERM' ---"
-command = ""
-# Use 'kubectl get pod -A' to list all pods across all namespaces.
-# Pipe to 'grep' for the search term.
-# Pipe to 'head -n 1' to select only the first data line (excluding the header).
-kubectl get pod -A | grep "$SEARCH_TERM" | awk '
-{
-    namespace = $1;
-    pod_name = $2;
 
-    # Check if the line is not the header line
-    if (pod_name != "NAME") {
-        print "--------------------------------------------------------"
-        print "SELECTED POD: " pod_name
-        print "NAMESPACE: " namespace
-        print "--------------------------------------------------------"
-        print "Starting kubectl describe in 1 second..."
+# 1. Use 'kubectl' and 'grep' to find the pod line.
+# 2. Use 'head -n 1' to get only the first result (excluding the header).
+POD_LINE=$(kubectl get pod -A | grep "$SEARCH_TERM" | grep -v 'NAME' | head -n 1)
 
-        # Introduce a 1-second pause
-        system("sleep 1")
+if [ -z "$POD_LINE" ]; then
+    echo "Error: No pod found matching '$SEARCH_TERM'."
+    exit 1
+fi
 
-        # Execute the kubectl describe command
-        system("kubectl describe pod " pod_name " -n " namespace)
-        command = "kubectl describe pod " pod_name " -n " namespace
-    }
-}
-'
+# 2. Extract Namespace and Pod Name using 'awk' from the selected line
+NAMESPACE=$(echo "$POD_LINE" | awk '{print $1}')
+POD_NAME=$(echo "$POD_LINE" | awk '{print $2}')
 
+# 3. Construct the final execution command
+EXEC_COMMAND="kubectl describe pod $POD_NAME -n $NAMESPACE"
+
+# Print Selection Info
+echo "--------------------------------------------------------"
+echo "SELECTED POD: $POD_NAME"
+echo "NAMESPACE: $NAMESPACE"
+echo "--------------------------------------------------------"
+echo "Starting kubectl describe in 1 second..."
+
+# Introduce a 1-second pause
+sleep 1
+
+# 4. Execute the command
+eval "$EXEC_COMMAND"
+
+# Print Summary at the end
 echo -e "\n--- Description complete ---"
-echo -e "\n Executed : $command"
+echo -e "\n Executed: $EXEC_COMMAND"
 echo -e "\n"
