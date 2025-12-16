@@ -27,7 +27,7 @@ echo "--- Results ---"
 
 # Execute the kubectl command with the stripped search term
 # The '-i' flag ensures case-insensitive search
-kubectl get cm -A | grep -i "$SEARCH_TERM_CLEANED"
+kubectl get svc -A | grep -i "$SEARCH_TERM_CLEANED"
 
 # Execute the function with the script's arguments
 echo -e "\n Executed: kubectl get svc -A | grep -i \"$SEARCH_TERM_CLEANED\""
