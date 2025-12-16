@@ -2,10 +2,6 @@
 # sudo yum install unzip # if unzip is not installed
 # file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file;
 
-alias findpod='kubectl get pods -A | grep '
-alias findsvc='kubectl get svc -A | grep '
-alias finding='kubectl get ing -A | grep '
-
 chmod +x /root/aliases-main/desc.sh
 alias desc='/root/aliases-main/desc.sh'
 
@@ -14,6 +10,15 @@ alias cm='/root/aliases-main/configmap.sh'
 
 chmod +x /root/aliases-main/findcm.sh
 alias findcm='/root/aliases-main/findcm.sh'
+
+chmod +x /root/aliases-main/findpod.sh
+alias findpod='/root/aliases-main/findpod.sh'
+
+chmod +x /root/aliases-main/finding.sh
+alias finding='/root/aliases-main/finding.sh'
+
+chmod +x /root/aliases-main/findsvc.sh
+alias findsvc='/root/aliases-main/findsvc.sh'
 
 chmod +x /root/aliases-main/logs.sh
 alias logs='/root/aliases-main/logs.sh'
