@@ -12,6 +12,9 @@ alias desc='/root/aliases-main/desc.sh'
 chmod +x /root/aliases-main/configmap.sh
 alias cm='/root/aliases-main/configmap.sh'
 
+chmod +x /root/aliases-main/findcm.sh
+alias findcm='/root/aliases-main/findcm.sh'
+
 chmod +x /root/aliases-main/logs.sh
 alias logs='/root/aliases-main/logs.sh'
 
@@ -57,23 +60,6 @@ ups () {
     source /root/aliases-main/$file
 }
 
-findcm() {
-    # 1. Capture the search term provided as the first argument ($1)
-    local SEARCH_TERM="$1"
-
-    # 2. Process the search term to strip common suffixes (if $1 is not empty)
-    if [ -n "$SEARCH_TERM" ]; then
-        # The sed pipeline strips:
-        # -[a-z0-9]{5}$  (e.g., -abcde, common Helm/Kustomize hashes)
-        # -[a-f0-9]{9,10}$ (e.g., -abcdef0123, longer hashes)
-        # -[0-9]+$ (e.g., -12345, revision numbers)
-        SEARCH_TERM=$(echo "$SEARCH_TERM" | sed -E 's/-[a-z0-9]{5}$//' | sed -E 's/-[a-f0-9]{9,10}$//' | sed -E 's/-[0-9]+$//')
-    fi
-
-    # 3. Execute the kubectl command with the stripped search term
-    # Note: We use the processed $SEARCH_TERM in the grep command.
-    kubectl get cm -A | grep -i "$SEARCH_TERM"
-}
 
 clear;
 
