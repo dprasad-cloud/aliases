@@ -30,4 +30,4 @@ echo "--- Results ---"
 kubectl get cm -A | grep -i "$SEARCH_TERM_CLEANED"
 
 # Execute the function with the script's arguments
-findcm_logic "$1"
+echo -e "\n Executed: kubectl get cm -A | grep -i \"$SEARCH_TERM_CLEANED\""
