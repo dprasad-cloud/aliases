@@ -5,7 +5,7 @@
 #              auto-generated suffixes from the search term before grepping.
 
 # Define the function to perform the search logic
-local SEARCH_TERM="$1"
+SEARCH_TERM="$1"
 
 # Check if a search term was provided
 if [ -z "$SEARCH_TERM" ]; then
