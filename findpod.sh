@@ -23,7 +23,7 @@ SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | \
 
 # Execute the kubectl command with the stripped search term
 # The '-i' flag ensures case-insensitive search
-kubectl get pod -A | grep "$SEARCH_TERM_CLEANED"
+kubectl get pod -A | grep $SEARCH_TERM_CLEANED
 
 # Execute the function with the script's arguments
 echo -e "\n Executed:\n\t kubectl get pod -A | grep -i \"$SEARCH_TERM_CLEANED\""
