@@ -13,6 +13,7 @@ if [ -z "$SEARCH_TERM" ]; then
     echo "Usage: $0 <search_term>"
     exit 1
 fi
+echo -e "\n"
 
 # Process the search term to strip common random suffixes
 SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | \

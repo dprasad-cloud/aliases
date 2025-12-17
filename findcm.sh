@@ -14,6 +14,8 @@ if [ -z "$SEARCH_TERM" ]; then
     exit 1
 fi
 
+echo -e "\n"
+
 # Process the search term to strip common random suffixes
 SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | \
     sed -E 's/-[a-z0-9]{5}$//' | \
