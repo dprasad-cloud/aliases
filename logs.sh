@@ -50,5 +50,5 @@ sleep 1
 kubectl logs "$POD_NAME" -n "$NAMESPACE"
 
 echo -e "\n--- Pod logs displayed ---"
-echo -e "\n Executed:\n kubectl logs $POD_NAME -n $NAMESPACE"
+echo -e "\n Executed:\n\t\t kubectl logs $POD_NAME -n $NAMESPACE"
 echo -e "\n"

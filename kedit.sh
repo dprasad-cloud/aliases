@@ -44,5 +44,5 @@ sleep 1
 kubectl edit deployment "$POD_NAME" -n "$NAMESPACE"
 
 echo "--- Pod bash session terminated ---"
-echo -e " Executed:\n kubectl edit deployment $POD_NAME -n $NAMESPACE"
+echo -e " Executed:\n\t\t kubectl edit deployment $POD_NAME -n $NAMESPACE"
 echo -e "\n"
