@@ -14,16 +14,11 @@ if [ -z "$SEARCH_TERM" ]; then
     exit 1
 fi
 
-echo "Original Search Term: $SEARCH_TERM"
-
 # Process the search term to strip common random suffixes
 SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | \
     sed -E 's/-[a-z0-9]{5}$//' | \
     sed -E 's/-[a-f0-9]{9,10}$//' | \
     sed -E 's/-[0-9]+$//')
-
-echo "Cleaned Search Term:  $SEARCH_TERM_CLEANED"
-echo "--- Results ---"
 
 # Execute the kubectl command with the stripped search term
 # The '-i' flag ensures case-insensitive search
