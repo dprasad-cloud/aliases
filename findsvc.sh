@@ -26,5 +26,5 @@ SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | \
 kubectl get svc -A | grep -i "$SEARCH_TERM_CLEANED"
 
 # Execute the function with the script's arguments
-echo -e "\n Executed:\n\t\t kubectl get svc -A | grep -i \"$SEARCH_TERM_CLEANED\""
+echo -e "\n Executed:\n\t kubectl get svc -A | grep -i \"$SEARCH_TERM_CLEANED\""
 echo -e "\n"
