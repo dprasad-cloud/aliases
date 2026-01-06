@@ -68,7 +68,7 @@ ups () {
 
 clear;
 
-echo -e "\n Available Shortcuts - Most commands ignore case
+echo -e "\n Available Shortcuts - Most commands ignore case"
 echo -e "\n "
 echo -e "\t findpod <search_key>        : Find pod across all namespaces"
 echo -e "\t findsvc <search_key>        : Find service across all namespaces"
