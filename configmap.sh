@@ -14,7 +14,7 @@ fi
 
 echo "--- Strip unwanted strings at the end of search string"
 # Remove common hash/number suffixes from the search term
-SEARCH_TERM=$(echo "$SEARCH_TERM" | sed -E 's/-[a-z0-9]{5}$//' | sed -E 's/-[a-f0-9]{9,10}$//' | sed -E 's/-[0-9]+$//')
+SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | sed -E 's/-[a-f0-9]{8,10}(-[a-z0-9]{5})?$//; s/-[0-9]+$//')
 
 echo "--- Searching for ConfigMaps containing '$SEARCH_TERM' and displaying properties ---"
 
