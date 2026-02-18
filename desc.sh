@@ -13,7 +13,7 @@ fi
 
 echo "--- Searching for ALL pods containing '$SEARCH_TERM' ---"
 
-# Variable to store ALL executed commands for printing at the end
+# Variable to store ALL command(s) for printing at the end
 ALL_EXEC_COMMANDS=""
 PODS_FOUND=0
 
@@ -53,7 +53,7 @@ done < <(kubectl get pod -A | grep "$SEARCH_TERM" | grep -v 'NAME')
 echo -e "\n--- Description complete ($PODS_FOUND pods processed) ---"
 
 if [ -n "$ALL_EXEC_COMMANDS" ]; then
-    echo -e "\nExecuted commands:"
+    echo -e "\ncommand(s):"
     # Print the concatenated commands.
     echo "$ALL_EXEC_COMMANDS"
 else

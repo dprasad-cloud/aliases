@@ -72,5 +72,5 @@ kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- $COMMAND
 
 
 echo -e "\n--- Pod execute command finished ---"
-echo -e "\n \nexecuted:\n\t kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
+echo -e "\n \ncommand(s):\n\t kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
 echo -e "\n"

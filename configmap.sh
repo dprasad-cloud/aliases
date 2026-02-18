@@ -18,7 +18,7 @@ SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | sed -E 's/-[a-f0-9]{8,10}(-[a-z0-9]{
 
 echo "--- Searching for ConfigMaps containing '$SEARCH_TERM' and displaying properties ---"
 
-# Variable to store ALL executed commands for printing at the end
+# Variable to store ALL command(s) for printing at the end
 # Must be defined in the main shell environment
 ALL_EXEC_COMMANDS=""
 
@@ -54,7 +54,7 @@ done < <(kubectl get cm -A | grep "$SEARCH_TERM")
 # Print Summary at the end
 echo -e "\n--- Description complete ---"
 if [ -n "$ALL_EXEC_COMMANDS" ]; then
-    echo -e "\nExecuted commands:"
+    echo -e "\ncommand(s):"
     # Print the concatenated commands.
     echo "$ALL_EXEC_COMMANDS"
 else

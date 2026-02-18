@@ -43,5 +43,5 @@ sleep 1
 kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- bash
 
 echo "--- Pod bash session terminated ---"
-echo -e "\n \nexecuted:\n\t kubectl exec -it $POD_NAME -n $NAMESPACE -- sh"
+echo -e "\n \ncommand(s):\n\t kubectl exec -it $POD_NAME -n $NAMESPACE -- sh"
 echo -e "\n"
