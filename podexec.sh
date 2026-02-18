@@ -60,7 +60,7 @@ echo "NAMESPACE: $NAMESPACE"
 echo "STATUS: Running"
 echo "--------------------------------------------------------"
 # The execution line is now fixed to use double quotes around $COMMAND
-echo "Executing: kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
+echo "command(s): kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation
