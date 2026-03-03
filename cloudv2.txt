@@ -54,7 +54,6 @@ hmtail () {
 loop5 () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
 loop15 () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
 
-
 ups () {
     # Define the target file name inside the extracted directory
     local file="cloudv2.txt"
