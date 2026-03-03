@@ -51,7 +51,7 @@ hmtail () {
   podexec "$1" tail -f /opt/tomcat/logs/hm.log
 }
 
-loop5 () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
+loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
 loop15 () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
 
 ups () {
@@ -95,7 +95,7 @@ echo -e "\t hmvi <search_key>       : Find the pod across all namespaces and run
 echo -e "\t hmcat <search_key>      : Find the pod across all namespaces and run command cat /opt/tomcat/logs/hm.log"
 echo -e "\t hmtail <search_key>     : Find the pod across all namespaces and run command tail -f /opt/tomcat/logs/hm.log"
 echo -e "\n "
-echo -e "\t loop5 <command>         : loop the provided command every 5 seconds"
+echo -e "\t loop <command>          : loop the provided command every 5 seconds"
 echo -e "\t loop15 <command>        : loop the provided command every 15 seconds"
 echo -e "\t ups                     : Update the aliases to latest version from github, also show this help"
 echo -e "\n "
