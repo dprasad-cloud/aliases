@@ -5,6 +5,9 @@
 chmod +x /root/aliases-main/desc.sh
 alias desc='/root/aliases-main/desc.sh'
 
+chmod +x /root/aliases-main/image.sh
+alias image='/root/aliases-main/image.sh'
+
 chmod +x /root/aliases-main/desc-ing.sh
 alias desc-ing='/root/aliases-main/desc-ing.sh'
 
