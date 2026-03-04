@@ -39,10 +39,6 @@ while read NAMESPACE POD_NAME REST; do
     echo "PROCESSING POD #$PODS_FOUND: $POD_NAME"
     echo "NAMESPACE: $NAMESPACE"
     echo "========================================================"
-    echo "Starting kubectl describe in 1 second..."
-
-    # Introduce a 1-second pause before each describe
-    sleep 1
 
     # 3. Execute the command
     eval "$CURRENT_EXEC_COMMAND"
