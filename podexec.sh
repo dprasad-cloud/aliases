@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generic Pod Execute Command Script
-# This script finds the first RUNNING pod matching the search term
+# This script finds the first pod matching the search term
 # and executes an arbitrary command inside it (kubectl exec).
 
 # $1 is the search term (e.g., 'temon')
@@ -30,15 +30,15 @@ if [ -z "$COMMAND" ]; then
 fi
 # ----------------------------------------------------------------------------------
 
-echo "--- Searching for the FIRST RUNNING pod containing '$SEARCH_TERM' (Case-Insensitive Regex) ---"
+echo "--- Searching for the FIRST pod containing '$SEARCH_TERM' (Case-Insensitive Regex) ---"
 
 # Use 'kubectl get pod -A' to list all pods across all namespaces.
 # Filter case-insensitively by the search term, then filter again to ensure it is 'Running',
 # and finally use 'head -n 1' to select only the first result.
-POD_INFO=$(kubectl get pod -A | grep -i "$SEARCH_TERM" | grep 'Running' | head -n 1)
+POD_INFO=$(kubectl get pod -A | grep -i "$SEARCH_TERM" | head -n 1)
 
 if [ -z "$POD_INFO" ]; then
-    echo "ERROR: No RUNNING pod found matching '$SEARCH_TERM'."
+    echo "ERROR: No pod found matching '$SEARCH_TERM'."
     exit 1
 fi
 
