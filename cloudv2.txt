@@ -103,7 +103,7 @@ echo -e "\t loop <command>          : loop the provided command every 5 seconds"
 echo -e "\t loop15 <command>        : loop the provided command every 15 seconds"
 echo -e "\t ups                     : Update the aliases to latest version from github, also show this help"
 echo -e "\n "
-echo -e "Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
+echo -e " Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
 echo -e "\n "
 
 
