@@ -32,6 +32,9 @@ alias findsvc='/root/aliases-main/findsvc.sh'
 chmod +x /root/aliases-main/logs.sh
 alias logs='/root/aliases-main/logs.sh'
 
+chmod +x /root/aliases-main/logsc.sh
+alias logsc='/root/aliases-main/logsc.sh'
+
 chmod +x /root/aliases-main/logsf.sh
 alias logsf='/root/aliases-main/logsf.sh'
 
