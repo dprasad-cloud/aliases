@@ -46,9 +46,27 @@ echo "--------------------------------------------------------"
 # Introduce a 1-second pause for confirmation
 sleep 1
 
+print_log_command() {
+    echo
+    echo "--- Pod logs displayed ---"
+    echo
+    echo "command(s):"
+    echo "    kubectl logs -f $POD_NAME -n $NAMESPACE"
+    echo
+}
+
+on_interrupt() {
+    echo
+    echo "--- log streaming interrupted (Ctrl+C) ---"
+    print_log_command
+    exit 130
+}
+
+# Ensure Ctrl+C still prints the reusable kubectl command.
+trap on_interrupt INT
+
 # Execute the kubectl logs command
 kubectl logs -f "$POD_NAME" -n "$NAMESPACE"
 
-echo -e "\n--- Pod logs displayed ---"
-echo -e "\n \ncommand(s):\n\t kubectl logs -f $POD_NAME -n $NAMESPACE"
-echo -e "\n"
+trap - INT
+print_log_command
