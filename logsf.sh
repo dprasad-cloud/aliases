@@ -27,6 +27,7 @@ fi
 # Use awk to safely extract the Namespace (column 1) and Pod Name (column 2)
 NAMESPACE=$(echo "$POD_INFO" | awk '{print $1}')
 POD_NAME=$(echo "$POD_INFO" | awk '{print $2}')
+LOG_CMD="kubectl logs -f $POD_NAME -n $NAMESPACE"
 
 # --- Logic: Calculate the base application name by conditionally stripping IDs ---
 # This three-part pipe handles all common Kubernetes suffixes:
@@ -40,24 +41,33 @@ echo "SELECTED POD: $POD_NAME"
 echo "BASE APPLICATION: $BASE_NAME"
 echo "NAMESPACE: $NAMESPACE"
 echo "--------------------------------------------------------"
-echo "command(s): kubectl logs -f $POD_NAME -n $NAMESPACE"
+echo "command(s): $LOG_CMD"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation
 sleep 1
+
+add_to_shell_history() {
+    # Only the current interactive shell can update Up-arrow history.
+    # This works when the script is sourced (not executed in a child shell).
+    if [[ "${BASH_SOURCE[0]}" != "$0" && $- == *i* ]]; then
+        history -s "$LOG_CMD"
+    fi
+}
 
 print_log_command() {
     echo
     echo "--- Pod logs displayed ---"
     echo
     echo "command(s):"
-    echo "    kubectl logs -f $POD_NAME -n $NAMESPACE"
+    echo "    $LOG_CMD"
     echo
 }
 
 on_interrupt() {
     echo
     echo "--- log streaming interrupted (Ctrl+C) ---"
+    add_to_shell_history
     print_log_command
     exit 130
 }
@@ -69,4 +79,5 @@ trap on_interrupt INT
 kubectl logs -f "$POD_NAME" -n "$NAMESPACE"
 
 trap - INT
+add_to_shell_history
 print_log_command
