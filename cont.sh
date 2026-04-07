@@ -29,7 +29,7 @@ while read NAMESPACE POD_NAME REST; do
     PODS_FOUND=$((PODS_FOUND + 1))
 
     # 1. Construct the final execution command
-    CURRENT_EXEC_COMMAND="kubectl describe pod $POD_NAME -n $NAMESPACE | grep \"Containers:\" -A 1"
+    CURRENT_EXEC_COMMAND="kubectl describe pod $POD_NAME -n $NAMESPACE | grep \"Containers:\" -A 3"
 
     # 2. Append the current command to the list, followed by a newline
     ALL_EXEC_COMMANDS+="$CURRENT_EXEC_COMMAND"$'\n'
