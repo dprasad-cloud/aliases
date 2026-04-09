@@ -27,7 +27,8 @@ POD_NAME=$(echo "$POD_INFO" | awk '{print $2}')
 LOG_CMD="kubectl logs -f $POD_NAME -n $NAMESPACE -c $CONTAINER_NAME"
 
 # Validate that the container exists in the selected pod.
-CONTAINERS=$(kubectl get pod "$POD_NAME" -n "$NAMESPACE" -o jsonpath='{range .spec.initContainers[*]}{.name}{\"\\n\"}{end}{range .spec.containers[*]}{.name}{\"\\n\"}{end}')
+CONTAINERS=$(kubectl get pod "$POD_NAME" -n "$NAMESPACE" -o jsonpath='{.spec.initContainers[*].name} {.spec.containers[*].name}' | tr ' ' '\n')
+
 if ! echo "$CONTAINERS" | grep -Fxq "$CONTAINER_NAME"; then
     echo "ERROR: Container '$CONTAINER_NAME' not found in pod '$POD_NAME'."
     echo "Available containers:"
