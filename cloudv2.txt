@@ -53,6 +53,9 @@ alias podexec='/root/aliases-main/podexec.sh'
 chmod +x /root/aliases-main/kedit.sh
 alias kedit='/root/aliases-main/kedit.sh'
 
+chmod +x /root/aliases-main/check_usage.sh
+alias check_usage='/root/aliases-main/check_usage.sh'
+
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
 }
