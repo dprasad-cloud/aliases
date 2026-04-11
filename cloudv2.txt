@@ -59,6 +59,9 @@ alias check_usage='/root/aliases-main/check_usage.sh'
 chmod +x /root/aliases-main/check_mem_all.sh
 alias check_mem_all='/root/aliases-main/check_mem_all.sh'
 
+chmod +x /root/aliases-main/check_cpu_all.sh
+alias check_cpu_all='/root/aliases-main/check_cpu_all.sh'
+
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
 }
