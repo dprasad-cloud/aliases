@@ -2,48 +2,44 @@
 
 HEAVY_THRESHOLD=0.50
 
-# 1. Local Hash Map for speed
+# 1. Fetching SUM of all container requests/limits per pod
+# Using a slightly more complex jsonpath to handle multiple containers
+echo "Pre-fetching and summing container resources..."
+
 declare -A cpu_data
-while read -r ns pod req lim; do
-    [[ -z "$req" ]] && req="0m"
-    [[ -z "$lim" ]] && lim="0m"
-    cpu_data["$ns/$pod"]="$req|$lim"
-done < <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{"\n"}{end}')
+# Note: We use a python/jq-like approach via a clever jsonpath to get totals
+while read -r ns pod req_sum lim_sum; do
+    cpu_data["$ns/$pod"]="$req_sum|$lim_sum"
+done < <(kubectl get pods -A -o json | jq -r '.items[] |
+    .metadata.namespace + " " + .metadata.name + " " +
+    ([.spec.containers[].resources.requests.cpu // "0m"] | map(if endswith("m") then .[:-1] | tonumber else . | tonumber * 1000 end) | add | tostring) + " " +
+    ([.spec.containers[].resources.limits.cpu // "0m"] | map(if endswith("m") then .[:-1] | tonumber else . | tonumber * 1000 end) | add | tostring)')
 
-# Helper function for unit conversion
-to_ms() {
-    local val=$1
-    if [[ "$val" == *m ]]; then echo "${val%m}"; elif [[ "$val" == "0" || -z "$val" ]]; then echo "0"; else echo "$((val * 1000))"; fi
-}
-
-# Temporary storage for summary math
+# 2. Main Processing
 TOTAL_U=0
 TOTAL_R=0
 
-echo "Analyzing cluster CPU usage..."
-
-# 2. Main Processing Loop
 while read -r ns pod usage_m mem; do
-
     usage=${usage_m%m}
     raw_data=${cpu_data["$ns/$pod"]}
 
-    request=$(echo "$raw_data" | cut -d'|' -f1)
-    limit=$(echo "$raw_data" | cut -d'|' -f2)
+    # Split the pre-summed data
+    req_ms=$(echo "$raw_data" | cut -d'|' -f1)
+    lim_ms=$(echo "$raw_data" | cut -d'|' -f2)
 
-    req_ms=$(to_ms "$request")
-    lim_ms=$(to_ms "$limit")
+    # Ensure we have numbers
+    req_ms=${req_ms:-0}
+    lim_ms=${lim_ms:-0}
 
-    # Add to totals for the final summary
     TOTAL_U=$((TOTAL_U + usage))
     TOTAL_R=$((TOTAL_R + req_ms))
 
-    # Check for High Load (> 50% of Limit)
+    # Heavy Load Check (Usage vs Sum of Limits)
     if [ "$lim_ms" -gt 0 ]; then
         is_heavy=$(awk "BEGIN {if ($usage/$lim_ms > $HEAVY_THRESHOLD) print 1; else print 0}")
         if [ "$is_heavy" -eq 1 ]; then
             lim_pct=$(awk "BEGIN {printf \"%.2f\", ($usage/$lim_ms)*100}")
-            echo "HEAVY LOAD: $ns/$pod ($usage_m used of $limit limit - $lim_pct%)"
+            echo "HEAVY LOAD: $ns/$pod ($usage_m used of ${lim_ms}m total limit - $lim_pct%)"
         fi
     fi
 done < <(kubectl top pods -A --no-headers)
@@ -59,5 +55,5 @@ if [ "$TOTAL_R" -gt 0 ]; then
     printf "Waste:           %.2f cores\n" $(awk "BEGIN {print $WASTE/1000}")
     printf "Efficiency:      %s%%\n" "$EFFICIENCY"
 else
-    echo "No requested CPU data found."
+    echo "No valid CPU request data found."
 fi
