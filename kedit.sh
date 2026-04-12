@@ -34,7 +34,8 @@ echo "--------------------------------------------------------"
 echo "SELECTED POD: $POD_NAME"
 echo "NAMESPACE: $NAMESPACE"
 echo "--------------------------------------------------------"
-echo "command(s): kubectl edit deployment $POD_NAME -n $NAMESPACE"
+echo "command(s):"
+echo "kubectl edit deployment $POD_NAME -n $NAMESPACE"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation

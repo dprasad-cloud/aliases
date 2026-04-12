@@ -41,7 +41,8 @@ echo "SELECTED POD: $POD_NAME"
 echo "NAMESPACE: $NAMESPACE"
 echo "CONTAINER: $CONTAINER_NAME"
 echo "--------------------------------------------------------"
-echo "command(s): $LOG_CMD"
+echo "command(s):"
+echo $LOG_CMD"
 echo "--------------------------------------------------------"
 
 sleep 1
