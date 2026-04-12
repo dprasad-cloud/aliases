@@ -41,7 +41,7 @@ echo "BASE APPLICATION: $BASE_NAME"
 echo "NAMESPACE: $NAMESPACE"
 echo "--------------------------------------------------------"
 echo "command(s):"
-echo "kubectl logs -f $POD_NAME -n $NAMESPACE"
+echo "        kubectl logs -f $POD_NAME -n $NAMESPACE"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation
@@ -52,7 +52,7 @@ print_log_command() {
     echo "--- Pod logs displayed ---"
     echo
     echo "command(s):"
-    echo "    kubectl logs -f $POD_NAME -n $NAMESPACE"
+    echo "        kubectl logs -f $POD_NAME -n $NAMESPACE"
     echo
 }
 

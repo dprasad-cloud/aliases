@@ -34,7 +34,7 @@ echo "NAMESPACE: $NAMESPACE"
 echo "STATUS: Running"
 echo "--------------------------------------------------------"
 echo "command(s):"
-echo "kubectl exec -it $POD_NAME -n $NAMESPACE -- bash"
+echo "        kubectl exec -it $POD_NAME -n $NAMESPACE -- bash"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation

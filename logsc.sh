@@ -33,7 +33,7 @@ echo "NAMESPACE: $NAMESPACE"
 echo "CONTAINER: $CONTAINER_NAME"
 echo "--------------------------------------------------------"
 echo "command(s):"
-echo "kubectl logs $POD_NAME -n $NAMESPACE -c $CONTAINER_NAME"
+echo "        kubectl logs $POD_NAME -n $NAMESPACE -c $CONTAINER_NAME"
 echo "--------------------------------------------------------"
 
 sleep 1
