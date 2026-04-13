@@ -1,12 +1,13 @@
 #!/bin/bash
 
 # Set these inputs before running: (or export them in the environment)
-# TB1="ws3"; NS1="common"; TB2="xcp8"; NS2="commongdc"; export TB1 TB2 NS1 NS2
+# TB1="ws4"; NS1="ws4r1"; TB2="xcp5"; NS2="xiq"; export TB1 TB2 NS1 NS2
 # NS1=A for all namespaces in TB1, NS2=A for all namespaces in TB2. Otherwise specify a single namespace for each.
 
 # Internal temp files
 TMP1="/tmp/tb1_pvc_res.txt"
 TMP2="/tmp/tb2_pvc_res.txt"
+rm -f "$TMP1" "$TMP2"
 
 # --- DATA COLLECTION ---
 for i in 1 2; do
@@ -46,27 +47,33 @@ done
 
 # --- COMPARISON ---
 export TB1 TB2
-awk '
+awk -v f1="$TMP1" -v f2="$TMP2" '
 BEGIN {
     s1 = toupper(ENVIRON["TB1"]); s2 = toupper(ENVIRON["TB2"]);
-
     printf "\n%-60s | %-22s | %-22s | %-10s\n", "PVC GROUP (Trimmed)", s1 " STORAGE (Gi)", s2 " STORAGE (Gi)", "DIFF (Gi)";
     printf "%-60s | %-10s %-11s | %-10s %-11s | %-10s\n",
            "------------------------------------------------------------", "Total", "(Qty)", "Total", "(Qty)", "----------";
 }
-NR==FNR {
-    st1[$1]=$2; qty1[$1]=$3; keys[$1]=1; next
-}
 {
-    st2[$1]=$2; qty2[$1]=$3; keys[$1]=1;
+    if (FILENAME == f1) {
+        st1[$1]=$2; qty1[$1]=$3; keys[$1]=1;
+    } else {
+        st2[$1]=$2; qty2[$1]=$3; keys[$1]=1;
+    }
 }
 END {
     n = asorti(keys, sorted_keys);
     for (i = 1; i <= n; i++) {
         k = sorted_keys[i];
-        v1_disp = sprintf("%7.1f  x%-3d", st1[k], qty1[k]);
-        v2_disp = sprintf("%7.1f  x%-3d", st2[k], qty2[k]);
-        diff = st2[k] - st1[k];
+        # Ensure uninitialized values are treated as 0
+        s1_val = (st1[k] ? st1[k] : 0);
+        q1_val = (qty1[k] ? qty1[k] : 0);
+        s2_val = (st2[k] ? st2[k] : 0);
+        q2_val = (qty2[k] ? qty2[k] : 0);
+
+        v1_disp = sprintf("%7.1f  x%-3d", s1_val, q1_val);
+        v2_disp = sprintf("%7.1f  x%-3d", s2_val, q2_val);
+        diff = s2_val - s1_val;
 
         printf "%-60s | %-22s | %-22s | %-10.1f\n",
                k, v1_disp, v2_disp, diff;

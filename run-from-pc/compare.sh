@@ -49,7 +49,7 @@ done
 
 # --- COMPARISON ---
 export TB1 TB2
-awk '
+awk -v f1="$TMP1" -v f2="$TMP2" '
 BEGIN {
     s1 = toupper(ENVIRON["TB1"]); s2 = toupper(ENVIRON["TB2"]);
 
@@ -57,20 +57,27 @@ BEGIN {
     printf "%-60s | %-12s %-12s | %-12s %-12s | %-12s %-12s | %-12s %-12s\n",
            "------------------------------------------------------------", s1 " (R)", s2 " (R)", s1 " (R)", s2 " (R)", s1 " (R)", s2 " (R)", s1 " (R)", s2 " (R)";
 }
-NR==FNR {
-    cr1[$1]=$2; cl1[$1]=$3; mr1[$1]=$4; ml1[$1]=$5; rep1[$1]=$6; keys[$1]=1; next
-}
 {
-    cr2[$1]=$2; cl2[$1]=$3; mr2[$1]=$4; ml2[$1]=$5; rep2[$1]=$6; keys[$1]=1;
+    if (FILENAME == f1) {
+        cr1[$1]=$2; cl1[$1]=$3; mr1[$1]=$4; ml1[$1]=$5; rep1[$1]=$6; keys[$1]=1;
+    } else {
+        cr2[$1]=$2; cl2[$1]=$3; mr2[$1]=$4; ml2[$1]=$5; rep2[$1]=$6; keys[$1]=1;
+    }
 }
 END {
     n = asorti(keys, sorted_keys);
     for (i = 1; i <= n; i++) {
         k = sorted_keys[i];
-        v1_cr = sprintf("%d (%d)", cr1[k], rep1[k]); v2_cr = sprintf("%d (%d)", cr2[k], rep2[k]);
-        v1_cl = sprintf("%d (%d)", cl1[k], rep1[k]); v2_cl = sprintf("%d (%d)", cl2[k], rep2[k]);
-        v1_mr = sprintf("%d (%d)", mr1[k], rep1[k]); v2_mr = sprintf("%d (%d)", mr2[k], rep2[k]);
-        v1_ml = sprintf("%d (%d)", ml1[k], rep1[k]); v2_ml = sprintf("%d (%d)", ml2[k], rep2[k]);
+
+        # Handle zero-values for empty testbeds
+        v1_cr = sprintf("%d (%d)", cr1[k], rep1[k]);
+        v2_cr = sprintf("%d (%d)", cr2[k], rep2[k]);
+        v1_cl = sprintf("%d (%d)", cl1[k], rep1[k]);
+        v2_cl = sprintf("%d (%d)", cl2[k], rep2[k]);
+        v1_mr = sprintf("%d (%d)", mr1[k], rep1[k]);
+        v2_mr = sprintf("%d (%d)", mr2[k], rep2[k]);
+        v1_ml = sprintf("%d (%d)", ml1[k], rep1[k]);
+        v2_ml = sprintf("%d (%d)", ml2[k], rep2[k]);
 
         printf "%-60s | %-12s %-12s | %-12s %-12s | %-12s %-12s | %-12s %-12s\n",
                k, v1_cr, v2_cr, v1_cl, v2_cl, v1_mr, v2_mr, v1_ml, v2_ml;
