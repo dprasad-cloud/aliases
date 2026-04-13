@@ -13,7 +13,7 @@ function to_m(val) {
    return val * 1000
 }
 function how_long_ago(ts) {
-    if (ts == "" || ts == "-") return "";
+    if (ts == "" || ts == "-" || ts == " ") return "";
     gsub(/[:TZ-]/, " ", ts);
     t = mktime(ts);
     diff = now - t;
@@ -29,6 +29,10 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    uc=to_m(u_cpu[$1$2]); lc=to_m($3);
    um=to_mi(u_mem[$1$2]); rm=to_mi($4); lm=to_mi($5);
 
+   # TRIM POD NAME TO 60
+   namespace=$1;
+   pod=substr($2, 1, 60);
+
    restarts=$6;
    raw_ts=$7;
 
@@ -42,8 +46,8 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    rp=(rm>0)?(um/rm)*100:0;
    lp=(lm>0)?(um/lm)*100:0;
 
-   printf "%-10s | %-35s | C: %-5s/%-5s (%3d%%) | M: %-7s | R: %-5s (%3d%%) | L: %-5s (%3d%%) | %s\n",
-          $1, $2, u_cpu[$1$2], $3, cp, u_mem[$1$2], $4, rp, $5, lp, restart_info
+   printf "%-10s | %-60s | C: %-5s/%-5s (%3d%%) | M: %-7s | R: %-5s (%3d%%) | L: %-5s (%3d%%) | %s\n",
+          namespace, pod, u_cpu[$1$2], $3, cp, u_mem[$1$2], $4, rp, $5, lp, restart_info
 }' <(kubectl top pods -A --no-headers | grep "$FILTER") \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | grep "$FILTER") \
 | column -t -s '|'
