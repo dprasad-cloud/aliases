@@ -9,7 +9,7 @@ function to_mi(val) {
    return val + 0
 }
 function to_m(val) {
-   if (val ~ /m/) { sub/m/, "", val; return val + 0 }
+   if (val ~ /m/) { sub(/m/, "", val); return val + 0 }
    return val * 1000
 }
 function how_long_ago(ts) {
@@ -32,7 +32,6 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    uc=to_m(u_cpu[$1$2]); lc=to_m($3);
    um=to_mi(u_mem[$1$2]); rm=to_mi($4); lm=to_mi($5);
 
-   # TRUNCATE POD NAME HERE
    p_name = $2;
    if (length(p_name) > 60) {
        display_pod = substr(p_name, 1, 57)"..."
@@ -53,7 +52,6 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    rp=(rm>0)?(um/rm)*100:0;
    lp=(lm>0)?(um/lm)*100:0;
 
-   # The %-60.60s ensures it is exactly 60 chars wide and truncated if longer
    printf "%-10s | %-60.60s | C: %-5s/%-5s (%3d%%) | M: %-7s | R: %-5s (%3d%%) | L: %-5s (%3d%%) | %s\n",
           $1, display_pod, u_cpu[$1$2], $3, cp, u_mem[$1$2], $4, rp, $5, lp, restart_info
 }' <(kubectl top pods -A --no-headers | grep "$FILTER" | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
