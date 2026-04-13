@@ -23,15 +23,16 @@ function how_long_ago(ts) {
     return int(diff/86400) "d ago";
 }
 
+# 1. Store top data using full name as key
 NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
 
+# 2. Match using full name, but trim for display
 ($1$2) in u_cpu {
    uc=to_m(u_cpu[$1$2]); lc=to_m($3);
    um=to_mi(u_mem[$1$2]); rm=to_mi($4); lm=to_mi($5);
 
-   # TRIM POD NAME TO 60
-   namespace=$1;
-   pod=substr($2, 1, 60);
+   # VISUAL TRIM ONLY
+   display_pod = substr($2, 1, 60);
 
    restarts=$6;
    raw_ts=$7;
@@ -47,7 +48,7 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    lp=(lm>0)?(um/lm)*100:0;
 
    printf "%-10s | %-60s | C: %-5s/%-5s (%3d%%) | M: %-7s | R: %-5s (%3d%%) | L: %-5s (%3d%%) | %s\n",
-          namespace, pod, u_cpu[$1$2], $3, cp, u_mem[$1$2], $4, rp, $5, lp, restart_info
+          $1, display_pod, u_cpu[$1$2], $3, cp, u_mem[$1$2], $4, rp, $5, lp, restart_info
 }' <(kubectl top pods -A --no-headers | grep "$FILTER") \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | grep "$FILTER") \
 | column -t -s '|'
