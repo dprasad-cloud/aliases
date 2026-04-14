@@ -64,10 +64,10 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    restarts=$7; raw_ts=$8;
    restart_info = (restarts > 0) ? how_long_ago(raw_ts) "(" restarts ")" : "";
 
-   # TARGET FORMAT:
-   # common | pod-name | C: 858m R/L 1/2 (90% / 42%) | M: 6088Mi | R/L: 6Gi / 12Gi (100% / 49%)
+   # CLEAN FORMAT:
+   # common | pod-name | C: 858m 1/2 (90% / 42%) | M: 6088Mi | 6Gi / 12Gi (100% / 49%) | 1d ago(1)
 
-   printf "%-10s | %-40.40s | C: %-5s R/L %-3s/%-4s (%3d%% / %3d%%) | M: %-7s | R/L: %-5s / %-5s (%3d%% / %3d%%) | %s\n",
+   printf "%-10s | %-40.40s | C: %-5s %-4s/%-4s (%3d%% / %3d%%) | M: %-7s | %-5s / %-5s (%3d%% / %3d%%) | %s\n",
           $1, display_pod, u_cpu[$1$2], $3, $4, cp_req, cp_lim, u_mem[$1$2], $5, $6, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
