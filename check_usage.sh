@@ -61,3 +61,12 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
 }' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
 | column -t -s '|'
+
+#
+#LEGEND:
+#Namespace | Pod Name | CPU Usage | CPU Req/Lim | (Req% / Lim%) | Mem Usage | Mem Req/Lim | (Req% / Lim%) | Restarts
+#C: CPU stats (millicores).
+#M: Memory stats (Mi/Gi).
+#Req/Lim: The resource Request vs. the Hard Limit.
+#% Values: How much of your Request and Limit you are currently using.
+#Time (Count): Time since the last restart and the total number of restarts.
