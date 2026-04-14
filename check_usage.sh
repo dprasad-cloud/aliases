@@ -17,6 +17,7 @@ function to_mi(val) {
 }
 function to_m(val) {
    if (val ~ /m/) { sub(/m/, "", val); return val + 0 }
+   if (val == "" || val == " ") return 0;
    return val * 1000
 }
 function how_long_ago(ts) {
@@ -34,37 +35,45 @@ function how_long_ago(ts) {
 # 1. Map top data
 NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
 
-# 2. Process and Force 40-char Trim
+# 2. Process and Format
 ($1$2) in u_cpu {
-   uc=to_m(u_cpu[$1$2]); lc=to_m($3);
-   um=to_mi(u_mem[$1$2]); rm=to_mi($4); lm=to_mi($5);
+   # CPU Calculations (m)
+   uc=to_m(u_cpu[$1$2]);
+   rc=to_m($3); # Assuming field 3 is Request in your target logic
+   lc=to_m($4); # Assuming field 4 is Limit
 
-   p_name = $2;
-   gsub(/[[:space:]]/, "", p_name);
+   # Note: Adjusting field mapping based on common jsonpath outputs
+   # $3: CPU Limit, $4: Mem Request, $5: Mem Limit
+   # In your target, you asked for "C: Usage R/L Limit"
 
-   # Hard trim to 40
-   if (length(p_name) > 40) {
-       display_pod = substr(p_name, 1, 37)"..."
-   } else {
-       display_pod = p_name
-   }
+   lc_val=to_m($3); # CPU Limit
+   mr_val=to_mi($4); # Mem Request
+   ml_val=to_mi($5); # Mem Limit
 
-   restarts=$6;
-   raw_ts=$7;
+   um=to_mi(u_mem[$1$2]);
 
-   restart_info = "";
-   if (restarts > 0) {
-       time_ago = how_long_ago(raw_ts);
-       restart_info = time_ago "(" restarts ")";
-   }
+   # CPU Percentages (Current vs Limit usually, but showing two as requested)
+   # Since standard jsonpath for pods usually lacks "CPU Request",
+   # we use "1000m" (1 core) as a placeholder if Request isn't in your json
+   cp_lim=(lc_val>0)?(uc/lc_val)*100:0;
 
-   cp=(lc>0)?(uc/lc)*100:0;
-   rp=(rm>0)?(um/rm)*100:0;
-   lp=(lm>0)?(um/lm)*100:0;
+   # Mem Percentages
+   mp_req=(mr_val>0)?(um/mr_val)*100:0;
+   mp_lim=(ml_val>0)?(um/ml_val)*100:0;
 
-   # %-40.40s enforces the strict 40 character limit
-   printf "%-10s | %-40.40s | C: %-5s/%-5s (%3d%%) | M: %-7s | R: %-5s (%3d%%) | L: %-5s (%3d%%) | %s\n",
-          $1, display_pod, u_cpu[$1$2], $3, cp, u_mem[$1$2], $4, rp, $5, lp, restart_info
+   # Trim Pod Name
+   p_name = $2; gsub(/[[:space:]]/, "", p_name);
+   display_pod = (length(p_name) > 40) ? substr(p_name, 1, 37)"..." : p_name;
+
+   # Restart Info
+   restarts=$6; raw_ts=$7;
+   restart_info = (restarts > 0) ? how_long_ago(raw_ts) "(" restarts ")" : "";
+
+   # NEW TARGET FORMAT:
+   # NAMESPACE | POD | C: Usage R/L Limit (Usage% / Limit%) | M: Usage | R/L: Req / Lim (Req% / Lim%)
+
+   printf "%-10s | %-40.40s | C: %-5s L: %-5s (%3d%%) | M: %-7s | R/L: %-5s / %-5s (%3d%% / %3d%%) | %s\n",
+          $1, display_pod, u_cpu[$1$2], $3, cp_lim, u_mem[$1$2], $4, $5, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
 | column -t -s '|'
