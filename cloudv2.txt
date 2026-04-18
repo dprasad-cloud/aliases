@@ -76,7 +76,7 @@ hmtail () {
 }
 
 # Commonly used findpod alias for finding pods in error states or with high restart counts
-alias finderr='findpod "term|err|crash|pend|evict|pull|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s"'
+alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s"'
 
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
 loop15 () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
