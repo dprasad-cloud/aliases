@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Script name: findpvc.sh
+# Description: Searches for Kubernetes pvcs, automatically stripping common
+#              auto-generated suffixes from the search term before grepping.
+
+# Define the function to perform the search logic
+SEARCH_TERM="$1"
+
+# Check if a search term was provided
+if [ -z "$SEARCH_TERM" ]; then
+    echo "Error: Please provide a search term."
+    echo "Usage: $0 <search_term>"
+    exit 1
+fi
+echo -e "\n"
+
+# Process the search term to strip common random suffixes
+SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | sed -E 's/-[a-f0-9]{8,10}(-[a-z0-9]{5})?$//; s/-[0-9]+$//')
+
+# Execute the kubectl command with the stripped search term
+# The '-i' flag ensures case-insensitive search
+kubectl get pvc -A | grep -iE "$SEARCH_TERM_CLEANED"
+
+# Execute the function with the script's arguments
+echo -e "\n \ncommand(s):\n\t kubectl get pvc -A | grep -iE \"$SEARCH_TERM_CLEANED\""
+echo -e "\n"
