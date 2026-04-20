@@ -78,8 +78,21 @@ hmtail () {
   podexec "$1" tail -f /opt/tomcat/logs/hm.log
 }
 
+echo -e "\n Shortcuts for checking resource usage on nodes (ex: node_top ip-10-201-50-219)"
+node_top() {
+  local node=$1
+  echo -e "POD_NAME\tCPU\tMEM"
+  join -1 1 -2 1 \
+    <(kubectl get pods -A -o wide | grep "$node" | awk '{print $2}' | sort) \
+    <(kubectl top pods -A --no-headers | awk '{print $2, $3, $4}' | sort) \
+  | column -t | sort -rnk2
+}
+
 # Commonly used findpod alias for finding pods in error states or with high restart counts
 alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s"'
+
+echo -e "\n Shortcut for checking disk usage on pods (ex: finderr | disk_usage)"
+alias disk_usage="while read ns pod; do echo \"--- \$pod (\$ns) ---\"; kubectl exec \$pod -n \$ns -- df -h 2>/dev/null | grep -E '^/dev/|Filesystem|kafka|data'; done"
 
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
 loop15 () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
