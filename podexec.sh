@@ -61,7 +61,7 @@ echo "STATUS: Running"
 echo "--------------------------------------------------------"
 # The execution line is now fixed to use double quotes around $COMMAND
 echo "command(s):"
-echo "        kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
+echo "        kubectl exec -it $POD_NAME -n $NAMESPACE -- sh -c $COMMAND"
 echo "--------------------------------------------------------"
 
 # Introduce a 1-second pause for confirmation
@@ -69,9 +69,8 @@ sleep 1
 
 # Execute the kubectl exec command
 # FIX: $COMMAND MUST be double-quoted here to prevent word splitting by the host shell.
-kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- $COMMAND
-
+kubectl exec -it "$POD_NAME" -n "$NAMESPACE" -- sh -c "$COMMAND"
 
 echo -e "\n--- Pod execute command finished ---"
-echo -e "\n \ncommand(s):\n\t kubectl exec -it $POD_NAME -n $NAMESPACE -- $COMMAND"
+echo -e "\n \ncommand(s):\n\t kubectl exec -it $POD_NAME -n $NAMESPACE -- sh -c $COMMAND"
 echo -e "\n"
