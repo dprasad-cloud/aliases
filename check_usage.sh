@@ -55,9 +55,9 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    cpu_perc = sprintf("(%3d%% / %3d%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
 
-   # CHANGED: Using cp_lim as the first hidden column for sorting
+   # CHANGED: Using mp_lim as the first hidden column for sorting
    printf "%d | %-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
-          cp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
+          mp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
 | sort -rn | cut -d '|' -f 2- | column -t -s '|'
