@@ -50,23 +50,14 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    restarts=$7; raw_ts=$8;
    restart_info = (restarts > 0) ? how_long_ago(raw_ts) "(" restarts ")" : "";
 
-   # Grouping the memory values into single strings to prevent "column -t" from splitting them
    cpu_rl = $3 "/" $4;
    mem_rl = $5 "/" $6;
    cpu_perc = sprintf("(%3d%% / %3d%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
 
-   printf "%-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
-          $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
+   # ADDED: uc (raw CPU millicores) as the first field for sorting
+   printf "%d | %-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
+          uc, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
-| column -t -s '|'
-
-#
-#LEGEND:
-#Namespace | Pod Name | CPU Usage | CPU Req/Lim | (Req% / Lim%) | Mem Usage | Mem Req/Lim | (Req% / Lim%) | Restarts
-#C: CPU stats (millicores).
-#M: Memory stats (Mi/Gi).
-#Req/Lim: The resource Request vs. the Hard Limit.
-#% Values: How much of your Request and Limit you are currently using.
-#Time (Count): Time since the last restart and the total number of restarts.
+| sort -rn | cut -d '|' -f 2- | column -t -s '|'
