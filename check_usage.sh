@@ -1,12 +1,13 @@
 FILTER=$1
 NOW=$(date +%s)
 
-if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
-    GREP_CMD="cat"
-else
-    GREP_CMD="grep -iE \"$FILTER\""
-fi
-echo "Filtering pods with: $GREP_CMD"
+filter_data() {
+    if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
+        cat
+    else
+        grep -iE "$FILTER"
+    fi
+}
 
 awk -v now="$NOW" 'BEGIN {FS="\t"; OFS=" | "}
 function to_mi(val) {
@@ -59,6 +60,6 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    # CHANGED: Using mp_lim as the first hidden column for sorting
    printf "%d | %-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
           mp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
-}' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
-   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
-| sort -rn | cut -d '|' -f 2- | column -t -s '|'
+}' <(kubectl top pods -A --no-headers | filter_data | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
+      <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | filter_data) \
+   | sort -rn | cut -d '|' -f 2- | column -t -s '|'
