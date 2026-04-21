@@ -4,7 +4,7 @@ NOW=$(date +%s)
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
     GREP_CMD="cat"
 else
-    GREP_CMD="grep -iE $FILTER"
+    GREP_CMD="grep -iE \"$FILTER\""
 fi
 
 awk -v now="$NOW" 'BEGIN {FS="\t"; OFS=" | "}
