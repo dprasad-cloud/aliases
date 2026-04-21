@@ -8,7 +8,9 @@ else
 fi
 echo "Filtering pods with: $GREP_CMD"
 
-awk -v now="$NOW" 'BEGIN {FS="\t"; OFS=" | "}
+# Use -F '[[:space:]]+' to handle both tabs and spaces flexibly
+awk -v now="$NOW" -v pattern="$FILTER" -F '[[:space:]]+' 'BEGIN { OFS=" | " }
+
 function to_mi(val) {
    if (val ~ /[Gg]i?/) { sub(/[Gg]i?/, "", val); return val * 1024 }
    if (val ~ /[Mm]i?/) { sub(/[Mm]i?/, "", val); return val }
@@ -32,8 +34,17 @@ function how_long_ago(ts) {
     return int(diff/86400) "d ago";
 }
 
-NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
+# --- Internal Filtering ---
+(pattern != "" && pattern != "all" && pattern != "ALL" && $0 !~ pattern) { next }
 
+# Source 1: kubectl top
+NR==FNR {
+    # If using default FS, $1 is Namespace, $2 is Name, $3 is CPU, $4 is MEM
+    u_cpu[$1$2]=$3; u_mem[$1$2]=$4;
+    next
+}
+
+# Source 2: kubectl get
 ($1$2) in u_cpu {
    uc = to_m(u_cpu[$1$2]);
    um = to_mi(u_mem[$1$2]);
@@ -45,7 +56,7 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
    mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
 
-   p_name = $2; gsub(/[[:space:]]/, "", p_name);
+   p_name = $2;
    display_pod = (length(p_name) > 40) ? substr(p_name, 1, 37)"..." : p_name;
 
    restarts=$7; raw_ts=$8;
@@ -56,9 +67,8 @@ NR==FNR {u_cpu[$1$2]=$3; u_mem[$1$2]=$4; next}
    cpu_perc = sprintf("(%3d%% / %3d%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
 
-   # CHANGED: Using mp_lim as the first hidden column for sorting
    printf "%d | %-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
           mp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
-}' <(kubectl top pods -A --no-headers | $GREP_CMD | awk '{print $1"\t"$2"\t"$3"\t"$4}') \
-   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.containers[0].resources.requests.cpu}{"\t"}{.spec.containers[0].resources.limits.cpu}{"\t"}{.spec.containers[0].resources.requests.memory}{"\t"}{.spec.containers[0].resources.limits.memory}{"\t"}{.status.containerStatuses[0].restartCount}{"\t"}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}' | $GREP_CMD) \
+}' <(kubectl top pods -A --no-headers) \
+   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{.status.containerStatuses[0].restartCount}{" "}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}') \
 | sort -rn | cut -d '|' -f 2- | column -t -s '|'
