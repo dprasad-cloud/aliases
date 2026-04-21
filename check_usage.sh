@@ -6,6 +6,7 @@ if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
 else
     GREP_CMD="grep -iE \"$FILTER\""
 fi
+echo "Filtering pods with: $GREP_CMD"
 
 awk -v now="$NOW" 'BEGIN {FS="\t"; OFS=" | "}
 function to_mi(val) {
