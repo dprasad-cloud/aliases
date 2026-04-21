@@ -6,7 +6,6 @@ if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
 else
     GREP_CMD="grep -iE \"$FILTER\""
 fi
-echo "Filtering pods with: $GREP_CMD"
 
 # Use -F '[[:space:]]+' to handle both tabs and spaces flexibly
 awk -v now="$NOW" -v pattern="$FILTER" -F '[[:space:]]+' 'BEGIN { OFS=" | " }
