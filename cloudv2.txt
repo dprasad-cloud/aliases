@@ -94,20 +94,28 @@ alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/
 echo -e "Shortcut for checking disk usage on pods (ex: finderr | disk_usage) or (disk_usage common-kafka)"
 unalias disk_usage 2>/dev/null
 disk_usage() {
-    # If an argument is provided (like "common-kafka"), eval it and pipe it back
+    # If an argument is provided, execute findpod and pipe it back into this function
     if [ -n "$1" ]; then
         eval "findpod \"$1\"" | disk_usage
         return
     fi
 
-    # The processing loop
-    while read -r ns pod rest; do
-        if [[ -n "$ns" && -n "$pod" ]]; then
-            echo -e "\n\033[1;34m--- $pod ($ns) ---\033[0m"
+    # Wrap the loop in a subshell to pipe the collective output to column -t
+    (
+        # Header for the table
+        echo "NAMESPACE POD FILESYSTEM SIZE USED AVAIL USE% MOUNTED_ON"
+
+        while read -r ns pod rest; do
+            # Skip header lines if findpod returns them
+            [[ "$ns" == "NAMESPACE" || -z "$ns" ]] && continue
+
+            # Execute df, filter, and use awk to prepend the ns and pod to every data line
             kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
-            grep -iE '^/dev/|Filesystem|kafka|data|mount'
-        fi
-    done
+            grep -iE '^/dev/|kafka|data|mount' | \
+            grep -v "Filesystem" | \
+            awk -v ns="$ns" -v pod="$pod" '{print ns, pod, $0}'
+        done
+    ) | column -t
 }
 
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
