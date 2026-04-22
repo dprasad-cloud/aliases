@@ -14,7 +14,7 @@ echo "--- Searching for pods containing '$SEARCH_TERM' ---"
 
 # Get all matching pods (Namespace and Name)
 # We store them in a variable to check if any were found
-MATCHES=$(kubectl get pod -A | grep "$SEARCH_TERM" | awk '{print $1 " " $2}')
+MATCHES=$(kubectl get pod -A | grep -iE "$SEARCH_TERM" | awk '{print $1 " " $2}')
 
 if [ -z "$MATCHES" ]; then
     echo "ERROR: No pods found matching '$SEARCH_TERM'."
