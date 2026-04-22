@@ -1,7 +1,7 @@
 #!/bin/bash
-
 # If an argument is provided (e.g., disk_usage n-kafka)
 if [ -n "$1" ]; then
+    shopt -s expand_aliases
     alias findpod='/root/aliases-main/findpod.sh'
     eval "findpod \"$1\"" | "$0"
     exit 0
