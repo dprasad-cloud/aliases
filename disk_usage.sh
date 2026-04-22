@@ -4,8 +4,8 @@
 if [ -n "$1" ]; then
     # We call the findpod alias/command and pipe it back into THIS script ($0)
     # Using 'bash -i' or sourcing ensure findpod is visible
-    shopt -s expand_aliases
-    [[ -f "/root/aliases-main/cloudv2.txt" ]] && source "/root/aliases-main/cloudv2.txt"
+#    shopt -s expand_aliases
+#    [[ -f "/root/aliases-main/cloudv2.txt" ]] && source "/root/aliases-main/cloudv2.txt"
 
     eval "findpod \"$1\"" | "$0"
     exit 0
