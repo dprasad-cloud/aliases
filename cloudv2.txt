@@ -99,28 +99,34 @@ disk_usage() {
         return
     fi
 
-    (
-        echo "NAMESPACE POD FILESYSTEM SIZE USED AVAIL USE% MOUNTED_ON"
+    # Print the header immediately
+    printf "%-12s %-45s %-20s %-7s %-7s %-7s %-5s %-20s\n" \
+        "NAMESPACE" "POD" "FILESYSTEM" "SIZE" "USED" "AVAIL" "USE%" "MOUNTED_ON"
 
-        local last_pod=""
-        while read -r ns pod rest; do
-            # 1. Skip headers or empty lines
-            [[ "$ns" == "NAMESPACE" || -z "$ns" || -z "$pod" ]] && continue
+    local last_pod=""
 
-            # 2. Only print the break if the pod name actually changed
-            if [[ "$pod" != "$last_pod" ]]; then
-                # Don't print a break before the very first pod
-                [[ -n "$last_pod" ]] && echo "---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------"
-                last_pod="$pod"
+    while read -r ns pod rest; do
+        [[ "$ns" == "NAMESPACE" || -z "$ns" || -z "$pod" ]] && continue
+
+        # Run df and filter for data disks
+        local disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
+                         grep -iE 'kafka|data|/dev/sd|/dev/nvme' | \
+                         grep -v "Filesystem")
+
+        if [[ -n "$disk_info" ]]; then
+            # Print separator if pod changed (but not for the first one)
+            if [[ -n "$last_pod" && "$pod" != "$last_pod" ]]; then
+                echo "------------------------------------------------------------------------------------------------------------------------"
             fi
+            last_pod="$pod"
 
-            # 3. Get disk info
-            kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
-            grep -iE '^/dev/|kafka|data|mount' | \
-            grep -v "Filesystem" | \
-            awk -v ns="$ns" -v pod="$pod" '{print ns, pod, $0}'
-        done
-    ) | column -t
+            # Use awk to format the output with fixed widths for live printing
+            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" '{
+                printf "%-12s %-45s %-20s %-7s %-7s %-7s %-5s %-20s\n", \
+                ns, substr(pod,1,45), $1, $2, $3, $4, $5, $6
+            }'
+        fi
+    done
 }
 
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
