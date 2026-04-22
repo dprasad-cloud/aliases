@@ -32,7 +32,9 @@ echo ""
 # Single confirmation for the entire list
 read -p "Confirm deletion of all pods listed above? (y/n): " CONFIRM
 if [[ "$CONFIRM" != "y" ]]; then
+    echo ""
     echo "Deletion cancelled."
+    echo ""
     exit 0
 fi
 
