@@ -91,9 +91,7 @@ node_top() {
 # Commonly used findpod alias for finding pods in error states or with high restart counts
 alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s"'
 
-echo -e "Shortcut for checking disk usage on pods (ex: finderr | disk_usage)"
-alias disk_usage="while read ns pod; do echo \"--- \$pod (\$ns) ---\"; kubectl exec \$pod -n \$ns -- df -h 2>/dev/null | grep -E '^/dev/|Filesystem|kafka|data'; done"
-
+echo -e "Shortcut for checking disk usage on pods (ex: finderr | disk_usage) or (disk_usage common-kafka)"
 unalias disk_usage 2>/dev/null
 disk_usage() {
     # If an argument is provided (like "common-kafka"), eval it and pipe it back
