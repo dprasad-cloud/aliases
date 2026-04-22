@@ -68,8 +68,8 @@ alias check_cpu_all='/root/aliases-main/check_cpu_all.sh'
 chmod +x /root/aliases-main/check_oom.sh
 alias check_oom='/root/aliases-main/check_oom.sh'
 
-chmod +x /root/aliases-main/disk_usage.sh
-alias disk_usage='/root/aliases-main/disk_usage.sh'
+chmod +x /root/aliases-main/check_disk.sh
+alias check_disk='/root/aliases-main/check_disk.sh'
 
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
