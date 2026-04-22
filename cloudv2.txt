@@ -94,24 +94,20 @@ alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/
 echo -e "Shortcut for checking disk usage on pods (ex: finderr | disk_usage)"
 alias disk_usage="while read ns pod; do echo \"--- \$pod (\$ns) ---\"; kubectl exec \$pod -n \$ns -- df -h 2>/dev/null | grep -E '^/dev/|Filesystem|kafka|data'; done"
 
+unalias disk_usage 2>/dev/null
 disk_usage() {
-    # If an argument is provided (like "finderr"), execute it and pipe it into this same function
+    # If an argument is provided (like "finderr"), eval it and pipe it back
     if [ -n "$1" ]; then
         eval "$1" | disk_usage
         return
     fi
 
+    # The processing loop
     while read -r ns pod rest; do
-        # Basic validation: ensure we have at least two columns
         if [[ -n "$ns" && -n "$pod" ]]; then
-            echo -e "\033[1;34m--- $pod ($ns) ---\033[0m"
-
-            # Execute df inside the pod
-            # Redirecting stderr to dev/null to ignore "sh: df: not found" or connection issues
+            echo -e "\n\033[1;34m--- $pod ($ns) ---\033[0m"
             kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
             grep -iE '^/dev/|Filesystem|kafka|data|mount'
-
-            echo "" # Add a newline for readability between pods
         fi
     done
 }
