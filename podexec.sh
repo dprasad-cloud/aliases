@@ -35,7 +35,7 @@ echo "--- Searching for the FIRST pod containing '$SEARCH_TERM' (Case-Insensitiv
 # Use 'kubectl get pod -A' to list all pods across all namespaces.
 # Filter case-insensitively by the search term, then filter again to ensure it is 'Running',
 # and finally use 'head -n 1' to select only the first result.
-POD_INFO=$(kubectl get pod -A | grep -i "$SEARCH_TERM" | head -n 1)
+POD_INFO=$(kubectl get pod -A | grep -iE "$SEARCH_TERM" | head -n 1)
 
 if [ -z "$POD_INFO" ]; then
     echo "ERROR: No pod found matching '$SEARCH_TERM'."

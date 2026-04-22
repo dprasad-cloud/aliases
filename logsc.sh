@@ -14,7 +14,7 @@ fi
 
 echo "--- Searching for the FIRST pod containing '$SEARCH_TERM' ---"
 
-POD_INFO=$(kubectl get pod -A | grep "$SEARCH_TERM" | head -n 1)
+POD_INFO=$(kubectl get pod -A | grep -iE "$SEARCH_TERM" | head -n 1)
 
 if [ -z "$POD_INFO" ]; then
     echo "ERROR: No pod found matching '$SEARCH_TERM'."
