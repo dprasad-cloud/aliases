@@ -68,6 +68,9 @@ alias check_cpu_all='/root/aliases-main/check_cpu_all.sh'
 chmod +x /root/aliases-main/check_oom.sh
 alias check_oom='/root/aliases-main/check_oom.sh'
 
+chmod +x /root/aliases-main/disk_usage.sh
+alias disk_usage='/root/aliases-main/disk_usage.sh'
+
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
 }
@@ -90,44 +93,6 @@ node_top() {
 
 # Commonly used findpod alias for finding pods in error states or with high restart counts
 alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s"'
-
-echo -e "Shortcut for checking disk usage on pods (ex: finderr | disk_usage) or (disk_usage common-kafka)"
-unalias disk_usage 2>/dev/null
-disk_usage() {
-    if [ -n "$1" ]; then
-        eval "findpod \"$1\"" | disk_usage
-        return
-    fi
-
-    # Print the header immediately
-    printf "%-12s %-45s %-20s %-7s %-7s %-7s %-5s %-20s\n" \
-        "NAMESPACE" "POD" "FILESYSTEM" "SIZE" "USED" "AVAIL" "USE%" "MOUNTED_ON"
-
-    local last_pod=""
-
-    while read -r ns pod rest; do
-        [[ "$ns" == "NAMESPACE" || -z "$ns" || -z "$pod" ]] && continue
-
-        # Run df and filter for data disks
-        local disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
-                         grep -iE 'kafka|data|/dev/sd|/dev/nvme' | \
-                         grep -v "Filesystem")
-
-        if [[ -n "$disk_info" ]]; then
-            # Print separator if pod changed (but not for the first one)
-            if [[ -n "$last_pod" && "$pod" != "$last_pod" ]]; then
-                echo "------------------------------------------------------------------------------------------------------------------------"
-            fi
-            last_pod="$pod"
-
-            # Use awk to format the output with fixed widths for live printing
-            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" '{
-                printf "%-12s %-45s %-20s %-7s %-7s %-7s %-5s %-20s\n", \
-                ns, substr(pod,1,45), $1, $2, $3, $4, $5, $6
-            }'
-        fi
-    done
-}
 
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
 loop15 () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
