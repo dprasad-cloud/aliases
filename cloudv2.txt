@@ -18,22 +18,22 @@ chmod +x /root/aliases-main/configmap.sh
 alias cm='/root/aliases-main/configmap.sh'
 
 chmod +x /root/aliases-main/findcm.sh
-alias findcm='/root/aliases-main/findcm.sh'
+alias fcm='/root/aliases-main/findcm.sh'
 
 chmod +x /root/aliases-main/findpod.sh
-alias findpod='/root/aliases-main/findpod.sh'
+alias fpod='/root/aliases-main/findpod.sh'
 
 chmod +x /root/aliases-main/delpod.sh
 alias delpod='/root/aliases-main/delpod.sh'
 
 chmod +x /root/aliases-main/finding.sh
-alias finding='/root/aliases-main/finding.sh'
+alias fing='/root/aliases-main/finding.sh'
 
 chmod +x /root/aliases-main/findsvc.sh
-alias findsvc='/root/aliases-main/findsvc.sh'
+alias fsvc='/root/aliases-main/findsvc.sh'
 
 chmod +x /root/aliases-main/findpvc.sh
-alias findpvc='/root/aliases-main/findpvc.sh'
+alias fpvc='/root/aliases-main/findpvc.sh'
 
 chmod +x /root/aliases-main/logs.sh
 alias logs='/root/aliases-main/logs.sh'
@@ -60,19 +60,19 @@ chmod +x /root/aliases-main/kedit.sh
 alias kedit='/root/aliases-main/kedit.sh'
 
 chmod +x /root/aliases-main/check_usage.sh
-alias check_usage='/root/aliases-main/check_usage.sh'
+alias checkusage='/root/aliases-main/check_usage.sh'
 
 chmod +x /root/aliases-main/check_mem_all.sh
-alias check_mem_all='/root/aliases-main/check_mem_all.sh'
+alias checkmem='/root/aliases-main/check_mem_all.sh'
 
 chmod +x /root/aliases-main/check_cpu_all.sh
-alias check_cpu_all='/root/aliases-main/check_cpu_all.sh'
+alias checkcpu='/root/aliases-main/check_cpu_all.sh'
 
 chmod +x /root/aliases-main/check_oom.sh
-alias check_oom='/root/aliases-main/check_oom.sh'
+alias checkoom='/root/aliases-main/check_oom.sh'
 
 chmod +x /root/aliases-main/check_disk.sh
-alias check_disk='/root/aliases-main/check_disk.sh'
+alias checkdisk='/root/aliases-main/check_disk.sh'
 
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
@@ -94,9 +94,9 @@ node_top() {
   | column -t | sort -rnk2
 }
 
-# Commonly used findpod alias for finding pods in error states or with high restart counts
+# Commonly used fpod alias for finding pods in error states or with high restart counts
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
-alias finderr='findpod $errstates'
+alias ferr='fpod $errstates'
 
 loop () { while true; do date; eval $@; echo -e '\n'; sleep 5;  done;}
 loop15 () { while true; do date; eval $@; echo -e '\n'; sleep 15;  done;}
@@ -121,10 +121,10 @@ clear;
 
 echo -e "\n Available Shortcuts - Most commands ignore case"
 echo -e "\n "
-echo -e "\t findpod <search_key>                    : Find pod across all namespaces"
-echo -e "\t findsvc <search_key>                    : Find service across all namespaces"
-echo -e "\t finding <search_key>                    : Find ingress across all namespaces"
-echo -e "\t findcm <search_key>                     : Find configmap across all namespaces"
+echo -e "\t fpod <search_key>                    : Find pod across all namespaces"
+echo -e "\t fsvc <search_key>                    : Find service across all namespaces"
+echo -e "\t fing <search_key>                    : Find ingress across all namespaces"
+echo -e "\t fcm <search_key>                     : Find configmap across all namespaces"
 echo -e "\n "
 echo -e "\t desc <search_key>                       : Find the pod across all namespaces and get description"
 echo -e "\t image <search_key>                      : Find the pod across all namespaces and get image details"

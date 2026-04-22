@@ -2,8 +2,8 @@
 # If an argument is provided (e.g., check_disk n-kafka else (finderr | check_disk)
 if [ -n "$1" ]; then
     shopt -s expand_aliases
-    alias findpod='/root/aliases-main/findpod.sh'
-    eval "findpod \"$1\"" | "$0"
+    alias fpod='/root/aliases-main/findpod.sh'
+    eval "fpod \"$1\"" | "$0"
     exit 0
 fi
 
