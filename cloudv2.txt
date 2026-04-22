@@ -23,6 +23,9 @@ alias findcm='/root/aliases-main/findcm.sh'
 chmod +x /root/aliases-main/findpod.sh
 alias findpod='/root/aliases-main/findpod.sh'
 
+chmod +x /root/aliases-main/delpod.sh
+alias delpod='/root/aliases-main/delpod.sh'
+
 chmod +x /root/aliases-main/finding.sh
 alias finding='/root/aliases-main/finding.sh'
 
