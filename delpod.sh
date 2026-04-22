@@ -25,6 +25,7 @@ echo "--------------------------------------------------------"
 echo "THE FOLLOWING PODS WILL BE DELETED:"
 echo "$MATCHES" | awk '{printf "  - Namespace: %-15s Pod: %s\n", $1, $2}'
 echo "--------------------------------------------------------"
+echo ""
 
 # Single confirmation for the entire list
 read -p "Delete all listed pods? (y/n): " CONFIRM
@@ -40,4 +41,6 @@ echo "$MATCHES" | while read -r NS POD; do
 done
 
 echo "--------------------------------------------------------"
+echo ""
 echo "Cleanup complete."
+echo ""
