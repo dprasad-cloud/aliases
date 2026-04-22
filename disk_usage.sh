@@ -2,7 +2,6 @@
 
 # 1. IMPORTANT: Enable alias expansion inside this script
 shopt -s expand_aliases
-source "/root/aliases-main/cloudv2.txt"
 
 disk_usage() {
     # If an argument is provided, execute findpod and pipe it back
