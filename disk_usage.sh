@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Ensure no alias conflicts with the function name
-unalias disk_usage 2>/dev/null
-
 disk_usage() {
     # If an argument is provided, execute findpod and pipe it back
     if [ -n "$1" ]; then
