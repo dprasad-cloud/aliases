@@ -38,4 +38,4 @@ while read -r ns pod rest; do
     fi
 done
 
-echo " -END- "
+echo "  "
