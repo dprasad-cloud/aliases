@@ -94,22 +94,23 @@ alias finderr='findpod "term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/
 echo -e "Shortcut for checking disk usage on pods (ex: finderr | disk_usage) or (disk_usage common-kafka)"
 unalias disk_usage 2>/dev/null
 disk_usage() {
-    # If an argument is provided, execute findpod and pipe it back into this function
+    # If an argument is provided, execute findpod and pipe it back
     if [ -n "$1" ]; then
         eval "findpod \"$1\"" | disk_usage
         return
     fi
 
-    # Wrap the loop in a subshell to pipe the collective output to column -t
     (
         # Header for the table
         echo "NAMESPACE POD FILESYSTEM SIZE USED AVAIL USE% MOUNTED_ON"
 
         while read -r ns pod rest; do
-            # Skip header lines if findpod returns them
             [[ "$ns" == "NAMESPACE" || -z "$ns" ]] && continue
 
-            # Execute df, filter, and use awk to prepend the ns and pod to every data line
+            # Insert a visual separator row for each new pod
+            echo "---------- ---------- ---------- ---------- ---------- ---------- ---------- ----------"
+
+            # Execute df, filter, and prepend ns/pod
             kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
             grep -iE '^/dev/|kafka|data|mount' | \
             grep -v "Filesystem" | \
