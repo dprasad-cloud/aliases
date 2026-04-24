@@ -97,6 +97,8 @@ node_top() {
 # Commonly used fpod alias for finding pods in error states or with high restart counts
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
 alias ferr='fpod $errstates'
+alias topnodes90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 90'"
+alias topnodes95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 95'"
 
 loop() { while true; do date; eval "$@"; echo -e "\n\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n\n"; sleep 15; done; }
