@@ -84,8 +84,8 @@ hmtail () {
   podexec "$1" tail -f /opt/tomcat/logs/hm.log
 }
 
-echo -e "Shortcut for checking resource usage on nodes (ex: nodetop ip-10-201-50-219)"
-nodetop() {
+echo -e "Shortcut for checking resource usage on nodes (ex: topnode ip-10-201-50-219)"
+topnode() {
   local node=$1
   echo -e "POD_NAME\tCPU\tMEM"
   join -1 1 -2 1 \
@@ -97,11 +97,11 @@ nodetop() {
 # Commonly used fpod alias for finding pods in error states or with high restart counts
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
 alias ferr='fpod $errstates'
- alias nodes90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 90 || \$5+0 > 90 || \$2 == \"<unknown>\"'"
- alias nodes95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 95 || \$5+0 > 95 || \$2 == \"<unknown>\"'"
+ alias topnode90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 90 || \$5+0 > 90 || \$2 == \"<unknown>\"'"
+ alias topnode95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 95 || \$5+0 > 95 || \$2 == \"<unknown>\"'"
 
-loop() { while true; do date; eval "$@"; echo -e "\n\n"; sleep 5; done; }
-loop15() { while true; do date; eval "$@"; echo -e "\n\n"; sleep 15; done; }
+loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
+loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
 
 ups () {
     # Define the target file name inside the extracted directory
