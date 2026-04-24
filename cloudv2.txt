@@ -98,8 +98,8 @@ node_top() {
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
 alias ferr='fpod $errstates'
 
-loop () { while true; do date; eval $@; echo -e '\n\n'; sleep 5;  done;}
-loop15 () { while true; do date; eval $@; echo -e '\n\n'; sleep 15;  done;}
+loop() { while true; do date; eval "$@"; echo -e "\n\n"; sleep 5; done; }
+loop15() { while true; do date; eval "$@"; echo -e "\n\n"; sleep 15; done; }
 
 ups () {
     # Define the target file name inside the extracted directory
