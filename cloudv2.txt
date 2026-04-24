@@ -96,8 +96,8 @@ topnode() {
     <(kubectl top pods -A --no-headers | awk '{print $2, $3, $4}' | sort) \
   | column -t | sort -rnk2
 }
-alias topnodes90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 90 || \$5+0 > 90 || \$2 == \"<unknown>\"'"
-alias topnodes95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 95 || \$5+0 > 95 || \$2 == \"<unknown>\"'"
+alias topnodes90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 >= 90 || \$5+0 > 90 || \$2 == \"<unknown>\"'"
+alias topnodes95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 >= 95 || \$5+0 > 95 || \$2 == \"<unknown>\"'"
 alias topnodes90filter="k get nodes | grep -Ff <(topnodes90 | awk '{print \$1}')"
 alias topnodes95filter="k get nodes | grep -Ff <(topnodes95 | awk '{print \$1}')"
 
