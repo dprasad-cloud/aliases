@@ -62,6 +62,9 @@ alias kedit='/root/aliases-main/kedit.sh'
 chmod +x /root/aliases-main/check_usage.sh
 alias checkusage='/root/aliases-main/check_usage.sh'
 
+chmod +x /root/aliases-main/check_usage_bycpu.sh
+alias checkusagebycpu='/root/aliases-main/check_usage_bycpu.sh'
+
 chmod +x /root/aliases-main/check_mem_all.sh
 alias checkmem='/root/aliases-main/check_mem_all.sh'
 
