@@ -84,8 +84,8 @@ hmtail () {
   podexec "$1" tail -f /opt/tomcat/logs/hm.log
 }
 
-echo -e "Shortcut for checking resource usage on nodes (ex: node_top ip-10-201-50-219)"
-node_top() {
+echo -e "Shortcut for checking resource usage on nodes (ex: nodetop ip-10-201-50-219)"
+nodetop() {
   local node=$1
   echo -e "POD_NAME\tCPU\tMEM"
   join -1 1 -2 1 \
