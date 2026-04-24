@@ -103,8 +103,8 @@ export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3)
 alias ferr='fpod $errstates'
 alias topnode90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 90 || \$5+0 > 90 || \$2 == \"<unknown>\"'"
 alias topnode95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 > 95 || \$5+0 > 95 || \$2 == \"<unknown>\"'"
-export topnode90filter="k get nodes | grep -Ff <(topnode90 | awk '{print \$1}')"
 alias topnode90filter="k get nodes | grep -Ff <(topnode90 | awk '{print \$1}')"
+alias topnode95filter="k get nodes | grep -Ff <(topnode95 | awk '{print \$1}')"
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
