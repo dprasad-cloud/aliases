@@ -8,7 +8,7 @@
 SEARCH_TERM="$1"
 
 if [ -z "$SEARCH_TERM" ]; then
-    echo "Usage: configmap <search_term>"
+    echo "Usage: cm <search_term>"
     exit 1
 fi
 
