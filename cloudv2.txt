@@ -98,8 +98,8 @@ topnode() {
 }
 alias topnodes90="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 >= 90 || \$5+0 > 90 || \$2 == \"<unknown>\"'"
 alias topnodes95="k top nodes | awk '\$0==\"\" || /$(date +%Y)/ || \$3+0 >= 95 || \$5+0 > 95 || \$2 == \"<unknown>\"'"
-alias topnodes90filter="k get nodes | grep -Ff <(topnodes90 | awk '{print \$1}')"
-alias topnodes95filter="k get nodes | grep -Ff <(topnodes95 | awk '{print \$1}')"
+alias topnodes90status="k get nodes | grep -Ff <(topnodes90 | awk '{print \$1}')"
+alias topnodes95status="k get nodes | grep -Ff <(topnodes95 | awk '{print \$1}')"
 
 # Commonly used fpod alias for finding pods in error states or with high restart counts
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
