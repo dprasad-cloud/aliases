@@ -41,6 +41,7 @@ fi
 # Iterate through the list and delete
 echo "$MATCHES" | while read -r NS POD STATUS; do
     echo "Deleting $POD in $NS (Current Status: $STATUS)..."
+    echo "Command: kubectl delete pod $POD -n $NS --now"
     kubectl delete pod "$POD" -n "$NS" --now
 done
 
