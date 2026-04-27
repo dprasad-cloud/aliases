@@ -15,7 +15,7 @@ chmod +x /root/aliases-main/desc-ing.sh
 alias desc-ing='/root/aliases-main/desc-ing.sh'
 
 chmod +x /root/aliases-main/configmap.sh
-alias cm='/root/aliases-main/configmap.sh'
+alias cm='bash /root/aliases-main/configmap.sh'
 
 chmod +x /root/aliases-main/findcm.sh
 alias fcm='/root/aliases-main/findcm.sh'
