@@ -3,79 +3,79 @@
 # file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file;
 
 chmod +x /root/aliases-main/desc.sh
-alias desc='/root/aliases-main/desc.sh'
+alias desc='bash /root/aliases-main/desc.sh'
 
 chmod +x /root/aliases-main/cont.sh
-alias cont='/root/aliases-main/cont.sh'
+alias cont='bash /root/aliases-main/cont.sh'
 
 chmod +x /root/aliases-main/image.sh
-alias image='/root/aliases-main/image.sh'
+alias image='bash /root/aliases-main/image.sh'
 
 chmod +x /root/aliases-main/desc-ing.sh
-alias desc-ing='/root/aliases-main/desc-ing.sh'
+alias desc-ing='bash /root/aliases-main/desc-ing.sh'
 
 chmod +x /root/aliases-main/configmap.sh
 alias cm='bash /root/aliases-main/configmap.sh'
 
 chmod +x /root/aliases-main/findcm.sh
-alias fcm='/root/aliases-main/findcm.sh'
+alias fcm='bash /root/aliases-main/findcm.sh'
 
 chmod +x /root/aliases-main/findpod.sh
-alias fpod='/root/aliases-main/findpod.sh'
+alias fpod='bash /root/aliases-main/findpod.sh'
 
 chmod +x /root/aliases-main/delpod.sh
-alias delpod='/root/aliases-main/delpod.sh'
+alias delpod='bash /root/aliases-main/delpod.sh'
 
 chmod +x /root/aliases-main/finding.sh
-alias fing='/root/aliases-main/finding.sh'
+alias fing='bash /root/aliases-main/finding.sh'
 
 chmod +x /root/aliases-main/findsvc.sh
-alias fsvc='/root/aliases-main/findsvc.sh'
+alias fsvc='bash /root/aliases-main/findsvc.sh'
 
 chmod +x /root/aliases-main/findpvc.sh
-alias fpvc='/root/aliases-main/findpvc.sh'
+alias fpvc='bash /root/aliases-main/findpvc.sh'
 
 chmod +x /root/aliases-main/logs.sh
-alias logs='/root/aliases-main/logs.sh'
+alias logs='bash /root/aliases-main/logs.sh'
 
 chmod +x /root/aliases-main/logsc.sh
-alias logsc='/root/aliases-main/logsc.sh'
+alias logsc='bash /root/aliases-main/logsc.sh'
 
 chmod +x /root/aliases-main/logsf.sh
-alias logsf='/root/aliases-main/logsf.sh'
+alias logsf='bash /root/aliases-main/logsf.sh'
 
 chmod +x /root/aliases-main/logsfc.sh
-alias logsfc='/root/aliases-main/logsfc.sh'
+alias logsfc='bash /root/aliases-main/logsfc.sh'
 
 chmod +x /root/aliases-main/podbash.sh
-alias podbash='/root/aliases-main/podbash.sh'
+alias podbash='bash /root/aliases-main/podbash.sh'
 
 chmod +x /root/aliases-main/podsh.sh
-alias podsh='/root/aliases-main/podsh.sh'
+alias podsh='bash /root/aliases-main/podsh.sh'
 
 chmod +x /root/aliases-main/podexec.sh
-alias podexec='/root/aliases-main/podexec.sh'
+alias podexec='bash /root/aliases-main/podexec.sh'
 
 chmod +x /root/aliases-main/kedit.sh
-alias kedit='/root/aliases-main/kedit.sh'
+alias kedit='bash /root/aliases-main/kedit.sh'
 
 chmod +x /root/aliases-main/check_usage.sh
-alias checkusage='/root/aliases-main/check_usage.sh'
+alias checkusage='bash /root/aliases-main/check_usage.sh'
 
 chmod +x /root/aliases-main/check_usage_bycpu.sh
-alias checkusagebycpu='/root/aliases-main/check_usage_bycpu.sh'
+alias checkusagebycpu='bash /root/aliases-main/check_usage_bycpu.sh'
 
 chmod +x /root/aliases-main/check_mem_all.sh
-alias checkmem='/root/aliases-main/check_mem_all.sh'
+alias checkmem='bash /root/aliases-main/check_mem_all.sh'
 
 chmod +x /root/aliases-main/check_cpu_all.sh
-alias checkcpu='/root/aliases-main/check_cpu_all.sh'
+alias checkcpu='bash /root/aliases-main/check_cpu_all.sh'
 
 chmod +x /root/aliases-main/check_oom.sh
-alias checkoom='/root/aliases-main/check_oom.sh'
+alias checkoom='bash /root/aliases-main/check_oom.sh'
 
 chmod +x /root/aliases-main/check_disk.sh
-alias checkdisk='/root/aliases-main/check_disk.sh'
+alias checkdisk='bash /root/aliases-main/check_disk.sh'
 
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
