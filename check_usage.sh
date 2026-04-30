@@ -37,32 +37,34 @@ function how_long_ago(ts) {
     return int(diff/86400) "d ago";
 }
 
-# Internal Filtering
-(pattern != "." && $0 !~ pattern) { next }
-
 # Source 1: kubectl top
 NR==FNR {
     u_cpu[$1$2]=$3; u_mem[$1$2]=$4;
     next
 }
 
-# Source 2: kubectl get (Aggregating all containers)
+# Internal Filtering
+(pattern != "." && $0 !~ pattern) { next }
+
+# Source 2: kubectl get
 ($1$2) in u_cpu {
    uc = to_m(u_cpu[$1$2]); um = to_mi(u_mem[$1$2]);
    rc_val = to_m($3); lc_val = to_m($4);
    mr_val = to_mi($5); ml_val = to_mi($6);
 
-   # Summing restarts and finding latest TS from all containers (Fields 7 and 8)
+   # Process comma-separated restarts and timestamps
    split($7, restarts_arr, ",");
    split($8, times_arr, ",");
 
    total_restarts = 0;
-   latest_ts = "";
+   latest_ts = "0";
 
    for (i in restarts_arr) {
        total_restarts += restarts_arr[i];
-       if (times_arr[i] != "<nil>" && times_arr[i] != "0" && times_arr[i] > latest_ts) {
-           latest_ts = times_arr[i];
+   }
+   for (j in times_arr) {
+       if (times_arr[j] != "<nil>" && times_arr[j] != "0" && times_arr[j] > latest_ts) {
+           latest_ts = times_arr[j];
        }
    }
 
@@ -76,9 +78,9 @@ NR==FNR {
        restart_info = "-";
    }
 
-   printf "%d | %-12s | %-40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
-          mp_lim, $1, display_pod, u_cpu[$1$2], $3"/"$4, sprintf("(%3d%% / %3d%%)", (rc_val>0?uc/rc_val*100:0), (lc_val>0?uc/lc_val*100:0)),
+   printf "%-12s | %-40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
+          $1, display_pod, u_cpu[$1$2], $3"/"$4, sprintf("(%3d%% / %3d%%)", (rc_val>0?uc/rc_val*100:0), (lc_val>0?uc/lc_val*100:0)),
           u_mem[$1$2], $5"/"$6, sprintf("(%3d%% / %3d%%)", (mr_val>0?um/mr_val*100:0), (ml_val>0?um/ml_val*100:0)), restart_info
 }' <(kubectl top pods -A --no-headers) \
-   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{.status.containerStatuses[*].restartCount}{" "}{.status.containerStatuses[*].lastState.terminated.finishedAt}{"\n"}{end}' | sed 's/ / /g') \
-| sort -rn | cut -d '|' -f 2- | column -t -s '|'
+   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{range .status.containerStatuses[*]}{.restartCount}{","}{end}{" "}{range .status.containerStatuses[*]}{.lastState.terminated.finishedAt}{","}{end}{"\n"}{end}') \
+| sort -k 1 | column -t -s '|'
