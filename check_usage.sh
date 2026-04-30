@@ -1,14 +1,17 @@
+#!/bin/bash
+
 FILTER=$1
 NOW=$(date +%s)
 
+# Handle empty or 'all' filter
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
-    GREP_CMD="cat"
+    pattern="."
 else
-    GREP_CMD="grep -iE \"$FILTER\""
+    pattern="$FILTER"
 fi
 
-# Use -F '[[:space:]]+' to handle both tabs and spaces flexibly
-awk -v now="$NOW" -v pattern="$FILTER" -F '[[:space:]]+' 'BEGIN { OFS=" | " }
+# Use awk to process both 'kubectl top' and 'kubectl get' outputs
+awk -v now="$NOW" -v pattern="$pattern" -F '[[:space:]]+' 'BEGIN { OFS=" | " }
 
 function to_mi(val) {
    if (val ~ /[Gg]i?/) { sub(/[Gg]i?/, "", val); return val * 1024 }
@@ -16,15 +19,18 @@ function to_mi(val) {
    if (val ~ /[Kk]i?/) { sub(/[Kk]i?/, "", val); return val / 1024 }
    return val + 0
 }
+
 function to_m(val) {
    if (val ~ /m/) { sub(/m/, "", val); return val + 0 }
-   if (val == "" || val == " ") return 0;
+   if (val == "" || val == " " || val == "0") return 0;
    return val * 1000
 }
+
 function how_long_ago(ts) {
-    if (ts == "" || ts == "-" || ts == " " || ts == "Never") return "";
+    if (ts == "" || ts == "-" || ts == " " || ts == "<nil>" || ts == "Never") return "";
     gsub(/[:TZ-]/, " ", ts);
     t = mktime(ts);
+    if (t <= 0) return "";
     diff = now - t;
     if (diff < 0) return "0s ago";
     if (diff < 60) return diff "s ago";
@@ -34,19 +40,19 @@ function how_long_ago(ts) {
 }
 
 # --- Internal Filtering ---
-(pattern != "" && pattern != "all" && pattern != "ALL" && $0 !~ pattern) { next }
+(pattern != "." && $0 !~ pattern) { next }
 
-# Source 1: kubectl top
+# Source 1: kubectl top (NR==FNR identifies the first file/stream)
 NR==FNR {
-    # If using default FS, $1 is Namespace, $2 is Name, $3 is CPU, $4 is MEM
     u_cpu[$1$2]=$3; u_mem[$1$2]=$4;
     next
 }
 
-# Source 2: kubectl get
+# Source 2: kubectl get (the second stream)
 ($1$2) in u_cpu {
    uc = to_m(u_cpu[$1$2]);
    um = to_mi(u_mem[$1$2]);
+
    rc_val = to_m($3); lc_val = to_m($4);
    mr_val = to_mi($5); ml_val = to_mi($6);
 
@@ -58,15 +64,23 @@ NR==FNR {
    p_name = $2;
    display_pod = (length(p_name) > 40) ? substr(p_name, 1, 37)"..." : p_name;
 
-   restarts=$7; raw_ts=$8;
-   restart_info = (restarts > 0) ? how_long_ago(raw_ts) "(" restarts ")" : "";
+   restarts = $7;
+   raw_ts = $8;
+
+   # Improved restart logic: Show count even if timestamp is missing
+   time_ago = how_long_ago(raw_ts);
+   if (restarts > 0) {
+       restart_info = (time_ago != "") ? time_ago " (" restarts ")" : "(" restarts " restarts)";
+   } else {
+       restart_info = "-";
+   }
 
    cpu_rl = $3 "/" $4;
    mem_rl = $5 "/" $6;
    cpu_perc = sprintf("(%3d%% / %3d%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
 
-   printf "%d | %-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
+   printf "%d | %-12s | %-40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
           mp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{.status.containerStatuses[0].restartCount}{" "}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}') \
