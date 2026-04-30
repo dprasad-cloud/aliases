@@ -21,7 +21,7 @@ SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | sed -E 's/-[a-f0-9]{8,10}(-[a-z0-9]{
 
 # Execute the kubectl command with the stripped search term
 # The '-i' flag ensures case-insensitive search
-kubectl get cm -A | grep -iE "$SEARCH_TERM_CLEANED"
+kubectl get cm -A | column -t | grep -iE "$SEARCH_TERM_CLEANED"
 
 # Execute the function with the script's arguments
 echo -e "\n \ncommand(s):\n\t kubectl get cm -A | grep -iE \"$SEARCH_TERM_CLEANED\""
