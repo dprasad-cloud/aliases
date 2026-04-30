@@ -3,14 +3,12 @@
 FILTER=$1
 NOW=$(date +%s)
 
-# Handle empty or 'all' filter
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
     pattern="."
 else
     pattern="$FILTER"
 fi
 
-# Use awk to process both 'kubectl top' and 'kubectl get' outputs
 awk -v now="$NOW" -v pattern="$pattern" -F '[[:space:]]+' 'BEGIN { OFS=" | " }
 
 function to_mi(val) {
@@ -27,7 +25,7 @@ function to_m(val) {
 }
 
 function how_long_ago(ts) {
-    if (ts == "" || ts == "-" || ts == " " || ts == "<nil>" || ts == "Never") return "";
+    if (ts == "" || ts == "-" || ts == " " || ts == "<nil>" || ts == "Never" || ts == "0") return "";
     gsub(/[:TZ-]/, " ", ts);
     t = mktime(ts);
     if (t <= 0) return "";
@@ -39,49 +37,48 @@ function how_long_ago(ts) {
     return int(diff/86400) "d ago";
 }
 
-# --- Internal Filtering ---
+# Internal Filtering
 (pattern != "." && $0 !~ pattern) { next }
 
-# Source 1: kubectl top (NR==FNR identifies the first file/stream)
+# Source 1: kubectl top
 NR==FNR {
     u_cpu[$1$2]=$3; u_mem[$1$2]=$4;
     next
 }
 
-# Source 2: kubectl get (the second stream)
+# Source 2: kubectl get (Aggregating all containers)
 ($1$2) in u_cpu {
-   uc = to_m(u_cpu[$1$2]);
-   um = to_mi(u_mem[$1$2]);
-
+   uc = to_m(u_cpu[$1$2]); um = to_mi(u_mem[$1$2]);
    rc_val = to_m($3); lc_val = to_m($4);
    mr_val = to_mi($5); ml_val = to_mi($6);
 
-   cp_req = (rc_val > 0) ? (uc / rc_val) * 100 : 0;
-   cp_lim = (lc_val > 0) ? (uc / lc_val) * 100 : 0;
-   mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
-   mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
+   # Summing restarts and finding latest TS from all containers (Fields 7 and 8)
+   split($7, restarts_arr, ",");
+   split($8, times_arr, ",");
+
+   total_restarts = 0;
+   latest_ts = "";
+
+   for (i in restarts_arr) {
+       total_restarts += restarts_arr[i];
+       if (times_arr[i] != "<nil>" && times_arr[i] != "0" && times_arr[i] > latest_ts) {
+           latest_ts = times_arr[i];
+       }
+   }
 
    p_name = $2;
    display_pod = (length(p_name) > 40) ? substr(p_name, 1, 37)"..." : p_name;
 
-   restarts = $7;
-   raw_ts = $8;
-
-   # Improved restart logic: Show count even if timestamp is missing
-   time_ago = how_long_ago(raw_ts);
-   if (restarts > 0) {
-       restart_info = (time_ago != "") ? time_ago " (" restarts ")" : "(" restarts " restarts)";
+   time_ago = how_long_ago(latest_ts);
+   if (total_restarts > 0) {
+       restart_info = (time_ago != "") ? time_ago " (" total_restarts ")" : "(" total_restarts ")";
    } else {
        restart_info = "-";
    }
 
-   cpu_rl = $3 "/" $4;
-   mem_rl = $5 "/" $6;
-   cpu_perc = sprintf("(%3d%% / %3d%%)", cp_req, cp_lim);
-   mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
-
    printf "%d | %-12s | %-40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
-          mp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
+          mp_lim, $1, display_pod, u_cpu[$1$2], $3"/"$4, sprintf("(%3d%% / %3d%%)", (rc_val>0?uc/rc_val*100:0), (lc_val>0?uc/lc_val*100:0)),
+          u_mem[$1$2], $5"/"$6, sprintf("(%3d%% / %3d%%)", (mr_val>0?um/mr_val*100:0), (ml_val>0?um/ml_val*100:0)), restart_info
 }' <(kubectl top pods -A --no-headers) \
-   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{.status.containerStatuses[0].restartCount}{" "}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}') \
+   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{.status.containerStatuses[*].restartCount}{" "}{.status.containerStatuses[*].lastState.terminated.finishedAt}{"\n"}{end}' | sed 's/ / /g') \
 | sort -rn | cut -d '|' -f 2- | column -t -s '|'
