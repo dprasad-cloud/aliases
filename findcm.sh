@@ -24,5 +24,5 @@ SEARCH_TERM_CLEANED=$(echo "$SEARCH_TERM" | sed -E 's/-[a-f0-9]{8,10}(-[a-z0-9]{
 kubectl get cm -A | grep -iE "$SEARCH_TERM_CLEANED" | column -t
 
 # Execute the function with the script's arguments
-echo -e "\n \ncommand(s):\n\t kubectl get cm -A | grep -iE \"$SEARCH_TERM_CLEANED\""
+echo -e "\n \ncommand(s):\n\t kubectl get cm -A | grep -iE \"$SEARCH_TERM_CLEANED\"" | column -t
 echo -e "\n"
