@@ -4,7 +4,7 @@ NOW=$(date +%s)
 
 # Handle empty or 'all' filter
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
-    PATTERN=""
+    PATTERN="."
 else
     PATTERN="$FILTER"
 fi
@@ -19,13 +19,14 @@ function to_mi(val) {
 }
 function to_m(val) {
    if (val ~ /m/) { sub(/m/, "", val); return val + 0 }
-   if (val == "" || val == " ") return 0;
+   if (val == "" || val == " " || val == "0") return 0;
    return val * 1000
 }
 function how_long_ago(ts) {
-    if (ts == "" || ts == "-" || ts == " " || ts == "Never") return "";
+    if (ts == "" || ts == "-" || ts == " " || ts == "<nil>" || ts == "Never" || ts == "0") return "";
     gsub(/[:TZ-]/, " ", ts);
     t = mktime(ts);
+    if (t <= 0) return "";
     diff = now - t;
     if (diff < 0) return "0s ago";
     if (diff < 60) return diff "s ago";
@@ -35,7 +36,7 @@ function how_long_ago(ts) {
 }
 
 # --- Internal Filtering ---
-(pattern != "" && pattern != "all" && pattern != "ALL" && $0 !~ pattern) { next }
+(pattern != "." && $0 !~ pattern) { next }
 
 # Source 1: kubectl top
 NR==FNR {
@@ -55,20 +56,38 @@ NR==FNR {
    mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
    mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
 
+   # Process multi-container restarts and timestamps
+   split($7, restarts_arr, ",");
+   split($8, times_arr, ",");
+
+   total_restarts = 0;
+   latest_ts = "0";
+
+   for (i in restarts_arr) { total_restarts += restarts_arr[i] }
+   for (j in times_arr) {
+       if (times_arr[j] != "<nil>" && times_arr[j] != "0" && times_arr[j] > latest_ts) {
+           latest_ts = times_arr[j];
+       }
+   }
+
    p_name = $2;
    display_pod = (length(p_name) > 40) ? substr(p_name, 1, 37)"..." : p_name;
 
-   restarts=$7; raw_ts=$8;
-   restart_info = (restarts > 0) ? how_long_ago(raw_ts) "(" restarts ")" : "";
+   time_ago = how_long_ago(latest_ts);
+   if (total_restarts > 0) {
+       restart_info = (time_ago != "") ? time_ago " (" total_restarts ")" : "(" total_restarts ")";
+   } else {
+       restart_info = "-";
+   }
 
    cpu_rl = $3 "/" $4;
    mem_rl = $5 "/" $6;
    cpu_perc = sprintf("(%3d%% / %3d%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
 
-   # CHANGED: Using cp_lim as the first field for sort -rn to pick up
-   printf "%d | %-10s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
+   # Sorting by CPU Limit % (cp_lim)
+   printf "%05d | %-12s | %-40.40s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
           cp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
-   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{.status.containerStatuses[0].restartCount}{" "}{.status.containerStatuses[0].lastState.terminated.finishedAt}{"\n"}{end}') \
+   <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{range .status.containerStatuses[*]}{.restartCount}{","}{end}{" "}{range .status.containerStatuses[*]}{.lastState.terminated.finishedAt}{","}{end}{"\n"}{end}') \
 | sort -rn | cut -d '|' -f 2- | column -t -s '|'
