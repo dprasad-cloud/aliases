@@ -8,7 +8,7 @@ if [ -n "$1" ]; then
 fi
 
 # Print the header immediately
-printf "\n%-12s %-45s %-20s %-7s %-7s %-7s %-5s %-20s\n" \
+printf "\n%-12s %-35s %-20s %-7s %-7s %-7s %-5s %-20s\n" \
     "NAMESPACE" "POD" "FILESYSTEM" "SIZE" "USED" "AVAIL" "USE%" "MOUNTED_ON"
 echo "------------------------------------------------------------------------------------------------------------------------"
 
@@ -32,7 +32,7 @@ while read -r ns pod rest; do
 
         # Print formatted rows
         echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" '{
-            printf "%-12s %-45s %-20s %-7s %-7s %-7s %-5s %-20s\n", \
+            printf "%-12s %-35s %-20s %-7s %-7s %-7s %-5s %-20s\n", \
             ns, substr(pod,1,45), $1, $2, $3, $4, $5, $6
         }'
     fi
