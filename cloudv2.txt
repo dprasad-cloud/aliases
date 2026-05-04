@@ -106,7 +106,14 @@ export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3)
 export commonkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server common-kafka:9092"
 export defaultkafka="unset JMX_PORT; bin/kafka-cluster.sh describe --bootstrap-server default-kafka:9092"
 
-alias ferr='fpod $errstates'
+#Usage (ferr or ferr "search_key")
+ferr() {
+    if [ -z "$1" ]; then
+        fpod $errstates
+    else
+        fpod $errstates | grep -iE "$1"
+    fi
+}
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
