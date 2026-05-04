@@ -105,6 +105,7 @@ alias topnodes95status="k get nodes | grep -Ff <(topnodes95 | awk '{print \$1}')
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
 export commonkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server common-kafka:9092"
 export defaultkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server default-kafka:9092"
+export nvokafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server nvo-kafka:9092"
 
 #Usage (ferr or ferr "search_key")
 unalias ferr
