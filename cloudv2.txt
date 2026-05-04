@@ -107,6 +107,7 @@ export commonkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-
 export defaultkafka="unset JMX_PORT; bin/kafka-cluster.sh describe --bootstrap-server default-kafka:9092"
 
 #Usage (ferr or ferr "search_key")
+unalias ferr
 ferr() {
     if [ -z "$1" ]; then
         fpod $errstates
