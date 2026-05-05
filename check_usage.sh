@@ -79,7 +79,7 @@ NR==FNR {
    mp_lim = (ml_val > 0) ? int((um / ml_val) * 100) : 0;
 
    # We print mp_lim as the first field so sort -rn works, then cut it out
-   printf "%05d | %-12s | %-27s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
+   printf "%03d | %-12s | %-27s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
           mp_lim, $1, display_pod, u_cpu[$1$2], $3"/"$4, sprintf("(%3d%% / %3d%%)", (rc_val>0?uc/rc_val*100:0), (lc_val>0?uc/lc_val*100:0)),
           u_mem[$1$2], $5"/"$6, sprintf("(%3d%% / %3d%%)", (mr_val>0?um/mr_val*100:0), mp_lim "%"), restart_info
 }' <(kubectl top pods -A --no-headers) \

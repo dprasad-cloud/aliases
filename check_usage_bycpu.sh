@@ -86,7 +86,7 @@ NR==FNR {
    mem_perc = sprintf("(%3d%% / %3d%%)", mp_req, mp_lim);
 
    # Sorting by CPU Limit % (cp_lim)
-   printf "%05d | %-12s | %-27.27s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
+   printf "%03d | %-12s | %-27.27s | C: %-5s %-10s %-15s | M: %-7s | %-12s %-15s | %s\n",
           cp_lim, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{" "}{.spec.containers[0].resources.requests.cpu}{" "}{.spec.containers[0].resources.limits.cpu}{" "}{.spec.containers[0].resources.requests.memory}{" "}{.spec.containers[0].resources.limits.memory}{" "}{range .status.containerStatuses[*]}{.restartCount}{","}{end}{" "}{range .status.containerStatuses[*]}{.lastState.terminated.finishedAt}{","}{end}{"\n"}{end}') \
