@@ -108,7 +108,7 @@ export defaultkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap
 export nvokafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server nvo-kafka:9092"
 
 #Usage (ferr or ferr "search_key")
-unalias ferr
+unalias ferr 2>/dev/null || true
 ferr() {
     if [ -z "$1" ]; then
         fpod $errstates
