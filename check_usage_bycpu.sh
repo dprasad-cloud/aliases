@@ -71,7 +71,7 @@ NR==FNR {
    }
 
    p_name = $2;
-   display_pod = (length(p_name) > 27) ? substr(p_name, 1, 24)"..." : p_name;
+   display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
 
    time_ago = how_long_ago(latest_ts);
    if (total_restarts > 0) {
