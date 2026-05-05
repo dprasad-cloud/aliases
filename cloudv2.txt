@@ -60,7 +60,7 @@ chmod +x /root/aliases-main/kedit.sh
 alias kedit='bash /root/aliases-main/kedit.sh'
 
 chmod +x /root/aliases-main/check_usage.sh
-alias checkusage='bash /root/aliases-main/check_usage.sh'
+checkusage() { bash /root/aliases-main/check_usage.sh "$@" }
 
 chmod +x /root/aliases-main/check_usage_bycpu.sh
 alias checkusagebycpu='bash /root/aliases-main/check_usage_bycpu.sh'
