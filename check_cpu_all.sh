@@ -16,7 +16,7 @@ done
 
 rm -f "$DATA_FILE"
 
-# 1. Fetching SUM of all container resources per pod
+# 1. Pre-fetching
 echo "Pre-fetching and summing CPU resources..."
 echo "NAMESPACE|POD|USAGE|REQUEST|LIMIT|%_REQ|%_LIMIT" > "$DATA_FILE"
 
@@ -28,80 +28,66 @@ done < <(kubectl get pods -A -o json | jq -r '.items[] |
     ([.spec.containers[].resources.requests.cpu // "0m"] | map(if endswith("m") then .[:-1] | tonumber else . | tonumber * 1000 end) | add | tostring) + " " +
     ([.spec.containers[].resources.limits.cpu // "0m"] | map(if endswith("m") then .[:-1] | tonumber else . | tonumber * 1000 end) | add | tostring)')
 
-# 2. Main Processing
-echo "Processing pod metrics..."
-
+# 2. Processing
 while read -r ns pod usage_m rest; do
     usage=${usage_m%m}
     raw_data=${cpu_data["$ns/$pod"]}
-
-    if [ -z "$raw_data" ]; then continue; fi
-
+    [ -z "$raw_data" ] && continue
     req_ms=$(echo "$raw_data" | cut -d'|' -f1)
     lim_ms=$(echo "$raw_data" | cut -d'|' -f2)
 
-    # Use awk to calculate percentages and format the row with pipes
     echo "$ns $pod $usage $req_ms $lim_ms" | awk '
         {
-            u = $3; r = $4; l = $5;
-            p_req = (r > 0) ? (u / r) * 100 : 0;
-            p_lim = (l > 0) ? (u / l) * 100 : 0;
+            u=$3; r=$4; l=$5;
+            p_req=(r>0)?(u/r)*100:0;
+            p_lim=(l>0)?(u/l)*100:0;
             printf "%s|%s|%sm|%sm|%sm|%.1f%%|%.1f%%\n", $1, $2, u, r, l, p_req, p_lim
         }' >> "$DATA_FILE"
 done < <(kubectl top pods -A --no-headers)
 
-# 3. Print Aligned Table (Sorted)
+# 3. Print Table
 echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
 {
     head -n 1 "$DATA_FILE"
     tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n
 } | column -t -s '|'
 
-# 4. Heavy Load Watchlist (Bulletproof Logic)
+# 4. WATCHLIST (Regex Method)
 echo -e "\n================================================================"
 echo "⚠️  HIGH LOAD WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
 echo "================================================================"
 
-# Using $NF (last field) and gsub to remove anything non-numeric
-HEAVY_COUNT=$(awk -v limit="$HEAVY_THRESHOLD" -F'|' '
-    BEGIN { count = 0 }
-    NR > 1 {
-        val = $NF;
-        gsub(/[^0-9.]/, "", val);
-        if (val != "" && val + 0 > limit) {
-            printf "%-15s %-45s %-10s / %-10s (%s)\n", $1, $2, $3, $5, $NF
-            count++
-        }
-    } END { print count }' "$DATA_FILE" | tail -n 1)
+# This logic reads the file BEFORE column -t touches it
+HEAVY_COUNT=0
+while IFS='|' read -r ns pod usage req lim preq plim; do
+    # Skip header
+    [[ "$ns" == "NAMESPACE" ]] && continue
+
+    # Strip % and convert to float for comparison
+    val=$(echo "$plim" | sed 's/%//g')
+
+    if (( $(echo "$val > $HEAVY_THRESHOLD" | bc -l) )); then
+        printf "%-15s %-45s %-10s / %-10s (%s)\n" "$ns" "$pod" "$usage" "$lim" "$plim"
+        ((HEAVY_COUNT++))
+    fi
+done < "$DATA_FILE"
 
 if [ "$HEAVY_COUNT" -eq 0 ]; then
     echo "  (No pods are currently exceeding $HEAVY_THRESHOLD% of their CPU limit)"
 fi
 
-# 5. Global Summary
+# 5. Summary
 echo -e "\n--- CLUSTER CPU SUMMARY ---"
 awk -F'|' '
-    function to_ms(val) {
-        gsub(/[^0-9.]/, "", val);
-        return val + 0
-    }
-    NR > 1 {
-        total_usage += to_ms($3);
-        total_req   += to_ms($4);
-        total_lim   += to_ms($5);
-    }
+    function to_ms(v) { gsub(/[^0-9.]/, "", v); return v + 0 }
+    NR > 1 { u += to_ms($3); r += to_ms($4); l += to_ms($5) }
     END {
-        if (total_req == 0) {
-            print "No valid CPU request data found.";
-            exit;
-        }
-        waste = total_req - total_usage;
-        printf "Total Requested: %.2f cores\n", total_req/1000;
-        printf "Total Used:      %.2f cores\n", total_usage/1000;
-        printf "Waste:           %.2f cores\n", waste/1000;
-        printf "Efficiency:      %.2f%% (Usage vs Request)\n", (total_usage / total_req) * 100;
-        if (total_lim > 0) printf "Utilization:     %.2f%% (Usage vs Limit)\n", (total_usage / total_lim) * 100;
+        if (r == 0) exit;
+        printf "Total Requested: %.2f cores\n", r/1000;
+        printf "Total Used:      %.2f cores\n", u/1000;
+        printf "Waste:           %.2f cores\n", (r-u)/1000;
+        printf "Efficiency:      %.2f%% (Usage vs Request)\n", (u/r)*100;
+        if (l > 0) printf "Utilization:     %.2f%% (Usage vs Limit)\n", (u/l)*100;
     }' "$DATA_FILE"
 
-# Cleanup
 rm "$DATA_FILE"
