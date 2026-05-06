@@ -52,21 +52,19 @@ echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
     tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n
 } | column -t -s '|'
 
-# 4. WATCHLIST (Regex Method)
+# 4. WATCHLIST (Awk-based numeric check)
 echo -e "\n================================================================"
-echo "⚠️  HIGH LOAD WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
+echo "⚠️  HIGH USAGE WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
 echo "================================================================"
 
-# This logic reads the file BEFORE column -t touches it
 HEAVY_COUNT=0
 while IFS='|' read -r ns pod usage req lim preq plim; do
-    # Skip header
     [[ "$ns" == "NAMESPACE" ]] && continue
 
-    # Strip % and convert to float for comparison
-    val=$(echo "$plim" | sed 's/%//g')
+    # Use awk to handle the decimal comparison to avoid "bc" dependency
+    is_heavy=$(awk -v v="${plim%\%}" -v t="$HEAVY_THRESHOLD" 'BEGIN {print (v > t ? 1 : 0)}')
 
-    if (( $(echo "$val > $HEAVY_THRESHOLD" | bc -l) )); then
+    if [ "$is_heavy" -eq 1 ]; then
         printf "%-15s %-45s %-10s / %-10s (%s)\n" "$ns" "$pod" "$usage" "$lim" "$plim"
         ((HEAVY_COUNT++))
     fi
