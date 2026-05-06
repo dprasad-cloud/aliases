@@ -119,7 +119,7 @@ topnodes90status() {
   rm -f "$tmp"
 }
 
-topnodes95status (){
+topnodes95status() {
   tmp="$(mktemp)" || return 1
   topnodes95 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
