@@ -104,22 +104,22 @@ topnode(){
   rm -f "$tmp_pods" "$tmp_top"
 }
 # Prefer functions over aliases so these work in non-interactive shells too.
-function topnodes90(){
+topnodes_90(){
   kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 90 || $5+0 > 90 || $2 == "<unknown>"'
 }
 
-function topnodes95(){
+topnodes_95(){
   kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 95 || $5+0 > 95 || $2 == "<unknown>"'
 }
 
-function topnodes90status(){
+topnodes_90status(){
   tmp="$(mktemp)" || return 1
   topnodes90 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
   rm -f "$tmp"
 }
 
-function topnodes95status(){
+topnodes_95status(){
   tmp="$(mktemp)" || return 1
   topnodes95 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
