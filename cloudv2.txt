@@ -84,42 +84,42 @@ checkoom() { _run_aliases_script /root/aliases-main/check_oom.sh "$@"; }
 chmod +x /root/aliases-main/check_disk.sh
 checkdisk() { _run_aliases_script /root/aliases-main/check_disk.sh "$@"; }
 
-hmvi () {
-  podexec "$1" vi /opt/tomcat/logs/hm.log
-}
-hmcat () {
-  podexec "$1" cat /opt/tomcat/logs/hm.log
-}
-hmtail () {
-  podexec "$1" tail -f /opt/tomcat/logs/hm.log
-}
+hmvi(){ podexec "$1" vi /opt/tomcat/logs/hm.log; }
+hmcat(){ podexec "$1" cat /opt/tomcat/logs/hm.log; }
+hmtail(){ podexec "$1" tail -f /opt/tomcat/logs/hm.log; }
 
 echo -e "Shortcut for checking resource usage on nodes (ex: topnode ip-10-201-50-219)"
-topnode() {
-  local node=$1
+topnode(){
+  node="$1"
   echo -e "POD_NAME\tCPU\tMEM"
-  join -1 1 -2 1 \
-    <(kubectl get pods -A -o wide | grep "$node" | awk '{print $2}' | sort) \
-    <(kubectl top pods -A --no-headers | awk '{print $2, $3, $4}' | sort) \
-  | column -t | sort -rnk2
+
+  tmp_pods="$(mktemp)" || return 1
+  tmp_top="$(mktemp)" || { rm -f "$tmp_pods"; return 1; }
+
+  kubectl get pods -A -o wide | grep "$node" | awk '{print $2}' | sort > "$tmp_pods"
+  kubectl top pods -A --no-headers | awk '{print $2, $3, $4}' | sort > "$tmp_top"
+
+  join -1 1 -2 1 "$tmp_pods" "$tmp_top" | column -t | sort -rnk2
+
+  rm -f "$tmp_pods" "$tmp_top"
 }
 # Prefer functions over aliases so these work in non-interactive shells too.
-topnodes90() {
+function topnodes90(){
   kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 90 || $5+0 > 90 || $2 == "<unknown>"'
 }
 
-topnodes95() {
+function topnodes95(){
   kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 95 || $5+0 > 95 || $2 == "<unknown>"'
 }
 
-topnodes90status() {
+function topnodes90status(){
   tmp="$(mktemp)" || return 1
   topnodes90 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
   rm -f "$tmp"
 }
 
-topnodes95status() {
+function topnodes95status(){
   tmp="$(mktemp)" || return 1
   topnodes95 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
@@ -147,7 +147,7 @@ loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
 
 ups () {
     # Define the target file name inside the extracted directory
-    local file="cloudv2.txt"
+    file="cloudv2.txt"
 
     # 1. Download the repository archive and save it to /root/main.zip
     wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip
