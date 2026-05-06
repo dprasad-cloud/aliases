@@ -115,11 +115,20 @@ topnodes95() {
 }
 
 topnodes90status() {
-  "$(_kcmd)" get nodes | grep -Ff <(topnodes90 | awk '{print $1}')
+  # Avoid process substitution (<(...)) so this still works when the shell is not bash.
+  local tmp
+  tmp="$(mktemp)" || return 1
+  topnodes90 | awk '{print $1}' > "$tmp"
+  "$(_kcmd)" get nodes | grep -Ff "$tmp"
+  rm -f "$tmp"
 }
 
 topnodes95status() {
-  "$(_kcmd)" get nodes | grep -Ff <(topnodes95 | awk '{print $1}')
+  local tmp
+  tmp="$(mktemp)" || return 1
+  topnodes95 | awk '{print $1}' > "$tmp"
+  "$(_kcmd)" get nodes | grep -Ff "$tmp"
+  rm -f "$tmp"
 }
 
 _kcmd() {
