@@ -104,24 +104,31 @@ topnode(){
   rm -f "$tmp_pods" "$tmp_top"
 }
 # Prefer functions over aliases so these work in non-interactive shells too.
-topnodes_90(){
-  kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 90 || $5+0 > 90 || $2 == "<unknown>"'
+#
+# Usage:
+#   topnodes 90
+#   topnodes 95
+#   topnodes_status 90
+#   topnodes_status 95
+function topnodes(){
+  threshold="$1"
+  if [ -z "$threshold" ]; then
+    echo "Usage: topnodes <cpu_threshold_percent>" >&2
+    return 2
+  fi
+
+  kubectl top nodes | awk -v thr="$threshold" '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= thr || $5+0 > thr || $2 == "<unknown>"'
 }
 
-topnodes_95(){
-  kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 95 || $5+0 > 95 || $2 == "<unknown>"'
-}
+function topnodes_status(){
+  threshold="$1"
+  if [ -z "$threshold" ]; then
+    echo "Usage: topnodes_status <cpu_threshold_percent>" >&2
+    return 2
+  fi
 
-topnodes_90status(){
   tmp="$(mktemp)" || return 1
-  topnodes90 | awk '{print $1}' > "$tmp"
-  kubectl get nodes | grep -Ff "$tmp"
-  rm -f "$tmp"
-}
-
-topnodes_95status(){
-  tmp="$(mktemp)" || return 1
-  topnodes95 | awk '{print $1}' > "$tmp"
+  topnodes "$threshold" | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
   rm -f "$tmp"
 }
