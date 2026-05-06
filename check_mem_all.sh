@@ -2,7 +2,12 @@
 
 # Configuration
 THRESHOLD=70
-DATA_FILE="/tmp/mem-data.txt"
+# Create a unique random temp file
+DATA_FILE=$(mktemp /tmp/mem-scan.XXXXXX)
+
+# Ensure the temp file is deleted on exit
+trap 'rm -f "$DATA_FILE"' EXIT
+
 SORT_COL=7  # Default to %_LIMIT (column 7)
 SORT_NAME="%_LIMIT"
 
@@ -20,8 +25,6 @@ while getopts "r" opt; do
       ;;
   esac
 done
-
-rm -f $DATA_FILE
 
 echo "Scanning all namespaces for Memory Usage..."
 echo "NAMESPACE|POD|USAGE|REQUEST|LIMIT|%_REQ|%_LIMIT" > "$DATA_FILE"
@@ -62,19 +65,21 @@ echo -e "\n================================================================"
 echo "⚠️  HIGH USAGE WATCHLIST (>$THRESHOLD% OF LIMIT)"
 echo "================================================================"
 
+# Using the robust logic that strips % and targets the last field
 awk -v limit="$THRESHOLD" -F'|' '
     NR > 1 {
-        split($7, a, "%");
-        if (a[1] > limit) {
-            printf "%-15s %-45s %-10s / %-10s (%s)\n", $1, $2, $3, $5, $7
+        val = $NF;
+        gsub(/[^0-9.]/, "", val);
+        if (val != "" && val + 0 > limit) {
+            printf "%-15s %-45s %-10s / %-10s (%s)\n", $1, $2, $3, $5, $NF
         }
     }' "$DATA_FILE"
 
 echo -e "\n--- Global Memory Summary ---"
 awk -F'|' '
     function to_mi(val) {
+        gsub(/[^0-9.]/, "", val); # Clean units for summary math
         if (val ~ /[Gg]i?/) { sub(/[Gg]i?/, "", val); return val * 1024 }
-        if (val ~ /[Mm]i?/) { sub(/[Mm]i?/, "", val); return val }
         return val + 0
     }
     NR > 1 {
@@ -90,6 +95,3 @@ awk -F'|' '
         if (total_req > 0) printf "Efficiency:      %.2f%% (Usage vs Request)\n", (total_usage / total_req) * 100;
         printf "Utilization:     %.2f%% (Usage vs Limit)\n", (total_usage / total_lim) * 100;
     }' "$DATA_FILE"
-
-# Cleanup
-rm "$DATA_FILE"
