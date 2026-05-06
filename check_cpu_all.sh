@@ -1,9 +1,31 @@
 #!/bin/bash
 
-HEAVY_THRESHOLD=0.50
+# Configuration
+HEAVY_THRESHOLD=50  # percentage
+DATA_FILE="/tmp/cpu-data.txt"
+SORT_COL=7          # Default to %_LIMIT (column 7)
+SORT_NAME="%_LIMIT"
 
-# 1. Fetching SUM of all container requests/limits per pod
-echo "Pre-fetching and summing container resources..."
+# Parse options
+while getopts "r" opt; do
+  case $opt in
+    r)
+      SORT_COL=6
+      SORT_NAME="%_REQUEST"
+      ;;
+    *)
+      echo "Usage: $0 [-r]"
+      echo "  -r: Sort by %_REQUEST (Default is %_LIMIT)"
+      exit 1
+      ;;
+  esac
+done
+
+rm -f $DATA_FILE
+
+# 1. Fetching SUM of all container resources per pod
+echo "Pre-fetching and summing CPU resources..."
+echo "NAMESPACE|POD|USAGE|REQUEST|LIMIT|%_REQ|%_LIMIT" > "$DATA_FILE"
 
 declare -A cpu_data
 while read -r ns pod req_sum lim_sum; do
@@ -14,48 +36,76 @@ done < <(kubectl get pods -A -o json | jq -r '.items[] |
     ([.spec.containers[].resources.limits.cpu // "0m"] | map(if endswith("m") then .[:-1] | tonumber else . | tonumber * 1000 end) | add | tostring)')
 
 # 2. Main Processing
-TOTAL_U=0
-TOTAL_R=0
-HEAVY_COUNT=0
+echo "Processing pod metrics..."
 
-echo -e "\nScanning for High Load Pods (> 50% Limit)..."
-
-while read -r ns pod usage_m mem; do
+while read -r ns pod usage_m rest; do
     usage=${usage_m%m}
     raw_data=${cpu_data["$ns/$pod"]}
+
+    if [ -z "$raw_data" ]; then continue; fi
 
     req_ms=$(echo "$raw_data" | cut -d'|' -f1)
     lim_ms=$(echo "$raw_data" | cut -d'|' -f2)
 
-    TOTAL_U=$((TOTAL_U + usage))
-    TOTAL_R=$((TOTAL_R + req_ms))
-
-    # Heavy Load Check
-    if [ "$lim_ms" -gt 0 ]; then
-        is_heavy=$(awk "BEGIN {if ($usage/$lim_ms > $HEAVY_THRESHOLD) print 1; else print 0}")
-        if [ "$is_heavy" -eq 1 ]; then
-            lim_pct=$(awk "BEGIN {printf \"%.2f\", ($usage/$lim_ms)*100}")
-            echo "  [!] HEAVY LOAD: $ns/$pod ($usage_m used of ${lim_ms}m limit - $lim_pct%)"
-            ((HEAVY_COUNT++))
-        fi
-    fi
+    # Calculate percentages using awk
+    echo "$ns $pod $usage $req_ms $lim_ms" | awk '
+        {
+            u = $3; r = $4; l = $5;
+            p_req = (r > 0) ? (u / r) * 100 : 0;
+            p_lim = (l > 0) ? (u / l) * 100 : 0;
+            printf "%s|%s|%sm|%sm|%sm|%.1f%%|%.1f%%\n", $1, $2, u, r, l, p_req, p_lim
+        }' >> "$DATA_FILE"
 done < <(kubectl top pods -A --no-headers)
 
-# 3. Handle Empty Heavy Load List
+# 3. Print Aligned Table (Sorted)
+echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
+{
+    head -n 1 "$DATA_FILE"
+    tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n
+} | column -t -s '|'
+
+# 4. Heavy Load Watchlist
+echo -e "\n================================================================"
+echo "⚠️  HIGH LOAD WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
+echo "================================================================"
+
+HEAVY_COUNT=$(awk -v limit="$HEAVY_THRESHOLD" -F'|' '
+    NR > 1 {
+        split($7, a, "%");
+        if (a[1] > limit) {
+            printf "%-15s %-45s %-10s / %-10s (%s)\n", $1, $2, $3, $5, $7
+            count++
+        }
+    } END { print count+0 }' "$DATA_FILE" | tail -n 1)
+
 if [ "$HEAVY_COUNT" -eq 0 ]; then
-    echo "  (No pods are currently exceeding 50% of their CPU limit)"
+    echo "  (No pods are currently exceeding $HEAVY_THRESHOLD% of their CPU limit)"
 fi
 
-# 4. Final Summary
-if [ "$TOTAL_R" -gt 0 ]; then
-    WASTE=$((TOTAL_R - TOTAL_U))
-    EFFICIENCY=$(awk "BEGIN {printf \"%.2f\", ($TOTAL_U / $TOTAL_R) * 100}")
+# 5. Global Summary
+echo -e "\n--- CLUSTER CPU SUMMARY ---"
+awk -F'|' '
+    function to_ms(val) {
+        sub(/m/, "", val);
+        return val + 0
+    }
+    NR > 1 {
+        total_usage += to_ms($3);
+        total_req   += to_ms($4);
+        total_lim   += to_ms($5);
+    }
+    END {
+        if (total_req == 0) {
+            print "No valid CPU request data found.";
+            exit;
+        }
+        waste = total_req - total_usage;
+        printf "Total Requested: %.2f cores\n", total_req/1000;
+        printf "Total Used:      %.2f cores\n", total_usage/1000;
+        printf "Waste:           %.2f cores\n", waste/1000;
+        printf "Efficiency:      %.2f%% (Usage vs Request)\n", (total_usage / total_req) * 100;
+        if (total_lim > 0) printf "Utilization:     %.2f%% (Usage vs Limit)\n", (total_usage / total_lim) * 100;
+    }' "$DATA_FILE"
 
-    echo -e "\n--- CLUSTER SUMMARY ---"
-    printf "Total Requested: %.2f cores\n" $(awk "BEGIN {print $TOTAL_R/1000}")
-    printf "Total Used:      %.2f cores\n" $(awk "BEGIN {print $TOTAL_U/1000}")
-    printf "Waste:           %.2f cores\n" $(awk "BEGIN {print $WASTE/1000}")
-    printf "Efficiency:      %s%%\n" "$EFFICIENCY"
-else
-    echo -e "\nNo valid CPU request data found. Check if pods have 'requests' defined."
-fi
+# Cleanup
+rm "$DATA_FILE"

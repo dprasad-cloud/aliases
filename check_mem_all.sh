@@ -3,6 +3,24 @@
 # Configuration
 THRESHOLD=70
 DATA_FILE="/tmp/mem-data.txt"
+SORT_COL=7  # Default to %_LIMIT (column 7)
+SORT_NAME="%_LIMIT"
+
+# Parse options
+while getopts "r" opt; do
+  case $opt in
+    r)
+      SORT_COL=6
+      SORT_NAME="%_REQUEST"
+      ;;
+    *)
+      echo "Usage: $0 [-r]"
+      echo "  -r: Sort by %_REQUEST (Default is %_LIMIT)"
+      exit 1
+      ;;
+  esac
+done
+
 rm -f $DATA_FILE
 
 echo "Scanning all namespaces for Memory Usage..."
@@ -20,11 +38,8 @@ kubectl top pods -A --no-headers | while read -r ns pod cpu usage_raw; do
     echo "$ns $pod $usage_raw $res" | awk '
         function to_mi(val) {
             if (val == "" || val == "0" || val == "<none>") return 0
-            # Matches G, Gi, g, gi
             if (val ~ /[Gg]i?/) { sub(/[Gg]i?/, "", val); return val * 1024 }
-            # Matches M, Mi, m, mi
             if (val ~ /[Mm]i?/) { sub(/[Mm]i?/, "", val); return val }
-            # Matches K, Ki, k, ki
             if (val ~ /[Kk]i?/) { sub(/[Kk]i?/, "", val); return val / 1024 }
             return val + 0
         }
@@ -36,8 +51,12 @@ kubectl top pods -A --no-headers | while read -r ns pod cpu usage_raw; do
         }' >> "$DATA_FILE"
 done
 
-# Print full aligned table
-column -t -s '|' "$DATA_FILE"
+# Print full aligned table - Sorted by chosen column ascending
+echo -e "\n--- Memory Usage Table (Sorted by $SORT_NAME Ascending) ---"
+{
+    head -n 1 "$DATA_FILE"
+    tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n
+} | column -t -s '|'
 
 echo -e "\n================================================================"
 echo "⚠️  HIGH USAGE WATCHLIST (>$THRESHOLD% OF LIMIT)"
