@@ -107,27 +107,27 @@ topnode() {
 topnodes90() {
   # Print nodes with >=90% CPU or >90% MEM, plus header/blank lines and unknown metrics.
   # Uses `k` if present (kubectl alias), otherwise falls back to `kubectl`.
-  local kcmd
-  if command -v k >/dev/null 2>&1; then kcmd=k; else kcmd=kubectl; fi
-  "$kcmd" top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 90 || $5+0 > 90 || $2 == "<unknown>"'
+  "$(_kcmd)" top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 90 || $5+0 > 90 || $2 == "<unknown>"'
 }
 
 topnodes95() {
-  local kcmd
-  if command -v k >/dev/null 2>&1; then kcmd=k; else kcmd=kubectl; fi
-  "$kcmd" top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 95 || $5+0 > 95 || $2 == "<unknown>"'
+  "$(_kcmd)" top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 95 || $5+0 > 95 || $2 == "<unknown>"'
 }
 
 topnodes90status() {
-  local kcmd
-  if command -v k >/dev/null 2>&1; then kcmd=k; else kcmd=kubectl; fi
-  "$kcmd" get nodes | grep -Ff <(topnodes90 | awk '{print $1}')
+  "$(_kcmd)" get nodes | grep -Ff <(topnodes90 | awk '{print $1}')
 }
 
 topnodes95status() {
-  local kcmd
-  if command -v k >/dev/null 2>&1; then kcmd=k; else kcmd=kubectl; fi
-  "$kcmd" get nodes | grep -Ff <(topnodes95 | awk '{print $1}')
+  "$(_kcmd)" get nodes | grep -Ff <(topnodes95 | awk '{print $1}')
+}
+
+_kcmd() {
+  if command -v k >/dev/null 2>&1; then
+    echo k
+  else
+    echo kubectl
+  fi
 }
 
 # Commonly used fpod alias for finding pods in error states or with high restart counts
