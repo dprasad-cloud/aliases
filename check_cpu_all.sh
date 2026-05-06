@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Configuration
-HEAVY_THRESHOLD=50  # percentage
+HEAVY_THRESHOLD=50  # Set to 50 for 50%
 DATA_FILE="/tmp/cpu-data.txt"
 SORT_COL=7          # Default to %_LIMIT (column 7)
 SORT_NAME="%_LIMIT"
@@ -47,7 +47,7 @@ while read -r ns pod usage_m rest; do
     req_ms=$(echo "$raw_data" | cut -d'|' -f1)
     lim_ms=$(echo "$raw_data" | cut -d'|' -f2)
 
-    # Calculate percentages using awk
+    # Use awk to calculate percentages and format the row
     echo "$ns $pod $usage $req_ms $lim_ms" | awk '
         {
             u = $3; r = $4; l = $5;
@@ -64,19 +64,22 @@ echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
     tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n
 } | column -t -s '|'
 
-# 4. Heavy Load Watchlist
+# 4. Heavy Load Watchlist (Corrected Comparison)
 echo -e "\n================================================================"
 echo "⚠️  HIGH LOAD WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
 echo "================================================================"
 
+# Using sub(/%/, "", val) ensures we compare numbers, not strings
 HEAVY_COUNT=$(awk -v limit="$HEAVY_THRESHOLD" -F'|' '
+    BEGIN { count = 0 }
     NR > 1 {
-        split($7, a, "%");
-        if (a[1] > limit) {
+        val = $7;
+        sub(/%/, "", val);
+        if (val + 0 > limit) {
             printf "%-15s %-45s %-10s / %-10s (%s)\n", $1, $2, $3, $5, $7
             count++
         }
-    } END { print count+0 }' "$DATA_FILE" | tail -n 1)
+    } END { print count }' "$DATA_FILE" | tail -n 1)
 
 if [ "$HEAVY_COUNT" -eq 0 ]; then
     echo "  (No pods are currently exceeding $HEAVY_THRESHOLD% of their CPU limit)"
