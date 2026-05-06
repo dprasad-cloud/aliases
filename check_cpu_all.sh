@@ -2,7 +2,12 @@
 
 # Configuration
 HEAVY_THRESHOLD=50
-DATA_FILE="/tmp/cpu-data.txt"
+# Create a unique random temp file
+DATA_FILE=$(mktemp /tmp/cpu-scan.XXXXXX)
+
+# Ensure the temp file is deleted on exit (even if interrupted)
+trap 'rm -f "$DATA_FILE"' EXIT
+
 SORT_COL=7
 SORT_NAME="%_LIMIT"
 
@@ -13,8 +18,6 @@ while getopts "r" opt; do
     *) echo "Usage: $0 [-r]"; exit 1 ;;
   esac
 done
-
-rm -f "$DATA_FILE"
 
 # 1. Pre-fetching
 echo "Pre-fetching and summing CPU resources..."
@@ -52,7 +55,7 @@ echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
     tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n
 } | column -t -s '|'
 
-# 4. WATCHLIST (Awk-based numeric check)
+# 4. WATCHLIST
 echo -e "\n================================================================"
 echo "⚠️  HIGH USAGE WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
 echo "================================================================"
@@ -61,7 +64,7 @@ HEAVY_COUNT=0
 while IFS='|' read -r ns pod usage req lim preq plim; do
     [[ "$ns" == "NAMESPACE" ]] && continue
 
-    # Use awk to handle the decimal comparison to avoid "bc" dependency
+    # Numeric check using awk
     is_heavy=$(awk -v v="${plim%\%}" -v t="$HEAVY_THRESHOLD" 'BEGIN {print (v > t ? 1 : 0)}')
 
     if [ "$is_heavy" -eq 1 ]; then
@@ -87,5 +90,3 @@ awk -F'|' '
         printf "Efficiency:      %.2f%% (Usage vs Request)\n", (u/r)*100;
         if (l > 0) printf "Utilization:     %.2f%% (Usage vs Limit)\n", (u/l)*100;
     }' "$DATA_FILE"
-
-rm "$DATA_FILE"
