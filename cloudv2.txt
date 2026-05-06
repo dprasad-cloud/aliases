@@ -2,6 +2,10 @@
 # sudo yum install unzip # if unzip is not installed
 # file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file;
 
+# To suppress the output of source command:
+# source /root/aliases-main/cloudv2.txt >/dev/null
+
+#Begin source
 for _a in desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
   unalias "$_a" 2>/dev/null || true
 done
