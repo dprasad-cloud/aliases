@@ -104,22 +104,22 @@ topnode() {
   | column -t | sort -rnk2
 }
 # Prefer functions over aliases so these work in non-interactive shells too.
-topnodes90(){
+topnodes90() {
   kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 90 || $5+0 > 90 || $2 == "<unknown>"'
 }
 
-topnodes95(){
+topnodes95() {
   kubectl top nodes | awk '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= 95 || $5+0 > 95 || $2 == "<unknown>"'
 }
 
-topnodes90status(){
+topnodes90status() {
   tmp="$(mktemp)" || return 1
   topnodes90 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
   rm -f "$tmp"
 }
 
-topnodes95status(){
+topnodes95status (){
   tmp="$(mktemp)" || return 1
   topnodes95 | awk '{print $1}' > "$tmp"
   kubectl get nodes | grep -Ff "$tmp"
