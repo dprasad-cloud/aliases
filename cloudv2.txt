@@ -3,81 +3,86 @@
 # file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file;
 
 chmod +x /root/aliases-main/desc.sh
-alias desc='bash /root/aliases-main/desc.sh'
-
-chmod +x /root/aliases-main/cont.sh
-alias cont='bash /root/aliases-main/cont.sh'
-
-chmod +x /root/aliases-main/image.sh
-alias image='bash /root/aliases-main/image.sh'
-
-chmod +x /root/aliases-main/desc-ing.sh
-alias desc-ing='bash /root/aliases-main/desc-ing.sh'
-
-chmod +x /root/aliases-main/configmap.sh
-alias cm='bash /root/aliases-main/configmap.sh'
-
-chmod +x /root/aliases-main/findcm.sh
-alias fcm='bash /root/aliases-main/findcm.sh'
-
-chmod +x /root/aliases-main/findpod.sh
-alias fpod='bash /root/aliases-main/findpod.sh'
-
-chmod +x /root/aliases-main/delpod.sh
-alias delpod='bash /root/aliases-main/delpod.sh'
-
-chmod +x /root/aliases-main/finding.sh
-alias fing='bash /root/aliases-main/finding.sh'
-
-chmod +x /root/aliases-main/findsvc.sh
-alias fsvc='bash /root/aliases-main/findsvc.sh'
-
-chmod +x /root/aliases-main/findpvc.sh
-alias fpvc='bash /root/aliases-main/findpvc.sh'
-
-chmod +x /root/aliases-main/logs.sh
-alias logs='bash /root/aliases-main/logs.sh'
-
-chmod +x /root/aliases-main/logsc.sh
-alias logsc='bash /root/aliases-main/logsc.sh'
-
-chmod +x /root/aliases-main/logsf.sh
-alias logsf='bash /root/aliases-main/logsf.sh'
-
-chmod +x /root/aliases-main/logsfc.sh
-alias logsfc='bash /root/aliases-main/logsfc.sh'
-
-chmod +x /root/aliases-main/podbash.sh
-alias podbash='bash /root/aliases-main/podbash.sh'
-
-chmod +x /root/aliases-main/podsh.sh
-alias podsh='bash /root/aliases-main/podsh.sh'
-
-chmod +x /root/aliases-main/podexec.sh
-alias podexec='bash /root/aliases-main/podexec.sh'
-
-chmod +x /root/aliases-main/kedit.sh
-alias kedit='bash /root/aliases-main/kedit.sh'
-
-chmod +x /root/aliases-main/check_usage.sh
-checkusage() {
-  bash /root/aliases-main/check_usage.sh "$@"
+_run_aliases_script() {
+  # Usage: _run_aliases_script /path/to/script.sh [args...]
+  local script="$1"; shift
+  bash "$script" "$@"
 }
 
+desc() { _run_aliases_script /root/aliases-main/desc.sh "$@"; }
+
+chmod +x /root/aliases-main/cont.sh
+cont() { _run_aliases_script /root/aliases-main/cont.sh "$@"; }
+
+chmod +x /root/aliases-main/image.sh
+image() { _run_aliases_script /root/aliases-main/image.sh "$@"; }
+
+chmod +x /root/aliases-main/desc-ing.sh
+desc_ing() { _run_aliases_script /root/aliases-main/desc-ing.sh "$@"; }
+alias desc-ing='desc_ing'
+
+chmod +x /root/aliases-main/configmap.sh
+cm() { _run_aliases_script /root/aliases-main/configmap.sh "$@"; }
+
+chmod +x /root/aliases-main/findcm.sh
+fcm() { _run_aliases_script /root/aliases-main/findcm.sh "$@"; }
+
+chmod +x /root/aliases-main/findpod.sh
+fpod() { _run_aliases_script /root/aliases-main/findpod.sh "$@"; }
+
+chmod +x /root/aliases-main/delpod.sh
+delpod() { _run_aliases_script /root/aliases-main/delpod.sh "$@"; }
+
+chmod +x /root/aliases-main/finding.sh
+fing() { _run_aliases_script /root/aliases-main/finding.sh "$@"; }
+
+chmod +x /root/aliases-main/findsvc.sh
+fsvc() { _run_aliases_script /root/aliases-main/findsvc.sh "$@"; }
+
+chmod +x /root/aliases-main/findpvc.sh
+fpvc() { _run_aliases_script /root/aliases-main/findpvc.sh "$@"; }
+
+chmod +x /root/aliases-main/logs.sh
+logs() { _run_aliases_script /root/aliases-main/logs.sh "$@"; }
+
+chmod +x /root/aliases-main/logsc.sh
+logsc() { _run_aliases_script /root/aliases-main/logsc.sh "$@"; }
+
+chmod +x /root/aliases-main/logsf.sh
+logsf() { _run_aliases_script /root/aliases-main/logsf.sh "$@"; }
+
+chmod +x /root/aliases-main/logsfc.sh
+logsfc() { _run_aliases_script /root/aliases-main/logsfc.sh "$@"; }
+
+chmod +x /root/aliases-main/podbash.sh
+podbash() { _run_aliases_script /root/aliases-main/podbash.sh "$@"; }
+
+chmod +x /root/aliases-main/podsh.sh
+podsh() { _run_aliases_script /root/aliases-main/podsh.sh "$@"; }
+
+chmod +x /root/aliases-main/podexec.sh
+podexec() { _run_aliases_script /root/aliases-main/podexec.sh "$@"; }
+
+chmod +x /root/aliases-main/kedit.sh
+kedit() { _run_aliases_script /root/aliases-main/kedit.sh "$@"; }
+
+chmod +x /root/aliases-main/check_usage.sh
+checkusage() { _run_aliases_script /root/aliases-main/check_usage.sh "$@"; }
+
 chmod +x /root/aliases-main/check_usage_bycpu.sh
-alias checkusagebycpu='bash /root/aliases-main/check_usage_bycpu.sh'
+checkusagebycpu() { _run_aliases_script /root/aliases-main/check_usage_bycpu.sh "$@"; }
 
 chmod +x /root/aliases-main/check_mem_all.sh
-alias checkmem='bash /root/aliases-main/check_mem_all.sh'
+checkmem() { _run_aliases_script /root/aliases-main/check_mem_all.sh "$@"; }
 
 chmod +x /root/aliases-main/check_cpu_all.sh
-alias checkcpu='bash /root/aliases-main/check_cpu_all.sh'
+checkcpu() { _run_aliases_script /root/aliases-main/check_cpu_all.sh "$@"; }
 
 chmod +x /root/aliases-main/check_oom.sh
-alias checkoom='bash /root/aliases-main/check_oom.sh'
+checkoom() { _run_aliases_script /root/aliases-main/check_oom.sh "$@"; }
 
 chmod +x /root/aliases-main/check_disk.sh
-alias checkdisk='bash /root/aliases-main/check_disk.sh'
+checkdisk() { _run_aliases_script /root/aliases-main/check_disk.sh "$@"; }
 
 hmvi () {
   podexec "$1" vi /opt/tomcat/logs/hm.log
