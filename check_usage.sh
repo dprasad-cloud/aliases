@@ -20,8 +20,10 @@ function to_mi(val) {
 }
 
 function to_m(val) {
+   # Normalize to millicores
    if (val ~ /m/) { sub(/m/, "", val); return val + 0 }
-   if (val == "" || val == " " || val == "0" || val == "-") return 0;
+   if (val == "" || val == " " || val == "0" || val == "-" || val == "<nil>") return 0;
+   # If no "m" suffix, Kubernetes treats it as whole cores (e.g., "2" = 2000m)
    return val * 1000
 }
 
@@ -61,19 +63,18 @@ NR==FNR {
    display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
 
    time_ago = how_long_ago(latest_ts);
-   if (total_restarts > 0) {
-       restart_info = (time_ago != "") ? time_ago " (" total_restarts ")" : "(" total_restarts ")";
-   } else {
-       restart_info = "-";
-   }
+   restart_info = (total_restarts > 0) ? ((time_ago != "") ? time_ago " (" total_restarts ")" : "(" total_restarts ")") : "-";
 
-   # Calculate Mem % for sorting
+   # Calculate Percentages
+   cp_req = (rc_val > 0) ? int((uc / rc_val) * 100) : 0;
+   cp_lim = (lc_val > 0) ? int((uc / lc_val) * 100) : 0;
+   mp_req = (mr_val > 0) ? int((um / mr_val) * 100) : 0;
    mp_lim = (ml_val > 0) ? int((um / ml_val) * 100) : 0;
 
    # We print mp_lim as the first field so sort -rn works, then cut it out
-   printf "%03d|%-12s|%-27s|C: %-5s %-10s %-15s|M: %-7s %-12s %-15s|%s\n",
-          mp_lim, $1, display_pod, u_cpu[$1$2], $3"/"$4, sprintf("(%3d%%/%3d%%)", (rc_val>0?uc/rc_val*100:0), (lc_val>0?uc/lc_val*100:0)),
-          u_mem[$1$2], $5"/"$6, sprintf("(%3d%%/%3d%%)", (mr_val>0?um/mr_val*100:0), mp_lim "%"), restart_info
+   printf "%03d|%-12s|%-27s|C: %-6s %-12s %-15s|M: %-7s %-12s %-15s|%s\n",
+          mp_lim, $1, display_pod, u_cpu[$1$2], $3"/"$4, sprintf("(%3d%%/%3d%%)", cp_req, cp_lim),
+          u_mem[$1$2], $5"/"$6, sprintf("(%3d%%/%3d%%)", mp_req, mp_lim "%"), restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | [
       .metadata.namespace,
