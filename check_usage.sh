@@ -19,11 +19,12 @@ function to_mi(val) {
 }
 
 function to_m(val) {
-   # Convert to string and clean
    v = val "";
-   if (v ~ /m/) { sub(/m/, "", v); return v + 0 }
    if (v == "" || v == "0" || v == "-" || v == "<nil>") return 0;
-   # If no "m", assume whole cores and convert to millicores
+   # If it has an "m", just strip it and return the number
+   if (v ~ /m/) { sub(/m/, "", v); return v + 0 }
+   # If no "m", it is either a whole number (2) or decimal (0.5).
+   # Both represent Cores and need to be multiplied by 1000.
    return v * 1000
 }
 
@@ -52,9 +53,13 @@ NR==FNR {
 
 # Source 2: kubectl get
 ($1$2) in u_cpu {
-   uc = to_m(u_cpu[$1$2]); um = to_mi(u_mem[$1$2]);
-   rc_val = to_m($3); lc_val = to_m($4);
-   mr_val = to_mi($5); ml_val = to_mi($6);
+   uc = to_m(u_cpu[$1$2]);
+   um = to_mi(u_mem[$1$2]);
+
+   rc_val = to_m($3);
+   lc_val = to_m($4);
+   mr_val = to_mi($5);
+   ml_val = to_mi($6);
 
    total_restarts = $7;
    latest_ts = $8;
@@ -78,10 +83,10 @@ NR==FNR {
    <(kubectl get pods -A -o json | jq -r '.items[] | [
       .metadata.namespace,
       .metadata.name,
-      (.spec.containers[0].resources.requests.cpu // "-" | tostring),
-      (.spec.containers[0].resources.limits.cpu // "-" | tostring),
-      (.spec.containers[0].resources.requests.memory // "-" | tostring),
-      (.spec.containers[0].resources.limits.memory // "-" | tostring),
+      (.spec.containers[0].resources.requests.cpu // "0" | tostring),
+      (.spec.containers[0].resources.limits.cpu // "0" | tostring),
+      (.spec.containers[0].resources.requests.memory // "0" | tostring),
+      (.spec.containers[0].resources.limits.memory // "0" | tostring),
       (.status.containerStatuses[0].restartCount // "0" | tostring),
       (.status.containerStatuses[0].lastState.terminated.finishedAt // "0" | tostring)
    ] | @tsv') \
