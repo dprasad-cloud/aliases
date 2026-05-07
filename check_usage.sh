@@ -21,11 +21,16 @@ function to_mi(val) {
 function to_m(val) {
    v = val "";
    if (v == "" || v == "0" || v == "-" || v == "<nil>") return 0;
-   # If it has an "m", just strip it and return the number
    if (v ~ /m/) { sub(/m/, "", v); return v + 0 }
-   # If no "m", it is either a whole number (2) or decimal (0.5).
-   # Both represent Cores and need to be multiplied by 1000.
-   return v * 1000
+
+   # If no "m", check if it looks like whole cores or millicores.
+   # Kubernetes does not allow raw numbers > 10 to represent cores in requests/limits usually.
+   # If v is small (e.g. 2 or 0.5), it is Cores -> multiply by 1000.
+   # If v is large (e.g. 2500), it is likely already millicores from a previous conversion.
+   if (v + 0 < 50) {
+       return v * 1000
+   }
+   return v + 0
 }
 
 function how_long_ago(ts) {
