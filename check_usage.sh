@@ -1,5 +1,4 @@
 #!/bin/bash
-
 FILTER=$1
 NOW=$(date +%s)
 
@@ -40,59 +39,49 @@ function how_long_ago(ts) {
     return int(diff/86400) "d ago";
 }
 
-# Source 1: kubectl top
 NR==FNR {
     split($0, a, /[[:space:]]+/);
     u_cpu[a[1]a[2]]=a[3]; u_mem[a[1]a[2]]=a[4];
     next
 }
 
-# Internal Filtering
 (pattern != "." && $0 !~ pattern) { next }
 
-# Source 2: kubectl get (Aggregated & Running only)
 ($1$2) in u_cpu {
    uc = to_m(u_cpu[$1$2]);
    um = to_mi(u_mem[$1$2]);
-
    rc_val = to_m($3); lc_val = to_m($4);
    mr_val = to_mi($5); ml_val = to_mi($6);
 
-   total_restarts = $7;
-   latest_ts = $8;
-
-   p_name = $2;
-   display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
-
-   time_ago = how_long_ago(latest_ts);
-   restart_info = (total_restarts > 0) ? ((time_ago != "") ? time_ago " (" total_restarts ")" : "(" total_restarts ")") : "-";
-
-   # Calculate Percentages with floating point
    cp_req = (rc_val > 0) ? (uc / rc_val) * 100 : 0;
    cp_lim = (lc_val > 0) ? (uc / lc_val) * 100 : 0;
    mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
    mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
 
-   cpu_rl = $3 "/" $4;
-   mem_rl = $5 "/" $6;
+   p_name = $2;
+   display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
+
+   time_ago = how_long_ago($8);
+   restart_info = ($7 > 0) ? ((time_ago != "") ? time_ago " (" $7 ")" : "(" $7 ")") : "-";
 
    cpu_perc = sprintf("(%3.1f%% / %3.1f%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
 
-   # Sorting by mp_req (Requested Memory %)
+   # Primary Sort: CPU Requested % (Change to mp_req for memory script)
    printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%s\n",
-          mp_req, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
+          cp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cpu_perc, u_mem[$1$2], $5"/"$6, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
-      def to_ms: if . == null then 0 elif (tostring | endswith("m")) then (tostring[:-1] | tonumber) else (tostring | tonumber * 1000) end;
-      def to_mib: if . == null then 0 elif (tostring | endswith("Ki")) then (tostring[:-2] | tonumber / 1024) elif (tostring | endswith("Mi")) then (tostring[:-2] | tonumber) elif (tostring | endswith("Gi")) then (tostring[:-2] | tonumber * 1024) else (tostring | tonumber / 1024 / 1024) end;
+      def clean: if . == null then "0" else tostring end;
+      def to_ms: clean | if endswith("m") then .[:-1] | tonumber elif contains(".") or (tonumber < 50) then tonumber * 1000 else tonumber end;
+      def to_mib: clean | if endswith("Ki") then .[:-2] | tonumber / 1024 elif endswith("Mi") then .[:-2] | tonumber elif endswith("Gi") then .[:-2] | tonumber * 1024 else tonumber / 1024 / 1024 end;
       [
          .metadata.namespace,
          .metadata.name,
-         ([.spec.containers[].resources.requests.cpu // "0m"] | map(to_ms) | add | tostring + "m"),
-         ([.spec.containers[].resources.limits.cpu // "0m"] | map(to_ms) | add | tostring + "m"),
-         ([.spec.containers[].resources.requests.memory // "0Mi"] | map(to_mib) | add | tostring + "Mi"),
-         ([.spec.containers[].resources.limits.memory // "0Mi"] | map(to_mib) | add | tostring + "Mi"),
+         ([.spec.containers[].resources.requests.cpu // "0"] | map(to_ms) | add | tostring + "m"),
+         ([.spec.containers[].resources.limits.cpu // "0"] | map(to_ms) | add | tostring + "m"),
+         ([.spec.containers[].resources.requests.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
+         ([.spec.containers[].resources.limits.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
          ([.status.containerStatuses[].restartCount // 0] | add | tostring),
          ([.status.containerStatuses[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
       ] | @tsv') \
