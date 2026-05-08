@@ -68,7 +68,7 @@ NR==FNR {
    mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
 
    # Primary Sort: mp_req (Memory Requested %)
-   printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%-5s\n",
+   printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%-3s\n",
           mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cpu_perc, u_mem[$1$2], $5"/"$6, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
