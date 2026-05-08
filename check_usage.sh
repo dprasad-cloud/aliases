@@ -32,11 +32,11 @@ function how_long_ago(ts) {
     t = mktime(ts);
     if (t <= 0) return "";
     diff = now - t;
-    if (diff < 0) return "0s ago";
-    if (diff < 60) return diff "s ago";
-    if (diff < 3600) return int(diff/60) "m ago";
-    if (diff < 86400) return int(diff/3600) "h ago";
-    return int(diff/86400) "d ago";
+    if (diff < 0) return "0s";
+    if (diff < 60) return diff "s";
+    if (diff < 3600) return int(diff/60) "m";
+    if (diff < 86400) return int(diff/3600) "h";
+    return int(diff/86400) "d";
 }
 
 NR==FNR {
@@ -62,13 +62,15 @@ NR==FNR {
    display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
 
    time_ago = how_long_ago($8);
-   restart_info = ($7 > 0) ? ((time_ago != "") ? time_ago " (" $7 ")" : "(" $7 ")") : "-";
+   # Constructing a short string like "23h(9)" or "10m" and trimming to 5 chars
+   raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
+   restart_info = substr(raw_restart, 1, 5);
 
    cpu_perc = sprintf("(%3.1f%% / %3.1f%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
 
    # Primary Sort: mp_req (Memory Requested %)
-   printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%s\n",
+   printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%-5s\n",
           mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cpu_perc, u_mem[$1$2], $5"/"$6, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
