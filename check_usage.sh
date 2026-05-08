@@ -64,7 +64,7 @@ NR==FNR {
    time_ago = how_long_ago($8);
    # Constructing a short string like "23h(9)" or "10m" and trimming to 5 chars
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
-   restart_info = substr(raw_restart, 1, 5);
+   restart_info = substr(raw_restart, 1, 4);
 
    cpu_perc = sprintf("(%3.1f%% / %3.1f%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
