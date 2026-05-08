@@ -32,11 +32,11 @@ function how_long_ago(ts) {
     t = mktime(ts);
     if (t <= 0) return "";
     diff = now - t;
-    if (diff < 0) return "0s ago";
-    if (diff < 60) return diff "s ago";
-    if (diff < 3600) return int(diff/60) "m ago";
-    if (diff < 86400) return int(diff/3600) "h ago";
-    return int(diff/86400) "d ago";
+    if (diff < 0) return "0s";
+    if (diff < 60) return diff "s";
+    if (diff < 3600) return int(diff/60) "m";
+    if (diff < 86400) return int(diff/3600) "h";
+    return int(diff/86400) "d";
 }
 
 NR==FNR {
@@ -62,17 +62,18 @@ NR==FNR {
    display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
 
    time_ago = how_long_ago($8);
-   restart_info = ($7 > 0) ? ((time_ago != "") ? time_ago " (" $7 ")" : "(" $7 ")") : "-";
+   # Constructing a short string like "23h(9)" and trimming to 5 chars
+   raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
+   restart_info = substr(raw_restart, 1, 5);
 
-   cpu_rl = $3 "/" $4;
-   mem_rl = $5 "/" $6;
-
-   cpu_perc = sprintf("(%3.1f%% / %3.1f%%)", cp_req, cp_lim);
-   mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
+   # Fixed-width percentage and resource strings to maintain alignment manually
+   cpu_res = sprintf("%-11s", $3"/"$4);
+   mem_res = sprintf("%-16s", $5"/"$6);
 
    # Primary Sort: cp_req (Requested CPU %)
-   printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%s\n",
-          cp_req, $1, display_pod, u_cpu[$1$2], cpu_rl, cpu_perc, u_mem[$1$2], mem_rl, mem_perc, restart_info
+   # Namespace is forced to 9 chars, column separator is a single space
+   printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-5s\n",
+          cp_req, $1, display_pod, u_cpu[$1$2], cpu_res, cp_req, cp_lim, u_mem[$1$2], mem_res, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
@@ -87,4 +88,4 @@ NR==FNR {
          ([.status.containerStatuses[].restartCount // 0] | add | tostring),
          ([.status.containerStatuses[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2- | column -t -s '|' -o ' | '
+| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
