@@ -65,13 +65,17 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 5);
 
-   cpu_perc = sprintf("(%3.1f%% / %3.1f%%)", cp_req, cp_lim);
-   mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
+   # Fixed-width percentage formatting to prevent pushing columns
+   cpu_perc = sprintf("(%5.1f%% / %3.1f%%)", cp_req, cp_lim);
+   mem_perc = sprintf("(%5.1f%% / %3.1f%%)", mp_req, mp_lim);
 
-   # Primary Sort: mp_req (Memory Requested %)
-   # Namespace is forced to 9 chars, column separator is a single space
-   printf "%10.2f|%-9.9s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%-5s\n",
-          mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cpu_perc, u_mem[$1$2], $5"/"$6, mem_perc, restart_info
+   # Format resource strings with fixed widths for consistent column parsing
+   cpu_res = sprintf("%-11s", $3"/"$4);
+   mem_res = sprintf("%-14s", $5"/"$6);
+
+   # Primary Sort: mp_req
+   printf "%10.2f|%-9.9s|%-27.27s|C: %-5s %s %s|M: %-7s %s %s|%-5s\n",
+          mp_req, $1, display_pod, u_cpu[$1$2], cpu_res, cpu_perc, u_mem[$1$2], mem_res, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
