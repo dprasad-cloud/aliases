@@ -65,17 +65,10 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 5);
 
-   # Fixed-width percentage formatting to prevent pushing columns
-   cpu_perc = sprintf("(%5.1f%% / %3.1f%%)", cp_req, cp_lim);
-   mem_perc = sprintf("(%5.1f%% / %3.1f%%)", mp_req, mp_lim);
-
-   # Format resource strings with fixed widths for consistent column parsing
-   cpu_res = sprintf("%-11s", $3"/"$4);
-   mem_res = sprintf("%-14s", $5"/"$6);
-
    # Primary Sort: mp_req
-   printf "%10.2f|%-9.9s|%-27.27s|C: %-5s %s %s|M: %-7s %s %s|%-5s\n",
-          mp_req, $1, display_pod, u_cpu[$1$2], cpu_res, cpu_perc, u_mem[$1$2], mem_res, mem_perc, restart_info
+   # We use fixed-width padding for EVERY element here to avoid alignment drift
+   printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-5s\n",
+          mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cp_req, cp_lim, u_mem[$1$2], $5"/"$6, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
@@ -90,4 +83,4 @@ NR==FNR {
          ([.status.containerStatuses[].restartCount // 0] | add | tostring),
          ([.status.containerStatuses[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2- | column -t -s '|' -o ' '
+| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
