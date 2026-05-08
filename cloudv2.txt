@@ -179,7 +179,7 @@ ups () {
 
 clear;
 
-echo -e "\n Available Shortcuts - Most commands ignore case. Also try topnode <>, checkoom etc..."
+echo -e "\n Available Shortcuts - Most commands ignore case. Also try topnode <>, checkoom, checkusage, checkdisk etc..."
 echo -e "\n "
 echo -e "\t fpod <search_key>                    : Find pod across all namespaces"
 echo -e "\t fsvc <search_key>                    : Find service across all namespaces"
