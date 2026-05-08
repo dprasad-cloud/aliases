@@ -67,14 +67,13 @@ NR==FNR {
    cpu_perc = sprintf("(%3.1f%% / %3.1f%%)", cp_req, cp_lim);
    mem_perc = sprintf("(%3.1f%% / %3.1f%%)", mp_req, mp_lim);
 
-   # Primary Sort: CPU Requested % (Change to mp_req for memory script)
+   # Primary Sort: mp_req (Memory Requested %)
    printf "%10.2f|%-12s|%-27.27s|C: %-6s %-12s %-18s|M: %-7s %-12s %-18s|%s\n",
-          cp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cpu_perc, u_mem[$1$2], $5"/"$6, mem_perc, restart_info
+          mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cpu_perc, u_mem[$1$2], $5"/"$6, mem_perc, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
-      def clean: if . == null then "0" else tostring end;
-      def to_ms: clean | if endswith("m") then .[:-1] | tonumber elif contains(".") or (tonumber < 50) then tonumber * 1000 else tonumber end;
-      def to_mib: clean | if endswith("Ki") then .[:-2] | tonumber / 1024 elif endswith("Mi") then .[:-2] | tonumber elif endswith("Gi") then .[:-2] | tonumber * 1024 else tonumber / 1024 / 1024 end;
+      def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
+      def to_mib: tostring | if endswith("Ki") then .[:-2] | tonumber / 1024 elif endswith("Mi") then .[:-2] | tonumber elif endswith("Gi") then .[:-2] | tonumber * 1024 else (gsub("[^0-9.]"; "") | tonumber / 1024 / 1024) end;
       [
          .metadata.namespace,
          .metadata.name,
