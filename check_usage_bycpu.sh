@@ -64,7 +64,7 @@ NR==FNR {
    time_ago = how_long_ago($8);
    # Constructing a short string like "23h(9)" and trimming to 5 chars
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
-   restart_info = substr(raw_restart, 1, 5);
+   restart_info = substr(raw_restart, 1, 6);
 
    # Fixed-width percentage and resource strings to maintain alignment manually
    cpu_res = sprintf("%-11s", $3"/"$4);
@@ -72,7 +72,7 @@ NR==FNR {
 
    # Primary Sort: cp_req (Requested CPU %)
    # Namespace is forced to 9 chars, column separator is a single space
-   printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-5s\n",
+   printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
           cp_req, $1, display_pod, u_cpu[$1$2], cpu_res, cp_req, cp_lim, u_mem[$1$2], mem_res, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
