@@ -176,7 +176,21 @@ ups () {
     source /root/aliases-main/$file
 }
 
-
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
 echo -e "\n Available Shortcuts - Most commands ignore case. Also try topnode <>, checkoom, checkusage, checkdisk etc..."
 echo -e "\n "
 echo -e "\t fpod <search_key>                    : Find pod across all namespaces"
@@ -209,19 +223,5 @@ echo -e "\t loop15 <command>                        : loop the provided command 
 echo -e "\t ups                                     : Update the aliases to latest version from github, also show this help"
 echo -e "\n "
 echo -e " Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
-echo -e "\n "
+
 
