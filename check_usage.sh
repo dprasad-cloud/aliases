@@ -1,11 +1,19 @@
 #!/bin/bash
 FILTER=$1
+MODE=$2  # 'first' or 'all'
 NOW=$(date +%s)
 
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
     pattern="."
 else
     pattern="${FILTER// /[[:space:]]+}"
+fi
+
+# Determine JQ index: 0 for first, empty string for all
+if [[ "$MODE" == "first" ]]; then
+    idx="0"
+else
+    idx=":" # jq slice [:] means all
 fi
 
 awk -v now="$NOW" -v pattern="$pattern" -F '\t' 'BEGIN { OFS="|" }
@@ -65,22 +73,22 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   # Primary Sort: mp_req
-   # We use fixed-width padding for EVERY element here to avoid alignment drift
    printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
           mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cp_req, cp_lim, u_mem[$1$2], $5"/"$6, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --no-headers) \
-   <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
+   <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
       def to_mib: tostring | if endswith("Ki") then .[:-2] | tonumber / 1024 elif endswith("Mi") then .[:-2] | tonumber elif endswith("Gi") then .[:-2] | tonumber * 1024 else (gsub("[^0-9.]"; "") | tonumber / 1024 / 1024) end;
+      (.spec.containers | if $i == "0" then .[0:1] else . end) as $cs |
+      (.status.containerStatuses | if $i == "0" then .[0:1] else . end) as $ss |
       [
          .metadata.namespace,
          .metadata.name,
-         ([.spec.containers[].resources.requests.cpu // "0"] | map(to_ms) | add | tostring + "m"),
-         ([.spec.containers[].resources.limits.cpu // "0"] | map(to_ms) | add | tostring + "m"),
-         ([.spec.containers[].resources.requests.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
-         ([.spec.containers[].resources.limits.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
-         ([.status.containerStatuses[].restartCount // 0] | add | tostring),
-         ([.status.containerStatuses[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
+         ([$cs[].resources.requests.cpu // "0"] | map(to_ms) | add | tostring + "m"),
+         ([$cs[].resources.limits.cpu // "0"] | map(to_ms) | add | tostring + "m"),
+         ([$cs[].resources.requests.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
+         ([$cs[].resources.limits.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
+         ([$ss[].restartCount // 0] | add | tostring),
+         ([$ss[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
       ] | @tsv') \
 | sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
