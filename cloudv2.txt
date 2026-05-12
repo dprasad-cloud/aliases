@@ -77,9 +77,11 @@ kedit() { _run_aliases_script /root/aliases-main/kedit.sh "$@"; }
 
 chmod +x /root/aliases-main/check_usage.sh
 checkusage() { _run_aliases_script /root/aliases-main/check_usage.sh "$@"; }
+cusage() { checkusage "$@"; }
 
 chmod +x /root/aliases-main/check_usage_bycpu.sh
 checkusagebycpu() { _run_aliases_script /root/aliases-main/check_usage_bycpu.sh "$@"; }
+cusage_bycpu() { checkusagebycpu "$@"; }
 
 chmod +x /root/aliases-main/check_mem_all.sh
 checkmem() { _run_aliases_script /root/aliases-main/check_mem_all.sh "$@"; }
