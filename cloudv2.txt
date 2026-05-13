@@ -226,5 +226,11 @@ echo -e "\t ups                                     : Update the aliases to late
 echo -e "\n "
 echo -e " Send shortcut suggestions and feedback to dprasad@extremenetworks.com"
 echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
+echo -e "\n "
 
 
