@@ -81,7 +81,12 @@ NR==FNR {
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
-      def to_mib: tostring | if endswith("Ki") then .[:-2] | tonumber / 1024 elif endswith("Mi") then .[:-2] | tonumber elif endswith("Gi") then .[:-2] | tonumber * 1024 else (gsub("[^0-9.]"; "") | tonumber / 1024 / 1024) end;
+      def to_mib: tostring |
+        if endswith("Ki") then (sub("Ki";"") | tonumber / 1024)
+        elif endswith("Mi") then (sub("Mi";"") | tonumber)
+        elif endswith("Gi") then (sub("Gi";"") | tonumber * 1024)
+        elif endswith("G") then (sub("G";"") | tonumber * 1024)
+        else (tonumber? // 0 / 1024 / 1024) end;
       (.spec.containers | if $i == "0" then .[0:1] else . end) as $cs |
       (.status.containerStatuses | if $i == "0" then .[0:1] else . end) as $ss |
       [
