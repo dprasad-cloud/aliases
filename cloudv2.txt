@@ -32,7 +32,6 @@ alias desc-ing='desc_ing'
 
 chmod +x /root/aliases-main/configmap.sh
 cm() { _run_aliases_script /root/aliases-main/configmap.sh "$@"; }
-alias cmap=/root/aliases-main/configmap.sh #fix for g2r1 - not sure why the shortcut cm is not working, so adding alias as well
 
 chmod +x /root/aliases-main/findcm.sh
 fcm() { _run_aliases_script /root/aliases-main/findcm.sh "$@"; }
