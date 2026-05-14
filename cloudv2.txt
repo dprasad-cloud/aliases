@@ -6,7 +6,7 @@
 # source /root/aliases-main/cloudv2.txt >/dev/null
 
 #Begin source
-for _a in desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
+for _a in fcon desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
   unalias "$_a" 2>/dev/null || true
 done
 unset _a
@@ -21,7 +21,7 @@ _run_aliases_script() {
 desc() { _run_aliases_script /root/aliases-main/desc.sh "$@"; }
 
 chmod +x /root/aliases-main/cont.sh
-cont() { _run_aliases_script /root/aliases-main/cont.sh "$@"; }
+fcon() { _run_aliases_script /root/aliases-main/cont.sh "$@"; }
 
 chmod +x /root/aliases-main/image.sh
 image() { _run_aliases_script /root/aliases-main/image.sh "$@"; }
@@ -199,12 +199,12 @@ echo -e "\t fpod <search_key>                    : Find pod across all namespace
 echo -e "\t fsvc <search_key>                    : Find service across all namespaces"
 echo -e "\t fing <search_key>                    : Find ingress across all namespaces"
 echo -e "\t fcm <search_key>                     : Find configmap across all namespaces"
+echo -e "\t fcont <search_key>                       : Find the pod across all namespaces and get container names"
 echo -e "\n "
 echo -e "\t desc <search_key>                       : Find the pod across all namespaces and get description"
 echo -e "\t image <search_key>                      : Find the pod across all namespaces and get image details"
 echo -e "\t desc_ing <search_key>                   : Find the ingress across all namespaces and get description"
 echo -e "\t cm <search_key>                         : Find the configmap across all namespaces and get properties"
-echo -e "\t cont <search_key>                       : Find the pod across all namespaces and get container names"
 echo -e "\n "
 echo -e "\t logs <search_key>                       : Find the pod across all namespaces and get logs"
 echo -e "\t logsf <search_key>                      : Find the pod across all namespaces and follow logs"
