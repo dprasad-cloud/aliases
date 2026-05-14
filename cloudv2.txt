@@ -32,6 +32,7 @@ alias desc-ing='desc_ing'
 
 chmod +x /root/aliases-main/configmap.sh
 cm() { _run_aliases_script /root/aliases-main/configmap.sh "$@"; }
+alias cm=/root/aliases-main/configmap.sh
 
 chmod +x /root/aliases-main/findcm.sh
 fcm() { _run_aliases_script /root/aliases-main/findcm.sh "$@"; }
