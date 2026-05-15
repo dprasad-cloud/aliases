@@ -1,6 +1,10 @@
 #Run the below line on AIO to get the aliases installed. Remove # before executing
 # sudo yum install unzip # if unzip is not installed
+
+#simple version
 # file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; source /root/aliases-main/$file;
+#updated version
+# file=cloudv2.txt ; wget -O /root/main.zip https://github.com/dprasad-cloud/aliases/archive/refs/heads/main.zip ; unzip -o /root/main.zip -d /root; cat /etc/bashrc >> /root/aliases-main/tmp.txt ; cat /etc/profile >> /root/aliases-main/tmp.txt ;cat ~/.bashrc >> /root/aliases-main/tmp.txt; cat /root/aliases-main/cloudv2.txt >> /root/aliases-main/tmp.txt ; exec /bin/bash --init-file /root/aliases-main/tmp.txt
 
 # To suppress the output of source command:
 # source /root/aliases-main/cloudv2.txt >/dev/null
