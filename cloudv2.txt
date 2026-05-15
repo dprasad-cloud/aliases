@@ -160,6 +160,9 @@ ferr() {
         fpod $errstates | grep -iE "$1"
     fi
 }
+awsacc() {
+    kubectl get configmap aws-auth -n kube-system -o yaml
+}
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
