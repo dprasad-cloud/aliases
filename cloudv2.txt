@@ -168,6 +168,10 @@ awsacc() {
     kubectl get configmap aws-auth -n kube-system -o yaml
 }
 
+topnodespods() {
+   for node in $(topnodes $1 | awk '{print $1}'); do topnode $node; done
+}
+
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
 
