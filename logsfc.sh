@@ -42,7 +42,7 @@ echo "NAMESPACE: $NAMESPACE"
 echo "CONTAINER: $CONTAINER_NAME"
 echo "--------------------------------------------------------"
 echo "command(s):"
-echo $LOG_CMD"
+echo "$LOG_CMD"
 echo "--------------------------------------------------------"
 
 sleep 1
