@@ -133,8 +133,6 @@ topnodes() {
     return 2
   fi
 
-  # Determine operator based on prefix
-  # Default to >= (no prefix), + means >=, - means <
   local op=">="
   local thr="$input"
 
@@ -147,6 +145,7 @@ topnodes() {
   fi
 
   kubectl top nodes | awk -v op="$op" -v thr="$thr" '
+    $1 == "NAME" { next }  # Skip the header row
     $0=="" || /'$(date +%Y)'/ || $2 == "<unknown>" || \
     (op == ">=" && ($3+0 >= thr || $5+0 >= thr)) || \
     (op == "<"  && ($3+0 <  thr || $5+0 <  thr))'
