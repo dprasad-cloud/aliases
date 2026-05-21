@@ -126,14 +126,30 @@ topnode(){
 #   topnodes 95
 #   topnodes_status 90
 #   topnodes_status 95
-function topnodes(){
-  threshold="$1"
-  if [ -z "$threshold" ]; then
-    echo "Usage: topnodes <cpu_threshold_percent>" >&2
+topnodes() {
+  local input="$1"
+  if [ -z "$input" ]; then
+    echo "Usage: topnodes [+|-]threshold" >&2
     return 2
   fi
 
-  kubectl top nodes | awk -v thr="$threshold" '$0=="" || /'"$(date +%Y)"'/ || $3+0 >= thr || $5+0 > thr || $2 == "<unknown>"'
+  # Determine operator based on prefix
+  # Default to >= (no prefix), + means >=, - means <
+  local op=">="
+  local thr="$input"
+
+  if [[ "$input" == -* ]]; then
+    op="<"
+    thr="${input#-}"
+  elif [[ "$input" == +* ]]; then
+    op=">="
+    thr="${input#+}"
+  fi
+
+  kubectl top nodes | awk -v op="$op" -v thr="$thr" '
+    $0=="" || /'$(date +%Y)'/ || $2 == "<unknown>" || \
+    (op == ">=" && ($3+0 >= thr || $5+0 >= thr)) || \
+    (op == "<"  && ($3+0 <  thr || $5+0 <  thr))'
 }
 
 function topnodes_status(){
