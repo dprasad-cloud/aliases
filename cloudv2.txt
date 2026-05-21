@@ -164,6 +164,10 @@ function topnodes_status(){
   rm -f "$tmp"
 }
 
+topnodes_pods() {
+   for node in $(topnodes $1 | awk '{print $1}'); do topnode $node; done
+}
+
 # Commonly used fpod alias for finding pods in error states or with high restart counts
 export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3).*Running|\s([1-9][0-9]|[0-9]{3,})\s'
 export commonkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server common-kafka:9092"
@@ -181,10 +185,6 @@ ferr() {
 }
 awsacc() {
     kubectl get configmap aws-auth -n kube-system -o yaml
-}
-
-topnodespods() {
-   for node in $(topnodes $1 | awk '{print $1}'); do topnode $node; done
 }
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
