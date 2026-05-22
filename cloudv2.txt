@@ -104,6 +104,38 @@ hmvi(){ podexec "$1" vi /opt/tomcat/logs/hm.log; }
 hmcat(){ podexec "$1" cat /opt/tomcat/logs/hm.log; }
 hmtail(){ podexec "$1" tail -f /opt/tomcat/logs/hm.log; }
 
+hmcat_all() {
+  local pod_pattern="$1"
+  local search_term="$2"
+
+  if [ -z "$pod_pattern" ] || [ -z "$search_term" ]; then
+    echo "Usage: search_pod_logs <pod_pattern> <search_term>"
+    return 1
+  fi
+
+  for pod in $(fpod "$pod_pattern" | awk '{print $2}'); do
+    echo "Processing pod: $pod"
+    # Assuming hmcat handles the pod argument and outputs to stdout
+    hmcat "$pod" | grep -iE "$search_term"
+  done
+}
+
+logs_all() {
+  local pod_pattern="$1"
+  local search_term="$2"
+
+  if [ -z "$pod_pattern" ] || [ -z "$search_term" ]; then
+    echo "Usage: search_pod_logs <pod_pattern> <search_term>"
+    return 1
+  fi
+
+  for pod in $(fpod "$pod_pattern" | awk '{print $2}'); do
+    echo "Processing pod: $pod"
+    # Assuming hmcat handles the pod argument and outputs to stdout
+    logs "$pod" | grep -iE "$search_term"
+  done
+}
+
 echo -e "Shortcut for checking resource usage on nodes (ex: topnode ip-10-201-50-219)"
 topnode(){
   node="$1"
