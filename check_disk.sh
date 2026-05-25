@@ -1,10 +1,17 @@
 #!/bin/bash
-# If an argument is provided (e.g., check_disk n-kafka else (finderr | check_disk)
+
+# If an argument is provided, use the alias logic
 if [ -n "$1" ]; then
     shopt -s expand_aliases
     alias fpod='/root/aliases-main/findpod.sh'
     eval "fpod \"$1\"" | "$0"
     exit 0
+fi
+
+# Detect if stdin is empty (not piped)
+if [ -t 0 ]; then
+    # No pipe detected; list all pods as default
+    exec kubectl get pods -A --no-headers | "$0"
 fi
 
 # Print the header immediately
