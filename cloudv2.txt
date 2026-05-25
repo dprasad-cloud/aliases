@@ -296,7 +296,7 @@ echo -e "\t Example: topnodes 90 (find nodes with cpu or memory usage above 90%)
 echo -e "\t Example: topnodes -20 (find nodes with cpu or memory usage below 20%)"
 echo -e "\n "
 echo -e "\t topnodes_status <value>                 : Find the nodes status with cpu or memory usage above the specified threshold"
-echo -e "\t topnodes_pods <value>                   : Find the pods which are running on nodes with cpu or memory usage above the specified threshold"
+echo -e "\t topnodes_pods <value>                   : Find the pods from the nodes with cpu or memory usage above the specified threshold"
 echo -e "\t topnode <node>                          : Find the pods which are running on the node"
 echo -e "\n "
 echo -e "\t loop <command>                          : loop the provided command every 5 seconds"
