@@ -31,7 +31,8 @@ while read -r ns pod rest; do
      "$rest" == *"Completed"* ]] && continue
 
     # Capture disk info
-    disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2> >(sed "s/^/$pod: /" >&2) | \
+    # Capture disk info, explicitly silencing the "Defaulted container" stderr
+    disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
                 grep -iE 'kafka|data|/dev/sd|/dev/nvme' | \
                 grep -v "Filesystem")
 
