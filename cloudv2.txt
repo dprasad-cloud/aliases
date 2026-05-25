@@ -284,6 +284,8 @@ echo -e "\t logs_all <search_key>                   : Find the pods across all n
 echo -e "\n "
 echo -e "\t ferr                                    : Find recently restarted or error state pods across all namespaces"
 echo -e "\t checkoom                                : Find the pods across all namespaces which had OOM or Evicted recently"
+echo -e "\t checkcpu                                : List cpu usage data of all the pods and summarize the usage"
+echo -e "\t checkmem                                : List memory usage data of all the pods and summarize the usage"
 echo -e "\t checkusage <key>                        : Check resource usage of the pods - sorted by memory usage"
 echo -e "\t checkusagebycpu <key>                   : Check resource usage of the pods - sorted by cpu usage"
 echo -e "\t checkdisk <key>                         : Check disk usage of the pods"
