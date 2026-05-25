@@ -23,10 +23,15 @@ last_pod=""
 
 while read -r ns pod rest; do
     # Skip headers, empty lines, or completed pods
-    [[ "$ns" == "NAMESPACE" || -z "$ns" || -z "$pod" || "$rest" == *"Completed"* ]] && continue
+    [[ "$ns" == "NAMESPACE" || \
+       "$ns" == "command(s):" || \
+       "$ns" == "kubectl" || \
+       -z "$ns" || \
+       -z "$pod" || \
+     "$rest" == *"Completed"* ]] && continue
 
     # Capture disk info
-    disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
+    disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2> >(sed "s/^/$pod: /" >&2) | \
                 grep -iE 'kafka|data|/dev/sd|/dev/nvme' | \
                 grep -v "Filesystem")
 
