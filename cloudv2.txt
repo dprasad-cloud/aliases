@@ -199,12 +199,12 @@ function topnodes_status(){
 topnodes_pods() {
     local threshold=$1
     local limit=${2:-10}
-    # Fix: Correct arithmetic syntax to account for the header line
     local adjusted_limit=$((limit + 1))
 
     for node in $(topnodes "$threshold" | awk '{print $1}'); do
         echo "--- Node: $node ---"
-        topnode "$node" | head -n "$adjusted_limit"
+        # Pipe to 'column -t' to normalize spacing
+        topnode "$node" | head -n "$adjusted_limit" | column -t
         echo ""
     done
 }
