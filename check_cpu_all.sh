@@ -18,34 +18,21 @@ done
 echo "Scanning Cluster CPU (Summing all containers)..."
 echo "NAMESPACE|POD|USAGE|REQUEST|LIMIT|%_REQ|%_LIMIT" > "$DATA_FILE"
 
-# 1. Capture top and pod data into variables
-TOP_DATA=$(kubectl top pods -A --no-headers)
-POD_DATA=$(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
-      def parse_cpu: tostring | {
-         num: (match("[0-9.]+").string // "0" | tonumber),
-         unit: (match("[A-Za-z]+").string // "")
-      } | if .unit == "m" then .num elif .num < 50 then .num * 1000 else .num end;
-      [
-         .metadata.namespace,
-         .metadata.name,
-         ([.spec.containers[].resources.requests.cpu // "0"] | map(parse_cpu) | add | tostring + "m"),
-         ([.spec.containers[].resources.limits.cpu // "0"] | map(parse_cpu) | add | tostring + "m")
-      ] | @tsv')
-
-# 2. Join the data using AWK
-awk -F '\t' -v top_input="$TOP_DATA" '
-BEGIN {
-    OFS="|"
-    # Load TOP_DATA into an array
-    n = split(top_input, lines, "\n")
-    for (i=1; i<=n; i++) {
-        split(lines[i], cols, /[[:space:]]+/)
-        # cols[1]=NS, cols[2]=Pod, cols[3]=Usage
-        u_cpu[cols[1]cols[2]] = cols[3]
-    }
+# 1. Get pod resource requests/limits and stream with top output to awk for joining
+awk '
+# NR==FNR processes the first "file" (from kubectl top)
+NR==FNR {
+    # $1=NS, $2=Pod, $3=Usage
+    # Use a single-character separator to avoid issues with pod names containing spaces
+    u_cpu[$1 FS $2] = $3
+    next
 }
+# The second block processes the second "file" (from kubectl get pods)
 {
-    key = $1$2
+    # Set FS for tab-separated input from POD_RESOURCES
+    FS="\t"; OFS="|"
+    # $1=NS, $2=Pod, $3=Request, $4=Limit
+    key = $1 " " $2
     if (key in u_cpu) {
         usage_raw = u_cpu[key]
         u_val = usage_raw; gsub(/m/,"",u_val)
@@ -57,7 +44,19 @@ BEGIN {
 
         printf "%s|%s|%s|%s|%s|%.1f%%|%.1f%%\n", $1, $2, usage_raw, $3, $4, p_req, p_lim
     }
-}' <<< "$POD_DATA" >> "$DATA_FILE"
+}' <(kubectl top pods -A --no-headers) \
+   <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
+      def parse_cpu: tostring | {
+         num: (match("[0-9.]+").string // "0" | tonumber),
+         unit: (match("[A-Za-z]+").string // "")
+      } | if .unit == "m" then .num elif .num < 50 then .num * 1000 else .num end;
+      [
+         .metadata.namespace,
+         .metadata.name,
+         ([.spec.containers[].resources.requests.cpu // "0"] | map(parse_cpu) | add | tostring + "m"),
+         ([.spec.containers[].resources.limits.cpu // "0"] | map(parse_cpu) | add | tostring + "m")
+      ] | @tsv') >> "$DATA_FILE"
+
 
 # 3. Print Table
 echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
