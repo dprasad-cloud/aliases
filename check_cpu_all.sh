@@ -7,31 +7,34 @@ trap 'rm -f "$DATA_FILE"' EXIT
 
 SORT_COL=7
 SORT_NAME="%_LIMIT"
+NS_ARG="-A"
+NAMESPACE=""
 
-while getopts "r" opt; do
+while getopts "rn:" opt; do
   case $opt in
     r) SORT_COL=6; SORT_NAME="%_REQUEST" ;;
-    *) echo "Usage: $0 [-r]"; exit 1 ;;
+    n) NS_ARG="-n $OPTARG"; NAMESPACE="$OPTARG" ;;
+    *) echo "Usage: $0 [-r] [-n namespace]"; exit 1 ;;
   esac
 done
 
 echo "Scanning Cluster CPU (Summing all containers)..."
 echo "NAMESPACE|POD|USAGE|REQUEST|LIMIT|%_REQ|%_LIMIT" > "$DATA_FILE"
 
-# 1. Get pod resource requests/limits and stream with top output to awk for joining
-awk '
-# NR==FNR processes the first "file" (from kubectl top)
+# The logic handles the column shift automatically based on NS_ARG
+awk -v ns_arg="$NS_ARG" -v ns_val="$NAMESPACE" '
 NR==FNR {
-    # $1=NS, $2=Pod, $3=Usage
-    # Use a single-character separator to avoid issues with pod names containing spaces
-    u_cpu[$1 FS $2] = $3
+    # If -A, col1=NS, col2=Pod, col3=Usage
+    # If -n, col1=Pod, col2=Usage
+    if (ns_arg == "-A") {
+        u_cpu[$1 " " $2] = $3
+    } else {
+        u_cpu[ns_val " " $1] = $2
+    }
     next
 }
-# The second block processes the second "file" (from kubectl get pods)
 {
-    # Set FS for tab-separated input from POD_RESOURCES
     FS="\t"; OFS="|"
-    # $1=NS, $2=Pod, $3=Request, $4=Limit
     key = $1 " " $2
     if (key in u_cpu) {
         usage_raw = u_cpu[key]
@@ -44,21 +47,23 @@ NR==FNR {
 
         printf "%s|%s|%s|%s|%s|%.1f%%|%.1f%%\n", $1, $2, usage_raw, $3, $4, p_req, p_lim
     }
-}' <(kubectl top pods -A --no-headers) \
-   <(kubectl get pods -A -o json | jq -r '.items[] | select(.status.phase == "Running") |
+}' <(kubectl top pods $NS_ARG --no-headers) \
+   <(kubectl get pods $NS_ARG -o json | jq -r --arg ns "$NAMESPACE" '
+      .items[] | select(.status.phase == "Running") |
+      # If no namespace provided, use .metadata.namespace from JSON
+      def target_ns: if $ns == "" then .metadata.namespace else $ns end;
       def parse_cpu: tostring | {
          num: (match("[0-9.]+").string // "0" | tonumber),
          unit: (match("[A-Za-z]+").string // "")
       } | if .unit == "m" then .num elif .num < 50 then .num * 1000 else .num end;
       [
-         .metadata.namespace,
+         target_ns,
          .metadata.name,
          ([.spec.containers[].resources.requests.cpu // "0"] | map(parse_cpu) | add | tostring + "m"),
          ([.spec.containers[].resources.limits.cpu // "0"] | map(parse_cpu) | add | tostring + "m")
       ] | @tsv') >> "$DATA_FILE"
 
-
-# 3. Print Table
+# Print Table
 echo -e "\n--- CPU Usage Table (Sorted by $SORT_NAME Ascending) ---"
 if [ $(wc -l < "$DATA_FILE") -le 1 ]; then
     echo "No running pods with metrics found."
@@ -66,7 +71,7 @@ else
     { head -n 1 "$DATA_FILE"; tail -n +2 "$DATA_FILE" | sort -t'|' -k${SORT_COL},${SORT_COL}n; } | column -t -s '|'
 fi
 
-# 4. WATCHLIST
+# Watchlist
 echo -e "\n================================================================"
 echo "⚠️  HIGH USAGE WATCHLIST (>$HEAVY_THRESHOLD% OF LIMIT)"
 echo "================================================================"
@@ -81,7 +86,7 @@ awk -v threshold="$HEAVY_THRESHOLD" -F'|' '
     END { if (count==0) print "  (No pods exceeding threshold)" }
 ' "$DATA_FILE"
 
-# 5. Summary
+# Summary
 echo -e "\n--- CLUSTER CPU SUMMARY ---"
 awk -F'|' '
     NR > 1 {
