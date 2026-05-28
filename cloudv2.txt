@@ -82,11 +82,11 @@ kedit() { _run_aliases_script /root/aliases-main/kedit.sh "$@"; }
 
 chmod +x /root/aliases-main/check_usage.sh
 checkusage() { _run_aliases_script /root/aliases-main/check_usage.sh "$@"; }
-cusage() { checkusage "$@"; }
+cu() { checkusage "$@"; }
 
 chmod +x /root/aliases-main/check_usage_bycpu.sh
 checkusagebycpu() { _run_aliases_script /root/aliases-main/check_usage_bycpu.sh "$@"; }
-cusage_bycpu() { checkusagebycpu "$@"; }
+cubycpu() { checkusagebycpu "$@"; }
 
 chmod +x /root/aliases-main/check_mem_all.sh
 checkmem() { _run_aliases_script /root/aliases-main/check_mem_all.sh "$@"; }
@@ -292,7 +292,7 @@ echo -e "\t hmtail <search_key>                     : Find the pod across all na
 echo -e "\t hmcat_all <search_key>                  : Find the pods across all namespaces and cat /opt/tomcat/logs/hm.log from each pod"
 echo -e "\t logs_all <search_key>                   : Find the pods across all namespaces and loop the command logs <each pod>"
 echo -e "\n "
-echo -e "\t ferr                                    : Find recently restarted or error state pods across all namespaces"
+echo -e "\t ferr                                    : Find currently starting or error state pods across all namespaces"
 echo -e "\t checkoom                                : Find the pods across all namespaces which had OOM or Evicted recently"
 echo -e "\t checkcpu                                : List cpu usage data of all the pods and summarize the usage"
 echo -e "\t checkmem                                : List memory usage data of all the pods and summarize the usage"
