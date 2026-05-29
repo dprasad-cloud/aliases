@@ -227,6 +227,24 @@ ferr() {
 awsacc() {
     kubectl get configmap aws-auth -n kube-system -o yaml
 }
+argo_aiexpert() {
+    argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username aiexpert_admin --password $1
+}
+argo_nvo() {
+    argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username nvo_admin --password $1
+}
+argo_xiq() {
+    argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username xiq_admin --password $1
+}
+argo_xcp() {
+    argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username xcp_admin --password $1
+}
+argo_msp4xiq() {
+    argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username msp4xiq_admin --password $1
+}
+kpatch() {
+    kubectl patch app  $1 -n $2 --type merge -p '{"metadata":{"finalizers":null}}'
+}
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
