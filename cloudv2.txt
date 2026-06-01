@@ -242,6 +242,10 @@ argo_xcp() {
 argo_msp4xiq() {
     argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username msp4xiq_admin --password $1
 }
+argo_admin() {
+    argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username admin --password $1
+}
+
 kpatch() {
     kubectl patch app  $1 -n $2 --type merge -p '{"metadata":{"finalizers":null}}'
 }
