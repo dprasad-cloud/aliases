@@ -58,7 +58,7 @@ NR==FNR {
    mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
    mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
 
-   pc_name = $2 "/" $3;
+   pc_name = $2 ".*" $3;
 
    # Truncate at 30 characters maximum to keep columns tightly pushed left
    if (length(pc_name) > 30) {
