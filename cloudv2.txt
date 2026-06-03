@@ -256,8 +256,52 @@ kpatch() {
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
+
 grepie() { grep -iE "$@" | column -t; }
-topcont() { kubectl top pod -A --containers | grepie "$@";}
+topcont() {
+    local search_term=""
+    local sort_col=""
+
+    # Parse arguments
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            -r)
+                sort_col="cpu"
+                shift
+                ;;
+            -m)
+                sort_col="mem"
+                shift
+                ;;
+            *)
+                search_term="$1"
+                shift
+                ;;
+        esac
+    done
+
+    # Default to CPU sort if no flag is provided
+    if [ -z "$sort_col" ]; then
+        sort_col="cpu"
+    fi
+
+    # 1. Get metrics and strip header
+    # 2. Filter using your grepie
+    # 3. Use awk to append the target value to the front of the line,
+    #    sort it numerically, and then strip that temporary value away.
+    kubectl top pod -A --containers | tail -n +2 | grepie "$search_term" | awk -v mode="$sort_col" '
+        {
+            # NF is the last column (Memory), NF-1 is second-to-last (CPU)
+            val = (mode == "cpu") ? $(NF-1) : $NF;
+
+            # Strip units (m, Mi, Gi) so sort -rn works flawlessly
+            gsub(/[a-zA-Z]/, "", val);
+
+            print val "\t" $0;
+        }
+    ' | sort -rn | cut -f2-
+}
+
 
 ups () {
     # Define the target file name inside the extracted directory
