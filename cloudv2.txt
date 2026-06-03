@@ -88,6 +88,10 @@ chmod +x /root/aliases-main/check_usage_bycpu.sh
 checkusagebycpu() { _run_aliases_script /root/aliases-main/check_usage_bycpu.sh "$@"; }
 cubycpu() { checkusagebycpu "$@"; }
 
+chmod +x /root/aliases-main/check_usage_bycpu_cont.sh
+checkusagebycpu_cont() { _run_aliases_script /root/aliases-main/check_usage_bycpu_cont.sh "$@"; }
+cucon() { checkusagebycpu_cont "$@"; }
+
 chmod +x /root/aliases-main/check_mem_all.sh
 checkmem() { _run_aliases_script /root/aliases-main/check_mem_all.sh "$@"; }
 
@@ -252,6 +256,8 @@ kpatch() {
 
 loop() { while true; do date; eval "$@"; echo -e "\n"; sleep 5; done; }
 loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
+grepie() { grep -iE "$@" | column -t; }
+topcont() { kubectl top pod -A --containers | grepie "$@";}
 
 ups () {
     # Define the target file name inside the extracted directory
