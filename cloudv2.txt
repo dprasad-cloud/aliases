@@ -97,15 +97,19 @@ cucon() { checkusagebycpu_con "$@"; }
 
 chmod +x /root/aliases-main/check_mem_all.sh
 checkmem() { _run_aliases_script /root/aliases-main/check_mem_all.sh "$@"; }
+cmem() { checkmem "$@"; }
 
 chmod +x /root/aliases-main/check_cpu_all.sh
 checkcpu() { _run_aliases_script /root/aliases-main/check_cpu_all.sh "$@"; }
+ccpu() { checkcpu "$@"; }
 
 chmod +x /root/aliases-main/check_oom.sh
 checkoom() { _run_aliases_script /root/aliases-main/check_oom.sh "$@"; }
+coom() { checkoom "$@"; }
 
 chmod +x /root/aliases-main/check_disk.sh
 checkdisk() { _run_aliases_script /root/aliases-main/check_disk.sh "$@"; }
+cdisk() { checkdisk "$@"; }
 
 hmvi(){ podexec "$1" vi /opt/tomcat/logs/hm.log; }
 hmcat(){ podexec "$1" cat /opt/tomcat/logs/hm.log; }
