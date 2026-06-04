@@ -10,7 +10,7 @@
 # source /root/aliases-main/cloudv2.txt >/dev/null
 
 #Begin source
-for _a in logsprev topcon topcont cucon checkusagebycpu_con fcon desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
+for _a in sshnode logsprev topcon cucon checkusagebycpu_con fcon desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
   unalias "$_a" 2>/dev/null || true
 done
 unset _a
@@ -92,8 +92,8 @@ checkusagebycpu() { _run_aliases_script /root/aliases-main/check_usage_bycpu.sh 
 cubycpu() { checkusagebycpu "$@"; }
 
 chmod +x /root/aliases-main/check_usage_bycpu_cont.sh
-checkusagebycpu_cont() { _run_aliases_script /root/aliases-main/check_usage_bycpu_cont.sh "$@"; }
-cucon() { checkusagebycpu_cont "$@"; }
+checkusagebycpu_con() { _run_aliases_script /root/aliases-main/check_usage_bycpu_cont.sh "$@"; }
+cucon() { checkusagebycpu_con "$@"; }
 
 chmod +x /root/aliases-main/check_mem_all.sh
 checkmem() { _run_aliases_script /root/aliases-main/check_mem_all.sh "$@"; }
@@ -244,6 +244,8 @@ ferr() {
 awsacc() {
     kubectl get configmap aws-auth -n kube-system -o yaml
 }
+sshnode() { ssh -i /home/yazheng/coc ec2-user@$1; }
+
 argo_aiexpert() {
     argocd login $cluster-argocd.qa.xcloudiq.com  --skip-test-tls  --grpc-web --username aiexpert_admin --password $1
 }
@@ -383,6 +385,7 @@ echo -e "\t checkcpu                                : List cpu usage data of all
 echo -e "\t checkmem                                : List memory usage data of all the pods and summarize the usage"
 echo -e "\t checkusage <key>                        : Check resource usage of the pods - sorted by memory usage"
 echo -e "\t checkusagebycpu <key>                   : Check resource usage of the pods - sorted by cpu usage"
+echo -e "\t checkusagebycpu_con <key>                   : Check resource usage of the pods - sorted by cpu usage"
 echo -e "\t checkdisk <key>                         : Check disk usage of the pods"
 echo -e "\t delpod <key>                            : !!!! Use with caution - Find the matching pods and delete all of them !!!!"
 echo -e "\n "
