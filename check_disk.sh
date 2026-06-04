@@ -27,4 +27,4 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     if [ -n "$disk_info" ]; then
         echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" '\''BEGIN{OFS="\t"} {print ns, pod, $1, $2, $3, $4, $5, $6}'\''
     fi
-' | sort -t$'\t' -k7,7nr 2>/dev/null | column -t -s $'\t'
+' | sort -t$'\t' -k7,7n 2>/dev/null | column -t -s $'\t'
