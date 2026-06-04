@@ -14,41 +14,37 @@ if [ -t 0 ]; then
     exec kubectl get pods -A --no-headers | "$0"
 fi
 
-# Print the header immediately
-printf "\n%-12s %-35s %-20s %-7s %-7s %-7s %-5s %-20s\n" \
-    "NAMESPACE" "POD" "FILESYSTEM" "SIZE" "USED" "AVAIL" "USE%" "MOUNTED_ON"
-echo "------------------------------------------------------------------------------------------------------------------------"
-
 last_pod=""
 
-while read -r ns pod rest; do
-    # Skip headers, empty lines, or completed pods
-    [[ "$ns" == "NAMESPACE" || \
-       "$ns" == "command(s):" || \
-       "$ns" == "kubectl" || \
-       -z "$ns" || \
-       -z "$pod" || \
-     "$rest" == *"Completed"* ]] && continue
+# We wrap the output loop in a block so we can pipe the whole thing to 'column'
+{
+    # Print the header (tab-separated for the column command)
+    echo -e "NAMESPACE\tPOD\tFILESYSTEM\tSIZE\tUSED\tAVAIL\tUSE%\tMOUNTED_ON"
 
-    # Capture disk info
-    # Capture disk info, explicitly silencing the "Defaulted container" stderr
-    disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
-                grep -iE 'kafka|data|/dev/sd|/dev/nvme' | \
-                grep -v "Filesystem")
+    while read -r ns pod rest; do
+        [[ "$ns" == "NAMESPACE" || \
+           "$ns" == "command(s):" || \
+           "$ns" == "kubectl" || \
+           -z "$ns" || \
+           -z "$pod" || \
+           "$rest" == *"Completed"* ]] && continue
 
-    if [[ -n "$disk_info" ]]; then
-        # Print separator if pod changed
-        if [[ -n "$last_pod" && "$pod" != "$last_pod" ]]; then
-            echo "------------------------------------------------------------------------------------------------------------------------"
+        disk_info=$(kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | \
+                    grep -iE 'kafka|data|/dev/sd|/dev/nvme' | \
+                    grep -v "Filesystem")
+
+        if [[ -n "$disk_info" ]]; then
+            # If the pod changes, we can insert a visual indicator line
+            if [[ -n "$last_pod" && "$pod" != "$last_pod" ]]; then
+                # Repeating tabs tells 'column' to leave this row empty or draw a separator
+                echo -e "-\t-\t-\t-\t-\t-\t-\t-"
+            fi
+            last_pod="$pod"
+
+            # Pass fields separated by tabs
+            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" 'BEGIN{OFS="\t"} {
+                print ns, pod, $1, $2, $3, $4, $5, $6
+            }'
         fi
-        last_pod="$pod"
-
-        # Print formatted rows
-        echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" '{
-            printf "%-12s %-35s %-20s %-7s %-7s %-7s %-5s %-20s\n", \
-            ns, substr(pod,1,45), $1, $2, $3, $4, $5, $6
-        }'
-    fi
-done
-
-echo "  "
+    done
+} | column -t -s $'\t'
