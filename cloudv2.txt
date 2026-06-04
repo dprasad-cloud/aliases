@@ -218,6 +218,14 @@ export errstates='term|err|crash|pend|evict|pull|creating|init:|oom|(0/|1/2|2/3)
 export commonkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server common-kafka:9092"
 export defaultkafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server default-kafka:9092"
 export nvokafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server nvo-kafka:9092"
+export mid="(kafka|redis|rabbit|elastic|postgres|ignite|zookeeper)"
+export midxiq=xiq.*$mid
+export midcommon="common ".*$mid
+export midgdc=commongdc.*$mid
+export midnvo=nvo.*$mid
+export midguest=guest.*$mid
+export midloki=loki.*$mid
+export midmonitoring=monitoring.*$mid
 
 #Usage (ferr or ferr "search_key")
 unalias ferr 2>/dev/null || true
