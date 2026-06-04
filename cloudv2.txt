@@ -10,7 +10,7 @@
 # source /root/aliases-main/cloudv2.txt >/dev/null
 
 #Begin source
-for _a in topcon topcont cucon checkusagebycpu_con fcon desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
+for _a in logsprev topcon topcont cucon checkusagebycpu_con fcon desc cont image desc-ing cm fcm fpod delpod fing fsvc fpvc logs logsc logsf logsfc podbash podsh podexec kedit checkusage checkusagebycpu checkmem checkcpu checkoom checkdisk topnodes topnodes_status; do
   unalias "$_a" 2>/dev/null || true
 done
 unset _a
@@ -58,6 +58,9 @@ fpvc() { _run_aliases_script /root/aliases-main/findpvc.sh "$@"; }
 
 chmod +x /root/aliases-main/logs.sh
 logs() { _run_aliases_script /root/aliases-main/logs.sh "$@"; }
+
+chmod +x /root/aliases-main/logsprev.sh
+logsprev() { _run_aliases_script /root/aliases-main/logsprev.sh "$@"; }
 
 chmod +x /root/aliases-main/logsc.sh
 logsc() { _run_aliases_script /root/aliases-main/logsc.sh "$@"; }
