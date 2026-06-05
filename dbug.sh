@@ -80,7 +80,7 @@ NR==FNR {
    cpu_res = sprintf("%s/%s", $4, $5);
    mem_res = sprintf("%s/%s", $6, $7);
 
-   # Standardized structural positions to secure static column indices
+   # Maintained pipe dividers explicitly to preserve perfect column boundaries
    printf "%10.2f|%-9.9s| %-33.33s| C: %5s %-12s (%5.1f%% / %5.1f%%) | M: %7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
           cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, cp_req, cp_lim, u_mem[$1$2$3], mem_res, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
@@ -110,4 +110,4 @@ NR==FNR {
          ($status.restartCount // 0 | tostring),
          ($status.lastState.terminated.finishedAt // "0" | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
+| sort -t'|' -k1,1rn | cut -d '|' -f 2-
