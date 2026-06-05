@@ -53,24 +53,21 @@ NR==FNR {
    rc_val = to_m($4); lc_val = to_m($5);
    mr_val = to_mi($6); ml_val = to_mi($7);
 
-   cp_req = (rc_val > 0) ? (uc / rc_val) * 100 : 0;
-   cp_lim = (lc_val > 0) ? (uc / lc_val) * 100 : 0;
-   mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
-   mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
-
    pod_part = $2;
    con_part = $3;
+   is_pod_truncated = 0;
 
-   # Truncate and mark with .* only if string length exceeds limits
    if (length(pod_part) > 21) {
        pod_part = substr(pod_part, 1, 19) ".*"
+       is_pod_truncated = 1
    }
    if (length(con_part) > 10) {
        con_part = substr(con_part, 1, 8) ".*"
    }
 
-   # Combine cleanly with no structural layout padding inside the string itself
-   display_name = pod_part ".*" con_part;
+   # Only add the middle ".*" if the pod wasn't already truncated
+   bridge = (is_pod_truncated) ? "" : ".*";
+   display_name = pod_part bridge con_part;
 
    time_ago = how_long_ago($9);
    raw_restart = ($8 > 0) ? ((time_ago != "") ? time_ago "(" $8 ")" : "(" $8 ")") : "-";
