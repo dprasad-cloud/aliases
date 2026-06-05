@@ -111,6 +111,9 @@ chmod +x /root/aliases-main/check_disk.sh
 checkdisk() { _run_aliases_script /root/aliases-main/check_disk.sh "$@"; }
 cdisk() { checkdisk "$@"; }
 
+chmod +x /root/aliases-main/dbug.sh
+dbug() { _run_aliases_script /root/aliases-main/dbug.sh "$@"; }
+
 hmvi(){ podexec "$1" vi /opt/tomcat/logs/hm.log; }
 hmcat(){ podexec "$1" cat /opt/tomcat/logs/hm.log; }
 hmtail(){ podexec "$1" tail -f /opt/tomcat/logs/hm.log; }
