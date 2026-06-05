@@ -65,8 +65,12 @@ NR==FNR {
        con_part = substr(con_part, 1, 8) ".*"
    }
 
-   # Only add the middle ".*" if the pod wasn't already truncated
-   bridge = (is_pod_truncated) ? "" : ".*";
+   # Replaced the ternary operator with a robust if/else block
+   if (is_pod_truncated == 1) {
+       bridge = ""
+   } else {
+       bridge = ".*"
+   }
    display_name = pod_part bridge con_part;
 
    time_ago = how_long_ago($9);
