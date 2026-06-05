@@ -63,14 +63,19 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
+   # If pod name > 21 chars, truncate to 19 and add .* (21 total)
    if (length(pod_part) > 21) {
-       pod_part = substr(pod_part, 1, 18) "..."
-   }
-   if (length(con_part) > 10) {
-       con_part = substr(con_part, 1, 7) "..."
+       pod_part = substr(pod_part, 1, 19) ".*"
    }
 
-   # Format both sides cleanly to guarantee the .* is locked 10 characters from the end
+   # If container name > 10 chars, truncate to 8 and add .* (10 total)
+   if (length(con_part) > 10) {
+       con_part = substr(con_part, 1, 8) ".*"
+   }
+
+   # Format both parts into their static blocks.
+   # Using left-aligned %-21s and left-aligned %-10s ensures the central ".*"
+   # is cleanly positioned exactly 10 characters from the right edge.
    display_name = sprintf("%-21s.*%-10s", pod_part, con_part);
 
    time_ago = how_long_ago($9);
