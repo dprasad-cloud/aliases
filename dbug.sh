@@ -39,9 +39,9 @@ function how_long_ago(ts) {
     return int(diff/86400) "d";
 }
 
+# Match cleanly based on explicit tabs across both inputs
 NR==FNR {
-    split($0, a, /[[:space:]]+/);
-    u_cpu[a[1]a[2]a[3]]=a[4]; u_mem[a[1]a[2]a[3]]=a[5];
+    u_cpu[$1$2$3]=$4; u_mem[$1$2$3]=$5;
     next
 }
 
@@ -53,23 +53,24 @@ NR==FNR {
    rc_val = to_m($4); lc_val = to_m($5);
    mr_val = to_mi($6); ml_val = to_mi($7);
 
+   cp_req = (rc_val > 0) ? (uc / rc_val) * 100 : 0;
+   cp_lim = (lc_val > 0) ? (uc / lc_val) * 100 : 0;
+   mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
+   mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
+
    pod_part = $2;
    con_part = $3;
 
-   if (length(pod_part) + length(con_part) + 1 <= 33) {
-       display_name = pod_part "/" con_part
+   if (length(pod_part) + length(con_part) + 3 <= 33) {
+       display_name = pod_part " / " con_part
    } else {
-       # Keep the first 21 chars of pod name, and the LAST 10 chars of container name
-       # Total length = 21 + 2 (.*) + 10 = 33 characters
        p_trim = substr(pod_part, 1, 21);
-
        c_len = length(con_part);
        if (c_len > 10) {
-           c_trim = substr(con_part, c_len - 9); # Grab the trailing 10 characters
+           c_trim = substr(con_part, c_len - 9);
        } else {
            c_trim = con_part;
        }
-
        display_name = p_trim ".*" c_trim;
    }
 
@@ -82,7 +83,7 @@ NR==FNR {
 
    printf "%10.2f|%-9.9s| %-33.33s| C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
           cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, cp_req, cp_lim, u_mem[$1$2$3], mem_res, mp_req, mp_lim, restart_info
-}' <(kubectl top pods -A --containers --no-headers) \
+}' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
       def to_mib: tostring |
