@@ -60,9 +60,9 @@ NR==FNR {
 
    pc_name = $2 ".*" $3;
 
-   # Truncate at 30 characters maximum to keep columns tightly pushed left
-   if (length(pc_name) > 30) {
-       display_name = substr(pc_name, 1, 27) "..."
+   # Truncate at 33 characters maximum to keep columns tightly pushed left
+   if (length(pc_name) > 33) {
+       display_name = substr(pc_name, 1, 30) "..."
    } else {
        display_name = pc_name
    }
@@ -74,8 +74,8 @@ NR==FNR {
    cpu_res = sprintf("%-11s", $4"/"$5);
    mem_res = sprintf("%-16s", $6"/"$7);
 
-   # Tightened from %-35.35s down to %-30.30s and removed extra whitespace padding
-   printf "%10.2f|%-9.9s| %-30.30s| C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
+   # Tightened from %-30.30s to %-33.33s to hold the extra 3 characters
+   printf "%10.2f|%-9.9s| %-33.33s| C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
           cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, cp_req, cp_lim, u_mem[$1$2$3], mem_res, mp_req, mp_lim, restart_info
 }' <(kubectl top pods -A --containers --no-headers) \
    <(kubectl get pods -A -o json | jq -r '
