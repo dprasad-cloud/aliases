@@ -39,7 +39,6 @@ function how_long_ago(ts) {
     return int(diff/86400) "d";
 }
 
-# Match cleanly based on explicit tabs across both inputs
 NR==FNR {
     u_cpu[$1$2$3]=$4; u_mem[$1$2$3]=$5;
     next
@@ -78,11 +77,18 @@ NR==FNR {
    raw_restart = ($8 > 0) ? ((time_ago != "") ? time_ago "(" $8 ")" : "(" $8 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   cpu_res = sprintf("%-11s", $4"/"$5);
-   mem_res = sprintf("%-16s", $6"/"$7);
+   cpu_res = sprintf("%s/%s", $4, $5);
+   mem_res = sprintf("%s/%s", $6, $7);
 
-   printf "%10.2f|%-9.9s| %-33.33s| C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
-          cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, cp_req, cp_lim, u_mem[$1$2$3], mem_res, mp_req, mp_lim, restart_info
+   # Formatted percentages cleanly into standard string lengths without inner floating spaces
+   c_req_str = sprintf("%.1f%%", cp_req);
+   c_lim_str = sprintf("%.1f%%", cp_lim);
+   m_req_str = sprintf("%.1f%%", mp_req);
+   m_lim_str = sprintf("%.1f%%", mp_lim);
+
+   # Enforced strict spacing layout so that word-counts are identical across every row
+   printf "%10.2f|%-9s %-33s C: %5s %-12s ( %6s / %6s ) M: %7s %-16s ( %6s / %6s ) %s\n",
+          cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, c_req_str, c_lim_str, u_mem[$1$2$3], mem_res, m_req_str, m_lim_str, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
@@ -110,4 +116,4 @@ NR==FNR {
          ($status.restartCount // 0 | tostring),
          ($status.lastState.terminated.finishedAt // "0" | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
+| sort -t'|' -k1,1rn | cut -d '|' -f 2-
