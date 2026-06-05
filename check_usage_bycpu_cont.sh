@@ -55,23 +55,23 @@ NR==FNR {
 
    pod_part = $2;
    con_part = $3;
-   is_pod_truncated = 0;
 
-   if (length(pod_part) > 21) {
-       pod_part = substr(pod_part, 1, 19) ".*"
-       is_pod_truncated = 1
-   }
-   if (length(con_part) > 10) {
-       con_part = substr(con_part, 1, 8) ".*"
-   }
-
-   # Replaced the ternary operator with a robust if/else block
-   if (is_pod_truncated == 1) {
-       bridge = ""
+   if (length(pod_part) + length(con_part) + 1 <= 33) {
+       display_name = pod_part "/" con_part
    } else {
-       bridge = ".*"
+       # Keep the first 21 chars of pod name, and the LAST 10 chars of container name
+       # Total length = 21 + 2 (.*) + 10 = 33 characters
+       p_trim = substr(pod_part, 1, 21);
+
+       c_len = length(con_part);
+       if (c_len > 10) {
+           c_trim = substr(con_part, c_len - 9); # Grab the trailing 10 characters
+       } else {
+           c_trim = con_part;
+       }
+
+       display_name = p_trim ".*" c_trim;
    }
-   display_name = pod_part bridge con_part;
 
    time_ago = how_long_ago($9);
    raw_restart = ($8 > 0) ? ((time_ago != "") ? time_ago "(" $8 ")" : "(" $8 ")") : "-";
