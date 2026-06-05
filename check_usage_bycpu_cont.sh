@@ -56,16 +56,17 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
-   if (length(pod_part) + length(con_part) + 1 <= 33) {
-       display_name = pod_part "/" con_part
+   # Account for the 3 characters added by " / "
+   if (length(pod_part) + length(con_part) + 3 <= 33) {
+       display_name = pod_part " / " con_part
    } else {
-       # Keep the first 21 chars of pod name, and the LAST 10 chars of container name
-       # Total length = 21 + 2 (.*) + 10 = 33 characters
+       # Keep first 21 chars of pod name, and the LAST 10 chars of container name
+       # 21 + 2 (.*) + 10 = 33 characters total
        p_trim = substr(pod_part, 1, 21);
 
        c_len = length(con_part);
        if (c_len > 10) {
-           c_trim = substr(con_part, c_len - 9); # Grab the trailing 10 characters
+           c_trim = substr(con_part, c_len - 9);
        } else {
            c_trim = con_part;
        }
