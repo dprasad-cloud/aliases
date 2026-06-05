@@ -73,11 +73,18 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   cpu_res = sprintf("%-11s", $3"/"$4);
-   mem_res = sprintf("%-16s", $5"/"$6);
+   cpu_res = sprintf("%s/%s", $3, $4);
+   mem_res = sprintf("%s/%s", $5, $6);
 
-   printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
-          cp_req, $1, display_pod, u_cpu[$1$2], cpu_res, cp_req, cp_lim, u_mem[$1$2], mem_res, mp_req, mp_lim, restart_info
+   # Flatten percentages into strings to prevent floating inner spaces
+   c_req_str = sprintf("%.1f%%", cp_req);
+   c_lim_str = sprintf("%.1f%%", cp_lim);
+   m_req_str = sprintf("%.1f%%", mp_req);
+   m_lim_str = sprintf("%.1f%%", mp_lim);
+
+   # Formatted output with explicit spacing layout and no trailing inner parentheses padding
+   printf "%10.2f|%-9s %-27s C: %5s %-12s ( %6s / %6s ) M: %7s %-16s ( %6s / %6s ) %s\n",
+          cp_req, $1, display_pod, u_cpu[$1$2], cpu_res, c_req_str, c_lim_str, u_mem[$1$2], mem_res, m_req_str, m_lim_str, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
@@ -99,4 +106,4 @@ NR==FNR {
          ([$ss[].restartCount // 0] | add | tostring),
          ([$ss[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
+| sort -t'|' -k1,1rn | cut -d '|' -f 2-
