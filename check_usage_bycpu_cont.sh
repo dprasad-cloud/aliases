@@ -53,15 +53,17 @@ NR==FNR {
    rc_val = to_m($4); lc_val = to_m($5);
    mr_val = to_mi($6); ml_val = to_mi($7);
 
+   cp_req = (rc_val > 0) ? (uc / rc_val) * 100 : 0;
+   cp_lim = (lc_val > 0) ? (uc / lc_val) * 100 : 0;
+   mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
+   mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
+
    pod_part = $2;
    con_part = $3;
 
-   # Account for the 1 character added by "/" instead of 3 from " / "
    if (length(pod_part) + length(con_part) + 1 <= 33) {
        display_name = pod_part "/" con_part
    } else {
-       # Keep first 21 chars of pod name, and the LAST 10 chars of container name
-       # 21 + 2 (.*) + 10 = 33 characters total
        p_trim = substr(pod_part, 1, 21);
        c_len = length(con_part);
        if (c_len > 10) {
