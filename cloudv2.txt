@@ -281,6 +281,7 @@ loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
 awkprint() { awk -v col="${1:-1}" '{print $col}' ;}
 sortby() { sort -h -k$@;}
 grepie() { grep -iE "$@" | column -t; }
+cols() { awk '{for(i=1;i<=NF;i++) print "Column " i ": " $i; exit}'; }
 
 topcon() {
     local search_term=""
