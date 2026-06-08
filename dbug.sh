@@ -4,9 +4,9 @@ MODE=$2  # 'first' or 'all'
 NOW=$(date +%s)
 
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
-    PATTERN="."
+    pattern="."
 else
-    PATTERN="${FILTER// /[[:space:]]+}"
+    pattern="${FILTER// /[[:space:]]+}"
 fi
 
 # Determine JQ index: 0 for first, empty string for all
@@ -16,7 +16,7 @@ else
     idx=":" # jq slice [:] means all
 fi
 
-awk -v now="$NOW" -v pattern="$PATTERN" -F '\t' 'BEGIN { OFS="|" }
+awk -v now="$NOW" -v pattern="$pattern" -F '\t' 'BEGIN { OFS="|" }
 
 function to_mi(val) {
    v = val "";
@@ -73,17 +73,17 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   # FIXED: Lock float lengths inside localized block wrappers to freeze position shifts
+   # FIXED: Strict internal padding on percentages so spacing fluctuations don't leak
    c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
    m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
 
-   # FIXED: Rigidity-padded sub blocks for target resource limits
-   cpu_limits_fixed = sprintf("%-11s", sprintf("%s/%s", $3, $4));
-   mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $5, $6));
+   # FIXED: Freeze layout shifting by hard-padding limits combinations
+   cpu_limits_fixed = sprintf("%-12s", sprintf("%s/%s", $3, $4));
+   mem_limits_fixed = sprintf("%-16s", sprintf("%s/%s", $5, $6));
 
-   # Fixed structural layout blueprint matching the container-specific tool formatting
-   printf "%10.2f|%-8.8s %-27s C: %5s %s %s M: %7s %s %s %s\n",
-          cp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
+   # Removed intermediate pipeline characters (|) inside printf to preserve output formatting post-sed
+   printf "%10.2f|%-9.9s   %-27.27s   C: %5s %s %s   M: %7s %s %s   %-6s\n",
+          mp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
@@ -105,4 +105,4 @@ NR==FNR {
          ([$ss[].restartCount // 0] | add | tostring),
          ([$ss[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2-
+| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
