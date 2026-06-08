@@ -239,6 +239,7 @@ export midmonitoring=monitoring.*$mid
 export rabbitmq="rabbitmqctl list_queues name consumers messages messages_ready messages_unacknowledged | awk '\$3 > 0'"
 export flink="flink list"
 export redis="redis-cli cluster info"
+export postgres="pg_isready -U postgres"
 
 #Usage (ferr or ferr "search_key")
 unalias ferr 2>/dev/null || true
