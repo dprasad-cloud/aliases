@@ -99,12 +99,12 @@ NR==FNR {
    m_req_str = sprintf("%.1f%%", mp_req);
    m_lim_str = sprintf("%.1f%%", mp_lim);
 
-   # CRITICAL FIX: Split combinations into explicitly padded sub-blocks
-   # %5s for usage, %11s for "request/limit" string blocks cleanly handles up to 9999m / 99999Mi boundaries.
-   cpu_limits_fixed = sprintf("%s/%s", $4, $5);
-   mem_limits_fixed = sprintf("%s/%s", $6, $7);
+   # Enforce rigid width layout inside the combinations to prevent layout snapping
+   cpu_limits_fixed = sprintf("%-11s", sprintf("%s/%s", $4, $5));
+   mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $6, $7));
 
-   printf "%10.2f|%-8.8s %-33s C: %5s %-11s ( %6s / %6s ) M: %7s %-15s ( %6s / %6s ) %s\n",
+   # Print template with strictly right-aligned usage tokens (%5s and %7s)
+   printf "%10.2f|%-8.8s %-33s C: %5s %s ( %6s / %6s ) M: %7s %s ( %6s / %6s ) %s\n",
           cp_req, $1, display_name, u_cpu[$1$2$3], cpu_limits_fixed, c_req_str, c_lim_str, u_mem[$1$2$3], mem_limits_fixed, m_req_str, m_lim_str, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
