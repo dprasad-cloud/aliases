@@ -17,6 +17,6 @@ kubectl get pods -A -o json \
       print k, (oom[k]?oom[k]:0), (c137[k]?c137[k]:0), (other[k]?other[k]:0), r[k], t[k]
     }
   }' \
-| sort -t$'\t' -k6,6r \
+| sort -t$'\t' -k7,7r \
 | { printf "NAMESPACE\tPOD\tOOM\t137\tOTHER\tRESTARTS\tLAST_TERMINATED_AT\n"; cat; } \
 | column -t -s$'\t'
