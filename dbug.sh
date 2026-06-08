@@ -60,7 +60,6 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
-   # Adaptive format checking inside awk
    if (length(pod_part) + length(con_part) + 2 <= 33) {
        display_name = pod_part ".*" con_part
    } else {
@@ -103,8 +102,8 @@ NR==FNR {
    m_req_str = sprintf("%.1f%%", mp_req);
    m_lim_str = sprintf("%.1f%%", mp_lim);
 
-   # Restoring original print format settings requested
-   printf "%10.2f|%-9s %-33s C: %5s %-12s ( %6s / %6s ) M: %7s %-16s ( %6s / %6s ) %s\n",
+   # Updated %-9s to %-8.8s to fix namespace length constraint
+   printf "%10.2f|%-8.8s %-33s C: %5s %-12s ( %6s / %6s ) M: %7s %-16s ( %6s / %6s ) %s\n",
           cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, c_req_str, c_lim_str, u_mem[$1$2$3], mem_res, m_req_str, m_lim_str, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
@@ -119,4 +118,18 @@ NR==FNR {
       .metadata.namespace as $ns |
       .metadata.name as $pod |
       (.status.containerStatuses // [] | map({key: .name, value: .}) | from_entries) as $statuses |
-      .
+      .spec.containers[] |
+      .name as $cname |
+      $statuses[$cname] as $status |
+      [
+         $ns,
+         $pod,
+         $cname,
+         (.resources.requests.cpu // "0" | to_ms | tostring | . + "m"),
+         (.resources.limits.cpu // "0" | to_ms | tostring | . + "m"),
+         (.resources.requests.memory // "0" | to_mib | tostring | . + "Mi"),
+         (.resources.limits.memory // "0" | to_mib | tostring | . + "Mi"),
+         ($status.restartCount // 0 | tostring),
+         ($status.lastState.terminated.finishedAt // "0" | tostring)
+      ] | @tsv') \
+| sort -t'|' -k1,1rn | cut -d '|' -f 2-
