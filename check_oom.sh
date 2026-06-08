@@ -1,8 +1,22 @@
 kubectl get pods -A -o json \
 | jq -r '.items[] | .metadata.namespace as $ns | .metadata.name as $pod | (.status.containerStatuses // [])[] |
-  select(.lastState.terminated.reason == "OOMKilled" or .lastState.terminated.exitCode == 137) |
-  [$ns, $pod, (.restartCount|tostring), (.lastState.terminated.finishedAt // "-")] | @tsv' \
-| awk -F'\t' 'BEGIN{OFS="\t"} {key=$1"\t"$2; c[key]++; r[key]=$3; t[key]=$4} END{for(k in c){print k, c[k], r[k], t[k]}}' \
-| sort -t$'\t' -k5,5r \
-| { printf "NAMESPACE\tPOD\tOOM_MATCH_COUNT\tRESTART_COUNT\tLAST_OOM_FINISHED_AT\n"; cat; } \
+  select(.lastState.terminated) |
+  .lastState.terminated as $t |
+  (if $t.reason == "OOMKilled" then "oom" elif $t.exitCode == 137 then "137" else "other" end) as $type |
+  [$ns, $pod, $type, (.restartCount|tostring), ($t.finishedAt // "-")] | @tsv' \
+| awk -F'\t' 'BEGIN{OFS="\t"} {
+    key=$1"\t"$2;
+    r[key]=$4;
+    t[key]=$5;
+    if ($3 == "oom") oom[key]++;
+    else if ($3 == "137") c137[key]++;
+    else other[key]++;
+  }
+  END {
+    for(k in r) {
+      print k, (oom[k]?oom[k]:0), (c137[k]?c137[k]:0), (other[k]?other[k]:0), r[k], t[k]
+    }
+  }' \
+| sort -t$'\t' -k7,7r \
+| { printf "NAMESPACE\tPOD\tOOM\t137\tOTHER\tRESTARTS\tLAST_TERMINATED_AT\n"; cat; } \
 | column -t -s$'\t'
