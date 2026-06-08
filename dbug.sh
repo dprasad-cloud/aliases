@@ -2,7 +2,6 @@ kubectl get pods -A -o json \
 | jq -r '.items[] | .metadata.namespace as $ns | .metadata.name as $pod | (.status.containerStatuses // [])[] |
   select(.lastState.terminated) |
   .lastState.terminated as $t |
-  # Determine type: "oom" if explicitly OOMKilled, "137" if exitCode 137 but not OOMKilled, "other" otherwise
   (if $t.reason == "OOMKilled" then "oom" elif $t.exitCode == 137 then "137" else "other" end) as $type |
   [$ns, $pod, $type, (.restartCount|tostring), ($t.finishedAt // "-")] | @tsv' \
 | awk -F'\t' 'BEGIN{OFS="\t"} {
@@ -19,5 +18,5 @@ kubectl get pods -A -o json \
     }
   }' \
 | sort -t$'\t' -k6,6r \
-| { printf "NAMESPACE\tPOD\tOOM_COUNT\tSIGKILL_137_COUNT\tOTHER_COUNT\tRESTART_COUNT\tLAST_TERMINATED_AT\n"; cat; } \
+| { printf "NAMESPACE\tPOD\tOOM\t137\tOTHER\tRESTARTS\tLAST_TERMINATED_AT\n"; cat; } \
 | column -t -s$'\t'
