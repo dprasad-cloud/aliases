@@ -79,6 +79,7 @@ NR==FNR {
    cpu_limits_fixed = sprintf("%-12s", sprintf("%s/%s", $3, $4));
    mem_limits_fixed = sprintf("%-16s", sprintf("%s/%s", $5, $6));
 
+   # Enforces max/min length constraints strictly to 9 characters on namespace ($1)
    printf "%10.2f|%-9.9s   %-27.27s   C: %5s %s %s   M: %7s %s %s   %-6s\n",
           mp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --no-headers) \
