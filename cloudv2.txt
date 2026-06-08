@@ -289,10 +289,9 @@ sortby() {
         next
     }
     {
-        print | "sort -h -k -r " args
+        print | "sort -r -h -k " args
     }'
 }
-sortbyoom() { sortby 3 -r; }
 
 grepie() { grep -iE "$@" | column -t; }
 cols() { awk '{for(i=1;i<=NF;i++) print "Column " i ": " $i; exit}'; }
