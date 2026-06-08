@@ -237,7 +237,8 @@ export midguest=guest.*$mid
 export midloki=loki.*$mid
 export midmonitoring=monitoring.*$mid
 export rabbitmq="rabbitmqctl list_queues name consumers messages messages_ready messages_unacknowledged | awk '\$3 > 0'"
-export flink="flink list"
+export flinkcheck="flink list"
+export redischeck="redis-cli cluster info"
 
 #Usage (ferr or ferr "search_key")
 unalias ferr 2>/dev/null || true
