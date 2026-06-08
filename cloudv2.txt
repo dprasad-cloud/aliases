@@ -289,7 +289,7 @@ sortby() {
         next
     }
     {
-        print | "sort -h -k" args
+        print | "sort -h -k -r" args
     }'
 }
 sortbyoom() { sortby 3 -r; }
