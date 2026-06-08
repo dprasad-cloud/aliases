@@ -60,18 +60,18 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
-   # Custom Strict Truncation Logic to preserve exactly 33 characters
+   # Custom exact format trimming logic
    if (length(pod_part) + length(con_part) + 1 <= 33) {
        display_name = pod_part "/" con_part
    } else {
        p_len = length(pod_part)
+       c_len = length(con_part)
+
+       p_start = substr(pod_part, 1, 16)
        p_end = (p_len >= 5) ? substr(pod_part, p_len - 4) : pod_part
+       c_trim = (c_len > 10) ? substr(con_part, c_len - 9) : con_part
 
-       start_len = 33 - 2 - 5 - 2 - length(con_part)
-       if (start_len < 1) start_len = 1
-
-       p_start = substr(pod_part, 1, start_len)
-       display_name = p_start ".*" p_end ".*" con_part
+       display_name = p_start ".*" p_end ".*" c_trim
    }
 
    time_ago = how_long_ago($9);
