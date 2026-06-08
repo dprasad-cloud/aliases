@@ -14,7 +14,7 @@ echo "--- Searching for pods matching '$SEARCH_TERM' ---"
 
 # Get matching pods: Namespace ($1), Name ($2), and Status ($4)
 # Added -i for case-insensitivity and -E for extended regex support as per your edit
-MATCHES=$(kubectl get pod -A | grep -iE "$SEARCH_TERM" | awk '{print $1 " " $2 " " $4}')
+MATCHES=$(kubectl get pod -A --sort-by='.metadata.creationTimestamp' | tac | grep -iE "$SEARCH_TERM" | awk '{print $1 " " $2 " " $4}')
 
 if [ -z "$MATCHES" ]; then
     echo "ERROR: No pods found matching '$SEARCH_TERM'."

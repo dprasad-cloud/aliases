@@ -43,7 +43,7 @@ while read NAMESPACE POD_NAME REST; do
     # 3. Execute the command
     eval "$CURRENT_EXEC_COMMAND"
 
-done < <(kubectl get pod -A | grep "$SEARCH_TERM" | grep -v 'NAME')
+done < <(kubectl get pod -A --sort-by='.metadata.creationTimestamp' | tac | grep "$SEARCH_TERM" | grep -v 'NAME')
 
 # Print Summary at the end
 echo -e "\n--- Description complete ($PODS_FOUND pods processed) ---"
