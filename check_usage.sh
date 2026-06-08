@@ -73,8 +73,15 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   printf "%10.2f|%-9.9s | %-27.27s | C: %-5s %-12s (%5.1f%% / %5.1f%%) | M: %-7s %-16s (%5.1f%% / %5.1f%%) | %-6s\n",
-          mp_req, $1, display_pod, u_cpu[$1$2], $3"/"$4, cp_req, cp_lim, u_mem[$1$2], $5"/"$6, mp_req, mp_lim, restart_info
+   c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
+   m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
+
+   cpu_limits_fixed = sprintf("%-12s", sprintf("%s/%s", $3, $4));
+   mem_limits_fixed = sprintf("%-16s", sprintf("%s/%s", $5, $6));
+
+   # FIXED: Reduced all multi-space gaps down to 1 single hardcoded space separation
+   printf "%10.2f|%-9.9s %-27.27s C: %5s %s %s M: %7s %s %s %-6s\n",
+          mp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
