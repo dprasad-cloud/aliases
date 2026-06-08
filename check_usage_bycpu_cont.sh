@@ -94,17 +94,17 @@ NR==FNR {
    raw_restart = ($8 > 0) ? ((time_ago != "") ? time_ago "(" $8 ")" : "(" $8 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   cpu_res = sprintf("%s/%s", $4, $5);
-   mem_res = sprintf("%s/%s", $6, $7);
+   # CRITICAL FIX: Explicitly format numbers right-aligned *inside* the parenthesis string wrapper
+   # This stops the character width changes from leaking out into the text column boundaries.
+   c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
+   m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
 
-   c_req_str = sprintf("%.1f%%", cp_req);
-   c_lim_str = sprintf("%.1f%%", cp_lim);
-   m_req_str = sprintf("%.1f%%", mp_req);
-   m_lim_str = sprintf("%.1f%%", mp_lim);
+   cpu_limits_fixed = sprintf("%-11s", sprintf("%s/%s", $4, $5));
+   mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $6, $7));
 
-   # Updated %-9s to %-8.8s to fix namespace length constraint
-   printf "%10.2f|%-8.8s %-33s C: %5s %-12s ( %6s / %6s ) M: %7s %-16s ( %6s / %6s ) %s\n",
-          cp_req, $1, display_name, u_cpu[$1$2$3], cpu_res, c_req_str, c_lim_str, u_mem[$1$2$3], mem_res, m_req_str, m_lim_str, restart_info
+   # All complex string segments are now rigid bounding blocks
+   printf "%10.2f|%-8.8s %-33s C: %5s %s %s M: %7s %s %s %s\n",
+          cp_req, $1, display_name, u_cpu[$1$2$3], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2$3], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
