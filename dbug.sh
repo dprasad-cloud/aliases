@@ -73,15 +73,12 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   # FIXED: Strict internal padding on percentages so spacing fluctuations don't leak
    c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
    m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
 
-   # FIXED: Freeze layout shifting by hard-padding limits combinations
    cpu_limits_fixed = sprintf("%-12s", sprintf("%s/%s", $3, $4));
    mem_limits_fixed = sprintf("%-16s", sprintf("%s/%s", $5, $6));
 
-   # Removed intermediate pipeline characters (|) inside printf to preserve output formatting post-sed
    printf "%10.2f|%-9.9s   %-27.27s   C: %5s %s %s   M: %7s %s %s   %-6s\n",
           mp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --no-headers) \
