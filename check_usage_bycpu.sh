@@ -73,18 +73,17 @@ NR==FNR {
    raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   cpu_res = sprintf("%s/%s", $3, $4);
-   mem_res = sprintf("%s/%s", $5, $6);
+   # FIXED: Lock float lengths inside localized block wrappers to freeze position shifts
+   c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
+   m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
 
-   # Flatten percentages into strings to prevent floating inner spaces
-   c_req_str = sprintf("%.1f%%", cp_req);
-   c_lim_str = sprintf("%.1f%%", cp_lim);
-   m_req_str = sprintf("%.1f%%", mp_req);
-   m_lim_str = sprintf("%.1f%%", mp_lim);
+   # FIXED: Rigidity-padded sub blocks for target resource limits
+   cpu_limits_fixed = sprintf("%-11s", sprintf("%s/%s", $3, $4));
+   mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $5, $6));
 
-   # Formatted output with explicit spacing layout and no trailing inner parentheses padding
-   printf "%10.2f|%-9s %-27s C: %5s %-12s ( %6s / %6s ) M: %7s %-16s ( %6s / %6s ) %s\n",
-          cp_req, $1, display_pod, u_cpu[$1$2], cpu_res, c_req_str, c_lim_str, u_mem[$1$2], mem_res, m_req_str, m_lim_str, restart_info
+   # Fixed structural layout blueprint matching the container-specific tool formatting
+   printf "%10.2f|%-8.8s %-27s C: %5s %s %s M: %7s %s %s %s\n",
+          cp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --no-headers) \
    <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
