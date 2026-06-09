@@ -62,26 +62,23 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
-   # 2. FIXED: Robust and clean podname.*containername string truncation
-   if (length(pod_part) + length(con_part) + 2 <= 33) {
-       display_name = pod_part ".*" con_part
+   # 2. FIXED: Multi-segment tracking allocation logic
+   raw_name = pod_part ".*" con_part
+   if (length(raw_name) <= 33) {
+       display_name = raw_name
    } else {
-       # Calculate how many characters we have available for the pod name string
-       # Max layout size (33) minus 2 chars (.*) minus container name length
-       avail_p = 33 - 2 - length(con_part);
+       # Fixed allocations for explicit identification:
+       # Total allowed = 33 characters. Two sets of ".*" consume 4 characters.
+       # Remaining space for structural metadata = 29 characters.
+       p_tail = (length(pod_part) >= 5) ? substr(pod_part, length(pod_part) - 4) : pod_part;
+       c_tail = (length(con_part) >= 12) ? substr(con_part, length(con_part) - 11) : con_part;
 
-       if (avail_p >= 7) {
-           # If we have space, cleanly clip the head of the pod name string
-           display_name = substr(pod_part, 1, avail_p) ".*" con_part
-       } else {
-           # If the container name is massive, preserve the final 12 characters of container name
-           # and give remaining allocation space over to the pod name string
-           c_trim = substr(con_part, length(con_part) - 11);
-           avail_p = 33 - 4 - length(c_trim); # account for double ".*" layout
-           if (avail_p < 4) avail_p = 4;
+       # Calculate dynamic remaining allocation left over for the pod head block
+       p_head_len = 33 - 4 - length(p_tail) - length(c_tail);
+       if (p_head_len < 3) p_head_len = 3; # Absolute baseline fallback structure
 
-           display_name = substr(pod_part, 1, avail_p) ".*" substr(pod_part, length(pod_part)-3) ".*" c_trim
-       }
+       p_head = substr(pod_part, 1, p_head_len);
+       display_name = p_head ".*" p_tail ".*" c_tail
    }
 
    time_ago = how_long_ago($9);
