@@ -293,7 +293,7 @@ sortby() {
     }'
 }
 
-grepie() { grep -iE "$@" | column -t; }
+grepie() { grep -iE "$@"; }
 cols() { awk '{for(i=1;i<=NF;i++) print "Column " i ": " $i; exit}'; }
 
 topcon() {
