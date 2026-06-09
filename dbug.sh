@@ -39,7 +39,7 @@ function how_long_ago(ts) {
     return int(diff/86400) "d";
 }
 
-# Process the top stream map
+# 1. Map top metrics securely using tab-separated keys
 NR==FNR {
     u_cpu[$1$2$3]=$4; u_mem[$1$2$3]=$5;
     next
@@ -47,9 +47,12 @@ NR==FNR {
 
 (pattern != "." && $0 !~ pattern) { next }
 
-($1$2$3) in u_cpu {
-   uc = to_m(u_cpu[$1$2$3]);
-   um = to_mi(u_mem[$1$2$3]);
+($1$2) in u_cpu || ($1$2$3) in u_cpu {
+   # Safeguard key lookups for both single and multi-container structures
+   k = (($1$2$3) in u_cpu) ? $1$2$3 : $1$2;
+   uc = to_m(u_cpu[k]);
+   um = to_mi(u_mem[k]);
+
    rc_val = to_m($4); lc_val = to_m($5);
    mr_val = to_mi($6); ml_val = to_mi($7);
 
@@ -61,6 +64,7 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
+   # 2. Re-scaffold the clean podname.*contname formatting block
    if (length(pod_part) + length(con_part) + 2 <= 33) {
        display_name = pod_part ".*" con_part
    } else {
@@ -102,7 +106,7 @@ NR==FNR {
    mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $6, $7));
 
    printf "%10.2f|%-9.9s %-33s C: %5s %s %s M: %7s %s %s %s\n",
-          cp_req, $1, display_name, u_cpu[$1$2$3], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2$3], mem_limits_fixed, m_pct_fixed, restart_info
+          cp_req, $1, display_name, u_cpu[k], cpu_limits_fixed, c_pct_fixed, u_mem[k], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
