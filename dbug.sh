@@ -62,20 +62,21 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
-   # 2. FIXED: Multi-segment tracking allocation logic
+   # 2. UPDATED: Precise multi-segment allocation (Max 33 chars)
    raw_name = pod_part ".*" con_part
    if (length(raw_name) <= 33) {
        display_name = raw_name
    } else {
-       # Fixed allocations for explicit identification:
-       # Total allowed = 33 characters. Two sets of ".*" consume 4 characters.
-       # Remaining space for structural metadata = 29 characters.
+       # Explicit allocations requested by user:
+       # Two delimiters ".*" = 4 characters total
+       # podtail length     = 5 characters
+       # conttail length    = 9 characters
        p_tail = (length(pod_part) >= 5) ? substr(pod_part, length(pod_part) - 4) : pod_part;
-       c_tail = (length(con_part) >= 12) ? substr(con_part, length(con_part) - 11) : con_part;
+       c_tail = (length(con_part) >= 9) ? substr(con_part, length(con_part) - 8) : con_part;
 
-       # Calculate dynamic remaining allocation left over for the pod head block
+       # Remaining space for pod head = 33 - 4 - 5 - 9 = 15 characters
        p_head_len = 33 - 4 - length(p_tail) - length(c_tail);
-       if (p_head_len < 3) p_head_len = 3; # Absolute baseline fallback structure
+       if (p_head_len < 1) p_head_len = 1;
 
        p_head = substr(pod_part, 1, p_head_len);
        display_name = p_head ".*" p_tail ".*" c_tail
