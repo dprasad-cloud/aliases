@@ -409,7 +409,7 @@ echo -e "\t checkcpu                                : (alias ccpu)    List cpu u
 echo -e "\t checkmem                                : (alias cmem)    List memory usage data of all the pods and summarize the usage"
 echo -e "\t checkusage <key>                        : (alias cu)      Check resource usage of the pods - sorted by memory usage"
 echo -e "\t checkusagebycpu <key>                   : (alias cubycpu) Check resource usage of the pods - sorted by cpu usage"
-echo -e "\t checkusagebycpu_con <key>               : (alias cucon)   Check resource usage of the pods - sorted by cpu usage"
+echo -e "\t checkusagebycpu_con <key>               : (alias cucon)   Check resource usage of the containers - sorted by cpu usage"
 echo -e "\t checkdisk <key>                         : (alias cdisk)   Check disk usage of the pods"
 echo -e "\t delpod <key>                            : !!!! Use with caution - Find the matching pods and delete all of them !!!!"
 echo -e "\n "
