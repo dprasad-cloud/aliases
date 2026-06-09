@@ -1,22 +1,14 @@
 #!/bin/bash
 FILTER=$1
-MODE=$2  # 'first' or 'all'
 NOW=$(date +%s)
 
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
-    pattern="."
+    PATTERN="."
 else
-    pattern="${FILTER// /[[:space:]]+}"
+    PATTERN="${FILTER// /[[:space:]]+}"
 fi
 
-# Determine JQ index: 0 for first, empty string for all
-if [[ "$MODE" == "first" ]]; then
-    idx="0"
-else
-    idx=":" # jq slice [:] means all
-fi
-
-awk -v now="$NOW" -v pattern="$pattern" -F '\t' 'BEGIN { OFS="|" }
+awk -v now="$NOW" -v pattern="$PATTERN" -F '\t' 'BEGIN { OFS="|" }
 
 function to_mi(val) {
    v = val "";
@@ -47,43 +39,72 @@ function how_long_ago(ts) {
     return int(diff/86400) "d";
 }
 
+# Process the top stream map
 NR==FNR {
-    split($0, a, /[[:space:]]+/);
-    u_cpu[a[1]a[2]]=a[3]; u_mem[a[1]a[2]]=a[4];
+    u_cpu[$1$2$3]=$4; u_mem[$1$2$3]=$5;
     next
 }
 
 (pattern != "." && $0 !~ pattern) { next }
 
-($1$2) in u_cpu {
-   uc = to_m(u_cpu[$1$2]);
-   um = to_mi(u_mem[$1$2]);
-   rc_val = to_m($3); lc_val = to_m($4);
-   mr_val = to_mi($5); ml_val = to_mi($6);
+($1$2$3) in u_cpu {
+   uc = to_m(u_cpu[$1$2$3]);
+   um = to_mi(u_mem[$1$2$3]);
+   rc_val = to_m($4); lc_val = to_m($5);
+   mr_val = to_mi($6); ml_val = to_mi($7);
 
    cp_req = (rc_val > 0) ? (uc / rc_val) * 100 : 0;
    cp_lim = (lc_val > 0) ? (uc / lc_val) * 100 : 0;
    mp_req = (mr_val > 0) ? (um / mr_val) * 100 : 0;
    mp_lim = (ml_val > 0) ? (um / ml_val) * 100 : 0;
 
-   p_name = $2;
-   display_pod = (length(p_name) > 27) ? substr(p_name, 1, 20) ".*" substr(p_name, length(p_name) - 4) : p_name;
+   pod_part = $2;
+   con_part = $3;
 
-   time_ago = how_long_ago($8);
-   raw_restart = ($7 > 0) ? ((time_ago != "") ? time_ago "(" $7 ")" : "(" $7 ")") : "-";
+   if (length(pod_part) + length(con_part) + 2 <= 33) {
+       display_name = pod_part ".*" con_part
+   } else {
+       p_len = length(pod_part)
+       c_len = length(con_part)
+
+       total_raw_len = p_len + c_len + 9
+       overflow = total_raw_len - 33
+
+       if (overflow > 0 && c_len > 10) {
+           c_reduction = (c_len - 10 >= overflow) ? overflow : (c_len - 10)
+           c_len = c_len - c_reduction
+           overflow = overflow - c_reduction
+       }
+
+       if (overflow > 0 && c_len > 5) {
+           c_reduction = (c_len - 5 >= overflow) ? overflow : (c_len - 5)
+           c_len = c_len - c_reduction
+       }
+
+       p_end = (p_len >= 5) ? substr(pod_part, p_len - 4) : pod_part
+       c_trim = substr(con_part, length(con_part) - c_len + 1)
+
+       start_len = 33 - 2 - 5 - 2 - length(c_trim)
+       if (start_len < 1) start_len = 1
+
+       p_start = substr(pod_part, 1, start_len)
+       display_name = p_start ".*" p_end ".*" c_trim
+   }
+
+   time_ago = how_long_ago($9);
+   raw_restart = ($8 > 0) ? ((time_ago != "") ? time_ago "(" $8 ")" : "(" $8 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
    c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
    m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
 
-   cpu_limits_fixed = sprintf("%-12s", sprintf("%s/%s", $3, $4));
-   mem_limits_fixed = sprintf("%-16s", sprintf("%s/%s", $5, $6));
+   cpu_limits_fixed = sprintf("%-11s", sprintf("%s/%s", $4, $5));
+   mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $6, $7));
 
-   # FIXED: Reduced all multi-space gaps down to 1 single hardcoded space separation
-   printf "%10.2f|%-9.9s %-27.27s C: %5s %s %s M: %7s %s %s %-6s\n",
-          mp_req, $1, display_pod, u_cpu[$1$2], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2], mem_limits_fixed, m_pct_fixed, restart_info
-}' <(kubectl top pods -A --no-headers) \
-   <(kubectl get pods -A -o json | jq -r --arg i "$idx" '.items[] | select(.status.phase == "Running") |
+   printf "%10.2f|%-9.9s %-33s C: %5s %s %s M: %7s %s %s %s\n",
+          cp_req, $1, display_name, u_cpu[$1$2$3], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2$3], mem_limits_fixed, m_pct_fixed, restart_info
+}' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
+   <(kubectl get pods -A -o json | jq -r '
       def to_ms: tostring | if endswith("m") then .[:-1] | tonumber elif contains(".") or (gsub("[^0-9.]"; "") | tonumber < 50) then (gsub("[^0-9.]"; "") | tonumber * 1000) else (gsub("[^0-9.]"; "") | tonumber) end;
       def to_mib: tostring |
         if endswith("Ki") then (sub("Ki";"") | tonumber / 1024)
@@ -91,16 +112,22 @@ NR==FNR {
         elif endswith("Gi") then (sub("Gi";"") | tonumber * 1024)
         elif endswith("G") then (sub("G";"") | tonumber * 1024)
         else (tonumber? // 0 / 1024 / 1024) end;
-      (.spec.containers | if $i == "0" then .[0:1] else . end) as $cs |
-      (.status.containerStatuses | if $i == "0" then .[0:1] else . end) as $ss |
+      .items[] | select(.status.phase == "Running") |
+      .metadata.namespace as $ns |
+      .metadata.name as $pod |
+      (.status.containerStatuses // [] | map({key: .name, value: .}) | from_entries) as $statuses |
+      .spec.containers[] |
+      .name as $cname |
+      $statuses[$cname] as $status |
       [
-         .metadata.namespace,
-         .metadata.name,
-         ([$cs[].resources.requests.cpu // "0"] | map(to_ms) | add | tostring + "m"),
-         ([$cs[].resources.limits.cpu // "0"] | map(to_ms) | add | tostring + "m"),
-         ([$cs[].resources.requests.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
-         ([$cs[].resources.limits.memory // "0"] | map(to_mib) | add | tostring + "Mi"),
-         ([$ss[].restartCount // 0] | add | tostring),
-         ([$ss[].lastState.terminated.finishedAt // "0"] | sort | last | tostring)
+         $ns,
+         $pod,
+         $cname,
+         (.resources.requests.cpu // "0" | to_ms | tostring | . + "m"),
+         (.resources.limits.cpu // "0" | to_ms | tostring | . + "m"),
+         (.resources.requests.memory // "0" | to_mib | tostring | . + "Mi"),
+         (.resources.limits.memory // "0" | to_mib | tostring | . + "Mi"),
+         ($status.restartCount // 0 | tostring),
+         ($status.lastState.terminated.finishedAt // "0" | tostring)
       ] | @tsv') \
-| sort -t'|' -k1,1rn | cut -d '|' -f 2- | sed 's/|/ /g'
+| sort -t'|' -k1,1rn | cut -d '|' -f 2-
