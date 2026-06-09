@@ -39,6 +39,7 @@ function how_long_ago(ts) {
     return int(diff/86400) "d";
 }
 
+# 1. Map top metrics securely using tab-separated keys
 NR==FNR {
     u_cpu[$1$2$3]=$4; u_mem[$1$2$3]=$5;
     next
@@ -49,6 +50,7 @@ NR==FNR {
 ($1$2$3) in u_cpu {
    uc = to_m(u_cpu[$1$2$3]);
    um = to_mi(u_mem[$1$2$3]);
+
    rc_val = to_m($4); lc_val = to_m($5);
    mr_val = to_mi($6); ml_val = to_mi($7);
 
@@ -60,50 +62,37 @@ NR==FNR {
    pod_part = $2;
    con_part = $3;
 
-   if (length(pod_part) + length(con_part) + 2 <= 33) {
-       display_name = pod_part ".*" con_part
+   # 2. UPDATED: Precise multi-segment allocation (Max 33 chars)
+   raw_name = pod_part ".*" con_part
+   if (length(raw_name) <= 33) {
+       display_name = raw_name
    } else {
-       p_len = length(pod_part)
-       c_len = length(con_part)
+       # Explicit allocations requested by user:
+       # Two delimiters ".*" = 4 characters total
+       # podtail length     = 5 characters
+       # conttail length    = 9 characters
+       p_tail = (length(pod_part) >= 5) ? substr(pod_part, length(pod_part) - 4) : pod_part;
+       c_tail = (length(con_part) >= 9) ? substr(con_part, length(con_part) - 8) : con_part;
 
-       total_raw_len = p_len + c_len + 9
-       overflow = total_raw_len - 33
+       # Remaining space for pod head = 33 - 4 - 5 - 9 = 15 characters
+       p_head_len = 33 - 4 - length(p_tail) - length(c_tail);
+       if (p_head_len < 1) p_head_len = 1;
 
-       if (overflow > 0 && c_len > 10) {
-           c_reduction = (c_len - 10 >= overflow) ? overflow : (c_len - 10)
-           c_len = c_len - c_reduction
-           overflow = overflow - c_reduction
-       }
-
-       if (overflow > 0 && c_len > 5) {
-           c_reduction = (c_len - 5 >= overflow) ? overflow : (c_len - 5)
-           c_len = c_len - c_reduction
-       }
-
-       p_end = (p_len >= 5) ? substr(pod_part, p_len - 4) : pod_part
-       c_trim = substr(con_part, length(con_part) - c_len + 1)
-
-       start_len = 33 - 2 - 5 - 2 - length(c_trim)
-       if (start_len < 1) start_len = 1
-
-       p_start = substr(pod_part, 1, start_len)
-       display_name = p_start ".*" p_end ".*" c_trim
+       p_head = substr(pod_part, 1, p_head_len);
+       display_name = p_head ".*" p_tail ".*" c_tail
    }
 
    time_ago = how_long_ago($9);
    raw_restart = ($8 > 0) ? ((time_ago != "") ? time_ago "(" $8 ")" : "(" $8 ")") : "-";
    restart_info = substr(raw_restart, 1, 6);
 
-   # CRITICAL FIX: Explicitly format numbers right-aligned *inside* the parenthesis string wrapper
-   # This stops the character width changes from leaking out into the text column boundaries.
    c_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", cp_req, cp_lim);
    m_pct_fixed = sprintf("( %6.1f%% / %5.1f%% )", mp_req, mp_lim);
 
    cpu_limits_fixed = sprintf("%-11s", sprintf("%s/%s", $4, $5));
    mem_limits_fixed = sprintf("%-15s", sprintf("%s/%s", $6, $7));
 
-   # All complex string segments are now rigid bounding blocks
-   printf "%10.2f|%-8.8s %-33s C: %5s %s %s M: %7s %s %s %s\n",
+   printf "%10.2f|%-9.9s %-33s C: %5s %s %s M: %7s %s %s %s\n",
           cp_req, $1, display_name, u_cpu[$1$2$3], cpu_limits_fixed, c_pct_fixed, u_mem[$1$2$3], mem_limits_fixed, m_pct_fixed, restart_info
 }' <(kubectl top pods -A --containers --no-headers | awk '{print $1"\t"$2"\t"$3"\t"$4"\t"$5}') \
    <(kubectl get pods -A -o json | jq -r '
