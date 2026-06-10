@@ -240,15 +240,23 @@ export rabbitmq="rabbitmqctl list_queues name consumers messages messages_ready 
 export flink="flink list"
 export redis="redis-cli cluster info"
 export postgres="pg_isready -U postgres"
+khelp() {
+    if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+        echo "Options (Passed via Environment Variables):"
+        echo "  pod=pod-name    (Default: default-kafka-0)"
+        echo "  bs=kafka-url    (Default: common-kafka.common:9092)"
+        echo "  kconsume <topic>"
+        return 0
+    fi
+    return 1 # Signifies: "No help requested, keep going."
+}
 kconsume() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_topic="$1"
     local my_bs="${bs:-common-kafka.common:9092}"
-
-    if [ -z "$pod_pattern" ]; then
-        echo "Usage: pod=default-kafka-0 - default is default-kafka-0"
-        echo "Usage: bs=kafka-url - default is common-kafka.common:9092"
-        echo "Usage: kconsume <podname> <topic>"
+    if khelp "$1"; then return 0; fi
+    if [ -z "$my_topic" ]; then
+        echo "Usage: kconsume <topic>"
         return 1
     fi
     local kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server $my_bs --from-beginning --topic $my_topic"
@@ -258,13 +266,7 @@ kconsume() {
 klist() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_bs="${bs:-common-kafka.common:9092}"
-
-    if [ -z "$pod_pattern" ]; then
-        echo "Usage: pod=default-kafka-0 - default is default-kafka-0"
-        echo "Usage: bs=kafka-url - default is common-kafka.common:9092"
-        echo "Usage: klist"
-        return 1
-    fi
+    if khelp "$1"; then return 0; fi
     local kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server $my_bs --list"
     # Dynamically constructs the string and passes it directly to podexec
     podexec "$pod_pattern" "$kafkalist"
@@ -272,13 +274,7 @@ klist() {
 kcluster() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_bs="${bs:-common-kafka.common:9092}"
-
-    if [ -z "$pod_pattern" ]; then
-        echo "Usage: pod=default-kafka-0 - default is default-kafka-0"
-        echo "Usage: bs=kafka-url - default is common-kafka.common:9092"
-        echo "Usage: kcluster <podname>"
-        return 1
-    fi
+    if khelp "$1"; then return 0; fi
     local kafkacluster="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server $my_bs"
     # Dynamically constructs the string and passes it directly to podexec
     podexec "$pod_pattern" "$kafkacluster"
