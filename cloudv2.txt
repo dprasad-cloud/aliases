@@ -246,6 +246,8 @@ khelp() {
         echo "  pod=pod-name    (Default: default-kafka-0)"
         echo "  bs=kafka-url    (Default: common-kafka.common:9092)"
         echo "  kconsume <topic>"
+        echo "  klist           (List all topics in the cluster)"
+        echo "  kcluster        (Check if the cluster is up by getting the cluster ID)"
         return 0
     fi
     return 1 # Signifies: "No help requested, keep going."
