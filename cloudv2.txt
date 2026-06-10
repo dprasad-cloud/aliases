@@ -487,6 +487,7 @@ echo -e "\t klist                                   : List all topics in the com
 echo -e "\t kconsume <topic>                        : Consume messages from the specified topic in the common-kafka.common cluster"
 echo -e "\n "
 echo -e "\t                                           Cluster can be overridden by setting variable bs=kafka-url:9092"
+echo -e "\t                                           Executing pod can be overridden by setting variable pod=common-kafka-0"
 echo -e "\n "
 echo -e "\t loop <command>                          : loop the provided command every 5 seconds"
 echo -e "\t loop15 <command>                        : loop the provided command every 15 seconds"
