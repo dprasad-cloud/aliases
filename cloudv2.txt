@@ -264,7 +264,7 @@ get_bs() {
     fi
     echo "common-kafka.common:9092"
 }
-kconsume() {
+kconsume_beginning() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_topic="$1"
     local my_bs=$(get_bs)
@@ -275,6 +275,47 @@ kconsume() {
     fi
     local kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server $my_bs --from-beginning --topic $my_topic"
     # Dynamically constructs the string and passes it directly to podexec
+    podexec "$pod_pattern" "$kafkaconsume"
+}
+kconsume_new() {
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_topic="$1"
+
+    if khelp "$my_topic"; then return 0; fi
+
+    if [ -z "$my_topic" ]; then
+        echo "Usage: kconsume_new <topic>"
+        return 1
+    fi
+
+    local my_bs=$(get_bs)
+    # Omitting --from-beginning makes Kafka start reading from 'latest' offset
+    local kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server $my_bs --topic $my_topic"
+
+    echo "Streaming ONLY NEW messages from Bootstrap Server: $my_bs"
+    podexec "$pod_pattern" "$kafkaconsume"
+}
+
+# 2. Read LAST N messages
+kconsume_last() {
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_topic="$1"
+    local num_messages="${2:-10}" # Defaults to 10 messages if not specified
+
+    if khelp "$my_topic"; then return 0; fi
+
+    if [ -z "$my_topic" ]; then
+        echo "Usage: kconsume_last <topic> [number_of_messages]"
+        return 1
+    fi
+
+    local my_bs=$(get_bs)
+
+    # We use --from-beginning to fetch historical data, then pipe to tail inside the pod
+    # to display only the last N messages cleanly.
+    local kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server $my_bs --from-beginning --topic $my_topic --max-messages 5000 2>/dev/null | tail -n $num_messages"
+
+    echo "Fetching last $num_messages messages (searching up to last 5000) from Bootstrap Server: $my_bs"
     podexec "$pod_pattern" "$kafkaconsume"
 }
 klist() {
@@ -475,7 +516,9 @@ echo -e "\t topnode <node>                          : Find the pods which are ru
 echo -e "\n "
 echo -e "\t kcluster                                : Check if the common-kafka.common cluster is up by getting the cluster ID"
 echo -e "\t klist                                   : List all topics in the common-kafka.common cluster"
-echo -e "\t kconsume <topic>                        : Consume messages from the specified topic in the common-kafka.common cluster"
+echo -e "\t kconsume_beginning <topic>              : Consume messages from the beginning from the specified topic in the common-kafka.common cluster"
+echo -e "\t kconsume_last <topic> [n]               : Consume last n messages (default 10) from the specified topic in the common-kafka.common cluster"
+echo -e "\t kconsume_new <topic>                    : Consume new messages from the specified topic in the common-kafka.common cluster"
 echo -e "\n "
 echo -e "\t                                           Cluster can be overridden by setting variable bs=kafka-url:9092"
 echo -e "\t                                           Executing pod can be overridden by setting variable pod=common-kafka-0"
