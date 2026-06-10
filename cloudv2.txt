@@ -241,12 +241,14 @@ export flink="flink list"
 export redis="redis-cli cluster info"
 export postgres="pg_isready -U postgres"
 kconsume() {
-    local pod_pattern=$1
-    local my_topic="$2"
-    local my_bs="${3:-common-kafka:9092}" # Defaults to common-kafka:9092 if omitted
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_topic="$1"
+    local my_bs="${bs:-common-kafka.common:9092}"
 
     if [ -z "$pod_pattern" ]; then
-        echo "Usage: kconsume <podname> <topic> [bootstrap_server]"
+        echo "Usage: pod=default-kafka-0 - default is default-kafka-0"
+        echo "Usage: bs=kafka-url - default is common-kafka.common:9092"
+        echo "Usage: kconsume <podname> <topic>"
         return 1
     fi
     local kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server $my_bs --from-beginning --topic $my_topic"
@@ -254,11 +256,13 @@ kconsume() {
     podexec "$pod_pattern" "$kafkaconsume"
 }
 klist() {
-    local pod_pattern=$1
-    local my_bs="${2:-common-kafka:9092}" # Defaults to common-kafka:9092 if omitted
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_bs="${bs:-common-kafka.common:9092}"
 
     if [ -z "$pod_pattern" ]; then
-        echo "Usage: klist <podname> [bootstrap_server]"
+        echo "Usage: pod=default-kafka-0 - default is default-kafka-0"
+        echo "Usage: bs=kafka-url - default is common-kafka.common:9092"
+        echo "Usage: klist"
         return 1
     fi
     local kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server $my_bs --list"
@@ -266,11 +270,13 @@ klist() {
     podexec "$pod_pattern" "$kafkalist"
 }
 kcluster() {
-    local pod_pattern=$1
-    local my_bs="${2:-common-kafka:9092}" # Defaults to common-kafka:9092 if omitted
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_bs="${bs:-common-kafka.common:9092}"
 
     if [ -z "$pod_pattern" ]; then
-        echo "Usage: kcluster <podname> [bootstrap_server]"
+        echo "Usage: pod=default-kafka-0 - default is default-kafka-0"
+        echo "Usage: bs=kafka-url - default is common-kafka.common:9092"
+        echo "Usage: kcluster <podname>"
         return 1
     fi
     local kafkacluster="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server $my_bs"
