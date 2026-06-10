@@ -240,22 +240,43 @@ export rabbitmq="rabbitmqctl list_queues name consumers messages messages_ready 
 export flink="flink list"
 export redis="redis-cli cluster info"
 export postgres="pg_isready -U postgres"
-export kafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server"
-export commonkafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic "
-export commonkafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server common-kafka:9092 --list"
-kafkaconsume() {
-    local topic="$2"
-    local server="${1:-common-kafka:9092}"
+kconsume() {
+    local pod_pattern=$1
+    local my_topic="$2"
+    local my_bs="${3:-common-kafka:9092}" # Defaults to common-kafka:9092 if omitted
 
-    if [ -z "$topic" ]; then
-        echo "Error: Topic name is required." >&2
+    if [ -z "$pod_pattern" ]; then
+        echo "Usage: kconsume <podname> <topic> [bootstrap_server]"
         return 1
     fi
-
-    # Constructs and echoes the string
-    echo "unset JMX_PORT; kafka-console-consumer.sh --bootstrap-server $server --from-beginning --topic $topic"
+    local kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server $my_bs --from-beginning --topic $my_topic"
+    # Dynamically constructs the string and passes it directly to podexec
+    podexec "$pod_pattern" "$kafkaconsume"
 }
-export kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server common-kafka:9092 --list"
+klist() {
+    local pod_pattern=$1
+    local my_bs="${2:-common-kafka:9092}" # Defaults to common-kafka:9092 if omitted
+
+    if [ -z "$pod_pattern" ]; then
+        echo "Usage: klist <podname> [bootstrap_server]"
+        return 1
+    fi
+    local kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server $my_bs --list"
+    # Dynamically constructs the string and passes it directly to podexec
+    podexec "$pod_pattern" "$kafkalist"
+}
+kcluster() {
+    local pod_pattern=$1
+    local my_bs="${2:-common-kafka:9092}" # Defaults to common-kafka:9092 if omitted
+
+    if [ -z "$pod_pattern" ]; then
+        echo "Usage: kcluster <podname> [bootstrap_server]"
+        return 1
+    fi
+    local kafkacluster="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server $my_bs"
+    # Dynamically constructs the string and passes it directly to podexec
+    podexec "$pod_pattern" "$kafkacluster"
+}
 
 #Usage (ferr or ferr "search_key")
 unalias ferr 2>/dev/null || true
