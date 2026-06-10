@@ -551,7 +551,7 @@ echo -e "\t klist                                   : List all topics in the kaf
 echo -e "\t kconsume_beginning <topic>              : Consume messages from the beginning from the specified topic"
 echo -e "\t kconsume_last <topic> [n]               : Consume last n messages (default 10) from the specified topic"
 echo -e "\t kconsume <topic>                        : Consume new messages from the specified topic"
-echo -e "\t kexecute <command>                      : Execute the specified kafka command. Example: kexecute \"kafka-topics.sh --list\""
+echo -e "\t kexecute <command>                      : Execute the specified kafka command. Ex: kexecute \"kafka-consumer-groups.sh --list\""
 echo -e "\n "
 echo -e "\t                                           By default, the above Kafka commands target common-kafka.common:9092"
 echo -e "\t                                           Cluster can be overridden by setting variable bs=kafka-url:9092"
