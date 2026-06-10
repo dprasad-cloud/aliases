@@ -243,6 +243,19 @@ export postgres="pg_isready -U postgres"
 export kafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server"
 export commonkafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic "
 export commonkafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server common-kafka:9092 --list"
+kafkaconsume() {
+    local topic="$2"
+    local server="${1:-common-kafka:9092}"
+
+    if [ -z "$topic" ]; then
+        echo "Error: Topic name is required." >&2
+        return 1
+    fi
+
+    # Constructs and echoes the string
+    echo "unset JMX_PORT; kafka-console-consumer.sh --bootstrap-server $server --from-beginning --topic $topic"
+}
+export kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server common-kafka:9092 --list"
 
 #Usage (ferr or ferr "search_key")
 unalias ferr 2>/dev/null || true
