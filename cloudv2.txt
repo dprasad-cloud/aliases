@@ -243,11 +243,11 @@ export postgres="pg_isready -U postgres"
 khelp() {
     if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
         echo " "
-        echo "Options (Passed via Environment Variables):"
+        echo " Options (Passed via Environment Variables):"
         echo "  pod=pod-name    (Default: default-kafka-0)"
         echo "  bs=kafka-url    (Default: common-kafka.common:9092)"
         echo " "
-        echo "Usage: "
+        echo " Usage: "
         echo "  klist           (List all topics in the cluster)"
         echo "  kcluster        (Check if the cluster is up by getting the cluster ID)"
         echo "  kconsume <topic>"
