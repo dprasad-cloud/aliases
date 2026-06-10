@@ -277,7 +277,7 @@ kconsume_beginning() {
     # Dynamically constructs the string and passes it directly to podexec
     podexec "$pod_pattern" "$kafkaconsume"
 }
-kconsume_new() {
+kconsume() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_topic="$1"
 
@@ -297,7 +297,7 @@ kconsume_new() {
 }
 
 # 2. Read LAST N messages
-kconsume() {
+kconsume_last() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_topic="$1"
     local num_messages="${2:-10}" # Defaults to 10 messages if not specified
@@ -517,8 +517,8 @@ echo -e "\n "
 echo -e "\t kcluster                                : Check if the common-kafka.common cluster is up by getting the cluster ID"
 echo -e "\t klist                                   : List all topics in the common-kafka.common cluster"
 echo -e "\t kconsume_beginning <topic>              : Consume messages from the beginning from the specified topic in the common-kafka.common cluster"
-echo -e "\t kconsume <topic> [n]                    : Consume last n messages (default 10) from the specified topic in the common-kafka.common cluster"
-echo -e "\t kconsume_new <topic>                    : Consume new messages from the specified topic in the common-kafka.common cluster"
+echo -e "\t kconsume_last <topic> [n]               : Consume last n messages (default 10) from the specified topic in the common-kafka.common cluster"
+echo -e "\t kconsume <topic>                        : Consume new messages from the specified topic in the common-kafka.common cluster"
 echo -e "\n "
 echo -e "\t                                           Cluster can be overridden by setting variable bs=kafka-url:9092"
 echo -e "\t                                           Executing pod can be overridden by setting variable pod=common-kafka-0"
