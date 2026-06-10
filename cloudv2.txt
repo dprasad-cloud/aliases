@@ -256,10 +256,27 @@ khelp() {
     fi
     return 1 # Signifies: "No help requested, keep going."
 }
+get_bs() {
+    # If global $bs is explicitly set by you, respect it first
+    if [ -n "$bs" ]; then
+        echo "$bs"
+        return 0
+    fi
+
+    # Look for an AWS ExternalName endpoint
+    local ext_url=$(fsvc "on .*common-kafka" 2>/dev/null | awk '/ExternalName/ {print $5}')
+
+    if [ -n "$ext_url" ] && [ "$ext_url" != "<none>" ]; then
+        echo "${ext_url}:9092"
+    else
+        # Local fallback
+        echo "common-kafka.common:9092"
+    fi
+}
 kconsume() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_topic="$1"
-    local my_bs="${bs:-common-kafka.common:9092}"
+    local my_bs=$(get_bs)
     if khelp "$1"; then return 0; fi
     if [ -z "$my_topic" ]; then
         echo "Usage: kconsume <topic>"
@@ -271,7 +288,7 @@ kconsume() {
 }
 klist() {
     local pod_pattern="${pod:-default-kafka-0}"
-    local my_bs="${bs:-common-kafka.common:9092}"
+    local my_bs=$(get_bs)
     if khelp "$1"; then return 0; fi
     local kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server $my_bs --list"
     # Dynamically constructs the string and passes it directly to podexec
@@ -279,7 +296,7 @@ klist() {
 }
 kcluster() {
     local pod_pattern="${pod:-default-kafka-0}"
-    local my_bs="${bs:-common-kafka.common:9092}"
+    local my_bs=$(get_bs)
     if khelp "$1"; then return 0; fi
     local kafkacluster="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server $my_bs"
     # Dynamically constructs the string and passes it directly to podexec
