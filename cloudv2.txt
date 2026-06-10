@@ -262,16 +262,7 @@ get_bs() {
         echo "$bs"
         return 0
     fi
-
-    # Look for an AWS ExternalName endpoint
-    local ext_url=$(fsvc "on .*common-kafka" 2>/dev/null | awk '/ExternalName/ {print $5}')
-
-    if [ -n "$ext_url" ] && [ "$ext_url" != "<none>" ]; then
-        echo "${ext_url}:9092"
-    else
-        # Local fallback
-        echo "common-kafka.common:9092"
-    fi
+    echo "common-kafka.common:9092"
 }
 kconsume() {
     local pod_pattern="${pod:-default-kafka-0}"
