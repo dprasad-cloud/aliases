@@ -241,8 +241,8 @@ export flink="flink list"
 export redis="redis-cli cluster info"
 export postgres="pg_isready -U postgres"
 export kafka="unset JMX_PORT; bin/kafka-cluster.sh cluster-id --bootstrap-server"
-export kafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server localhost:9092 --from-beginning --topic "
-export kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server localhost:9092 --list"
+export commonkafkaconsume="unset JMX_PORT; kafka-console-consumer.sh -bootstrap-server common-kafka:9092 --from-beginning --topic "
+export commonkafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server common-kafka:9092 --list"
 
 #Usage (ferr or ferr "search_key")
 unalias ferr 2>/dev/null || true
