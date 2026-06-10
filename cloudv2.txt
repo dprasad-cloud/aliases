@@ -336,25 +336,35 @@ kcluster() {
 }
 kexecute() {
     local pod_pattern="${pod:-default-kafka-0}"
-    local custom_cmd="$1"
 
-    if khelp "$custom_cmd"; then return 0; fi
+    # 1. Check if the very first argument is a help flag
+    if khelp "$1"; then return 0; fi
 
-    if [ -z "$custom_cmd" ]; then
-        echo "Usage: kexecute \"kafka-tool-name.sh [arguments]\""
-        echo "Example: kexecute \"kafka-topics.sh --list\""
+    if [ -z "$1" ]; then
+        echo "Usage: kexecute kafka-tool-name.sh [arguments]"
+        echo "Example: kexecute kafka-topics.sh --list"
         return 1
     fi
 
+    # 2. Dynamically grab the bootstrap server
     local my_bs=$(get_bs)
-    local script_name="${custom_cmd%% *}"
-    local script_args="${custom_cmd#* }"
 
-    local finalized_cmd="${script_name} --bootstrap-server ${my_bs} ${script_args}"
-    local full_payload="unset JMX_PORT; $finalized_cmd"
+    # 3. Extract the first argument (the script name)
+    local script_name="$1"
+
+    # 4. Shift the arguments over by one, leaving only the remaining options
+    shift
+
+    # 5. Automatically stitch it together using "$@" to preserve all remaining arguments
+    local finalized_cmd="${script_name} --bootstrap-server ${my_bs} \"\$@\""
+
+    # 6. Wrap it in JMX environment cleanup
+    local full_payload="unset JMX_PORT; ${script_name} --bootstrap-server ${my_bs} \$*"
 
     echo "Executing on pod ($pod_pattern) against ($my_bs)..."
-    podexec "$pod_pattern" "$full_payload"
+
+    # We pass the full string to podexec, letting Bash expand all the raw arguments safely
+    podexec "$pod_pattern" "unset JMX_PORT; ${script_name} --bootstrap-server ${my_bs} $*"
 }
 
 #Usage (ferr or ferr "search_key")
