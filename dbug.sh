@@ -31,7 +31,25 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
         disk_info=$(timeout 4s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>/dev/null | grep -iE "kafka|data|/dev/sd|/dev/nvme|helm" | grep -v "Filesystem")
 
         if [ -n "$disk_info" ]; then
-            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''BEGIN{OFS="\t"} {print ns, pod, container, $1, $2, $3, $4, $5, $6}'\''
+            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
+                BEGIN { OFS="\t" }
+                {
+                    display_pod = pod
+                    if (length(pod) > 33) {
+                        # Find the position of the last hyphen to safely separate the hash suffix
+                        match(pod, /-[^-]*$/)
+                        if (RSTART > 0) {
+                            prefix = substr(pod, 1, RSTART - 1)
+                            suffix = substr(pod, length(pod) - 4)
+                            display_pod = prefix ".*" suffix
+                        } else {
+                            # Fallback if no hyphen exists
+                            display_pod = substr(pod, 1, 26) ".*" substr(pod, length(pod) - 4)
+                        }
+                    }
+                    print ns, display_pod, container, $1, $2, $3, $4, $5, $6
+                }
+            '\''
         fi
     done
 ' | sort -t$'\t' -k8,8n 2>/dev/null | column -t -s $'\t'
