@@ -34,21 +34,29 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
                 BEGIN { OFS="\t" }
                 {
+                    # --- Truncate Pod Name ---
                     display_pod = pod
                     if (length(pod) > 33) {
-                        # Extract the final 5 characters
-                        suffix = substr(pod, length(pod) - 4)
-                        # Slice the prefix to exactly 26 chars to accommodate the 7-char ".*XXXXX" suffix
-                        prefix = substr(pod, 1, 26)
-
-                        # If the 26th character lands inside a trailing hyphen, clean it up
-                        if (substr(prefix, length(prefix)) == "-") {
-                            prefix = substr(prefix, 1, 25)
+                        suffix_pod = substr(pod, length(pod) - 4)
+                        prefix_pod = substr(pod, 1, 26)
+                        if (substr(prefix_pod, length(prefix_pod)) == "-") {
+                            prefix_pod = substr(prefix_pod, 1, 25)
                         }
-
-                        display_pod = prefix ".*" suffix
+                        display_pod = prefix_pod ".*" suffix_pod
                     }
-                    print ns, display_pod, container, $1, $2, $3, $4, $5, $6
+
+                    # --- Truncate Container Name ---
+                    display_container = container
+                    if (length(container) > 33) {
+                        suffix_con = substr(container, length(container) - 4)
+                        prefix_con = substr(container, 1, 26)
+                        if (substr(prefix_con, length(prefix_con)) == "-") {
+                            prefix_con = substr(prefix_con, 1, 25)
+                        }
+                        display_container = prefix_con ".*" suffix_con
+                    }
+
+                    print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
                 }
             '\''
         fi
