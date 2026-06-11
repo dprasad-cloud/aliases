@@ -34,7 +34,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
                 BEGIN { OFS="\t" }
                 {
-                    # --- Truncate Pod Name ---
+                    # --- Truncate Pod Name (Max 33) ---
                     display_pod = pod
                     if (length(pod) > 33) {
                         suffix_pod = substr(pod, length(pod) - 4)
@@ -45,13 +45,13 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
                         display_pod = prefix_pod ".*" suffix_pod
                     }
 
-                    # --- Truncate Container Name ---
+                    # --- Truncate Container Name (Max 27) ---
                     display_container = container
-                    if (length(container) > 33) {
+                    if (length(container) > 27) {
                         suffix_con = substr(container, length(container) - 4)
-                        prefix_con = substr(container, 1, 26)
+                        prefix_con = substr(container, 1, 20)
                         if (substr(prefix_con, length(prefix_con)) == "-") {
-                            prefix_con = substr(prefix_con, 1, 25)
+                            prefix_con = substr(prefix_con, 1, 19)
                         }
                         display_container = prefix_con ".*" suffix_con
                     }
