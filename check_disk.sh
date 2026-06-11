@@ -19,7 +19,7 @@ fi
 TOTAL_PODS=$(echo "$POD_LIST" | grep -c '^')
 
 if [ "$TOTAL_PODS" -gt 20 ]; then
-    echo "#Running checkdisk on more apps can take up to 40 sec"
+    echo "# !!! Running checkdisk on more apps can take up to 40 sec"
 fi
 
 # Process pods with a hard Linux-level timeout
