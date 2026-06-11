@@ -15,6 +15,13 @@ else
     POD_LIST=$(awk '{if ($1 && $2 && $1 != "NAMESPACE") print $1"/"$2}')
 fi
 
+# Count total pods to evaluate execution delay warning
+TOTAL_PODS=$(echo "$POD_LIST" | grep -c '^')
+
+if [ "$TOTAL_PODS" -gt 20 ]; then
+    echo "#Running checkdisk on more apps can take up to 40 sec"
+fi
+
 # Process pods with a hard Linux-level timeout
 echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     ns_pod="{}"
