@@ -409,11 +409,13 @@ loop15() { while true; do date; eval "$@"; echo -e "\n"; sleep 15; done; }
 awkprint() { awk -v col="${1:-1}" '{print $col}' ;}
 sortby() {
     awk -v args="$*" '
+    # Print and skip headers
     NR==1 && ($1 ~ /^(NAMESPACE|POD|NAME|ID)$/ || $2 ~ /^(POD|NAME)$/) {
         print;
         next
     }
-    {
+    # Ignore lines starting with # or a blank space, then sort the rest
+    !/^[# ]/ {
         print | "sort -r -h -k " args
     }'
 }
