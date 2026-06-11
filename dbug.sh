@@ -36,16 +36,17 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
                 {
                     display_pod = pod
                     if (length(pod) > 33) {
-                        # Find the position of the last hyphen to safely separate the hash suffix
-                        match(pod, /-[^-]*$/)
-                        if (RSTART > 0) {
-                            prefix = substr(pod, 1, RSTART - 1)
-                            suffix = substr(pod, length(pod) - 4)
-                            display_pod = prefix ".*" suffix
-                        } else {
-                            # Fallback if no hyphen exists
-                            display_pod = substr(pod, 1, 26) ".*" substr(pod, length(pod) - 4)
+                        # Extract the final 5 characters
+                        suffix = substr(pod, length(pod) - 4)
+                        # Slice the prefix to exactly 26 chars to accommodate the 7-char ".*XXXXX" suffix
+                        prefix = substr(pod, 1, 26)
+
+                        # If the 26th character lands inside a trailing hyphen, clean it up
+                        if (substr(prefix, length(prefix)) == "-") {
+                            prefix = substr(prefix, 1, 25)
                         }
+
+                        display_pod = prefix ".*" suffix
                     }
                     print ns, display_pod, container, $1, $2, $3, $4, $5, $6
                 }
