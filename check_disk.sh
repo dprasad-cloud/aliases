@@ -21,10 +21,44 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     ns="${ns_pod%/*}"
     pod="${ns_pod#*/}"
 
-    # Use the Linux "timeout" utility to forcefully kill kubectl after 4 seconds if it freezes
-    disk_info=$(timeout 4s kubectl exec "$pod" -n "$ns" -- df -h 2>/dev/null | grep -iE "kafka|data|/dev/sd|/dev/nvme" | grep -v "Filesystem")
+    # Get only the names of containers that are currently in a "running" state
+    running_containers=$(timeout 3s kubectl get pod "$pod" -n "$ns" -o jsonpath="{range .status.containerStatuses[?(@.state.running)]}{.name}{\"\n\"}{end}" 2>/dev/null)
 
-    if [ -n "$disk_info" ]; then
-        echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" '\''BEGIN{OFS="\t"} {print ns, pod, $1, $2, $3, $4, $5, $6}'\''
-    fi
-' | sort -t$'\t' -k7,7n 2>/dev/null | column -t -s $'\t'
+    for container in $running_containers; do
+        [ -z "$container" ] && continue
+
+        # Execute df -h explicitly specifying the container via "-c"
+        disk_info=$(timeout 4s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>/dev/null | grep -iE "kafka|data|/dev/sd|/dev/nvme|helm" | grep -v "Filesystem")
+
+        if [ -n "$disk_info" ]; then
+            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
+                BEGIN { OFS="\t" }
+                {
+                    # --- Truncate Pod Name (Max 33) ---
+                    display_pod = pod
+                    if (length(pod) > 33) {
+                        suffix_pod = substr(pod, length(pod) - 4)
+                        prefix_pod = substr(pod, 1, 26)
+                        if (substr(prefix_pod, length(prefix_pod)) == "-") {
+                            prefix_pod = substr(prefix_pod, 1, 25)
+                        }
+                        display_pod = prefix_pod ".*" suffix_pod
+                    }
+
+                    # --- Truncate Container Name (Max 27) ---
+                    display_container = container
+                    if (length(container) > 27) {
+                        suffix_con = substr(container, length(container) - 4)
+                        prefix_con = substr(container, 1, 20)
+                        if (substr(prefix_con, length(prefix_con)) == "-") {
+                            prefix_con = substr(prefix_con, 1, 19)
+                        }
+                        display_container = prefix_con ".*" suffix_con
+                    }
+
+                    print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
+                }
+            '\''
+        fi
+    done
+' | sort -t$'\t' -k8,8n 2>/dev/null | column -t -s $'\t'
