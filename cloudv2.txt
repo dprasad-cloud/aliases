@@ -239,7 +239,9 @@ export midmonitoring=monitoring.*$mid
 export rabbitmq="rabbitmqctl list_queues name consumers messages messages_ready messages_unacknowledged | awk '\$3 > 0'"
 export flink="flink list"
 export redis="redis-cli cluster info"
+export redislatency="redis-cli --latency"
 export postgres="pg_isready -U postgres"
+
 khelp() {
     if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
         echo " "
