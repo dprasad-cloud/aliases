@@ -44,6 +44,9 @@ fcm() { _run_aliases_script /root/aliases-main/findcm.sh "$@"; }
 chmod +x /root/aliases-main/findpod.sh
 fpod() { _run_aliases_script /root/aliases-main/findpod.sh "$@"; }
 
+chmod +x /root/aliases-main/findpodwide.sh
+fpodwide() { _run_aliases_script /root/aliases-main/findpodwide.sh "$@"; }
+
 chmod +x /root/aliases-main/delpod.sh
 delpod() { _run_aliases_script /root/aliases-main/delpod.sh "$@"; }
 
