@@ -5,7 +5,7 @@
 # displays its details, and opens an interactive bash session.
 
 # $1 is the search term (e.g., 'teconfig')
-SEARCH_TERM="$1"
+SEARCH_TERM="$*"
 
 if [ -z "$SEARCH_TERM" ]; then
     echo "Usage: podbash <search_term>"

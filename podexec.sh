@@ -5,7 +5,7 @@
 # and executes an arbitrary command inside it (kubectl exec).
 
 # $1 is the search term (e.g., 'temon')
-SEARCH_TERM="$1"
+SEARCH_TERM="$*"
 
 # --- FIX: Use 'shift' to robustly capture all remaining arguments as the command ---
 # 1. Check if SEARCH_TERM is provided.

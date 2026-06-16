@@ -3,7 +3,7 @@
 # Generic Multi-Pod Deletion Script
 # Finds all pods matching the search term (case-insensitive), shows status, and deletes after confirmation.
 
-SEARCH_TERM="$1"
+SEARCH_TERM="$*"
 
 if [ -z "$SEARCH_TERM" ]; then
     echo "Usage: delpod <search_term>"

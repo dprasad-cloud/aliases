@@ -3,7 +3,7 @@
 # Generic Ingress Description Script
 # This script finds ALL ingresses matching the search term and runs 'kubectl describe ing' for each.
 
-SEARCH_TERM="$1"
+SEARCH_TERM="$*"
 
 if [ -z "$SEARCH_TERM" ]; then
     echo "Usage: desc-ing <search_term>"

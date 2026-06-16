@@ -4,7 +4,7 @@
 # This script finds ALL pods matching the search term and runs 'kubectl describe pod | grep -i image' for each.
 
 # $1 is the search term (e.g., 'network')
-SEARCH_TERM="$1"
+SEARCH_TERM="$*"
 
 if [ -z "$SEARCH_TERM" ]; then
     echo "Usage: image <search_term>"

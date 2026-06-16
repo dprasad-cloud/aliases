@@ -5,7 +5,7 @@
 # and displays their properties.
 
 # $1 is the search term (e.g., 'tereport')
-SEARCH_TERM="$1"
+SEARCH_TERM="$*"
 
 if [ -z "$SEARCH_TERM" ]; then
     echo "Usage: cm <search_term>"
