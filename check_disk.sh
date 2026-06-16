@@ -4,7 +4,7 @@
 if [ -n "$1" ]; then
     shopt -s expand_aliases
     alias fpod='/root/aliases-main/findpod.sh'
-    eval "fpod \"$1\"" | "$0"
+    eval "fpod \"$*\"" | "$0"
     exit 0
 fi
 
