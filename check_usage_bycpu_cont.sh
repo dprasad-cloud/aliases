@@ -1,5 +1,5 @@
 #!/bin/bash
-FILTER=$1
+FILTER="$*"
 NOW=$(date +%s)
 
 if [[ "$FILTER" == "all" || "$FILTER" == "ALL" || -z "$FILTER" ]]; then
