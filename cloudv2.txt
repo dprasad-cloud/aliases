@@ -155,19 +155,36 @@ logs_all() {
 
 echo -e "Shortcut for checking resource usage on nodes (ex: topnode ip-10-201-50-219)"
 topnode(){
-  node="$1"
+  local node="$1"
+  if [ -z "$node" ]; then
+    echo "Error: Please provide a node name."
+    return 1
+  fi
+
   echo -e "POD_NAME\tCPU\tMEM"
 
+  local tmp_pods tmp_top
   tmp_pods="$(mktemp)" || return 1
   tmp_top="$(mktemp)" || { rm -f "$tmp_pods"; return 1; }
 
-  kubectl get pods -A -o wide | grep "$node" | awk '{print $2}' | sort > "$tmp_pods"
-  kubectl top pods -A --no-headers | awk '{print $2, $3, $4}' | sort > "$tmp_top"
+  # Force a consistent, standard locale for predictable sorting
+  local OLD_LC_ALL="$LC_ALL"
+  export LC_ALL=C
 
+  # Extract pod names on this node, sort explicitly by the first column
+  kubectl get pods -A -o wide | grep "$node" | awk '{print $2}' | sort -k1,1 > "$tmp_pods"
+
+  # Extract top stats, sort explicitly by the first column (pod name)
+  kubectl top pods -A --no-headers | awk '{print $2, $3, $4}' | sort -k1,1 > "$tmp_top"
+
+  # Join on field 1, clean format with column, and sort numerically descending by CPU (column 2)
   join -1 1 -2 1 "$tmp_pods" "$tmp_top" | column -t | sort -rnk2
 
+  # Cleanup and restore locale
   rm -f "$tmp_pods" "$tmp_top"
+  export LC_ALL="$OLD_LC_ALL"
 }
+
 # Prefer functions over aliases so these work in non-interactive shells too.
 #
 # Usage:
