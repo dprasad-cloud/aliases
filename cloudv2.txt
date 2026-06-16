@@ -244,7 +244,7 @@ export flink="flink list"
 export redis="redis-cli cluster info"
 export redislatency="redis-cli --latency"
 export postgres="pg_isready -U postgres"
-export ckafka="\"on .*common-kafka-\""
+export ckafka="on .*common-kafka-"
 export ckafkagdc="gdc.*common-kafka-"
 
 khelp() {
