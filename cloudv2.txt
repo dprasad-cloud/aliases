@@ -257,6 +257,7 @@ export midguest=guest.*$mid
 export midloki=loki.*$mid
 export midmonitoring=monitoring.*$mid
 export rabbitmq="rabbitmqctl list_queues name consumers messages messages_ready messages_unacknowledged | awk '\$3 > 0'"
+export rabbitmq_list=" rabbitmqctl list_queues name messages_ready messages_unacknowledged consumers | tr -d '\r' | column -t"
 export flink="flink list"
 export redis="redis-cli cluster info"
 export redislatency="redis-cli --latency"
