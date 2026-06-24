@@ -35,7 +35,7 @@ if [ "$TOTAL_PODS" -gt 20 ]; then
     echo "# !!! Running checkdisk on more apps can take up to 40 sec"
 fi
 
-# Process pods cleanly without hitting metadata API bottlenecks inside the loop
+# Process pods cleanly with high-tolerance parallel processing thresholds
 echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     line="{}"
     ns_pod="${line%/*}"
@@ -46,13 +46,12 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     for container in $containers; do
         [ -z "$container" ] && continue
 
-        # Capture raw execution output with a safe 6-second threshold
-        exec_output=$(timeout 6s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
+        # INCREASED TIMEOUT: Raised to 15 seconds to completely eliminate cluster/API latency drops
+        exec_output=$(timeout 15s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
 
-        # Filter out system paths and headers from successful execution
+        # Filter out system paths and headers from execution
         disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|overlay" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
 
-        # FIXED CONDITION: If we successfully extracted disk paths, bypass exit code validation entirely
         if [ -n "$disk_info" ]; then
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
                 BEGIN { OFS="\t" }
@@ -83,9 +82,13 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
                 }
         	'\''
         else
-            # No disk data found -> This is an actual error or timeout execution
+            # FIXED: Explicitly catch empty strings caused by timeouts or silent drops
             error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
-            [ -z "$error_msg" ] && error_msg="Timeout/Empty response"
+            if [ -z "$error_msg" ] || [ "${exec_output}" == "" ]; then
+                error_msg="Execution Timeout (15s)"
+            fi
+
+            # Clamp error text layout strictly to 30 characters
             error_msg=$(echo "$error_msg" | awk '\''{print substr($0, 1, 30)}'\'')
 
             echo -e "${ns}\t${pod}\t${container}\t[ERR: ${error_msg}]\t-\t-\t-\t-\t-"
