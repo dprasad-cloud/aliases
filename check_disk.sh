@@ -8,49 +8,50 @@ if [ -n "$1" ]; then
     exit 0
 fi
 
-# Parse input pods safely into namespace/pod format
+# Parse input pods safely into namespace/pod/containers format
 if [ -t 0 ] && [ ! -p /dev/stdin ]; then
-    POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"\n"}{end}')
+    # Single optimized API call pulling Namespace, Pod Name, and all Containers space-separated
+    POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}')
 else
-    # Clean out "kubectl", "get", and headers from pipeline input
-    POD_LIST=$(awk '$1 && $2 && $1 != "NAMESPACE" && $1 !~ /kubectl|get/ {
+    # Incoming pipeline data from fpod (space-separated output)
+    # Filter out internal "kubectl/get" loop lines
+    RAW_INPUT=$(awk '$1 && $2 && $1 != "NAMESPACE" && $1 !~ /kubectl|get/ {
         if ($1 ~ /\//) { print $1 }
         else { print $1"/"$2 }
     }')
+
+    # Resolve containers for piped pods using a single bulk query to avoid throttling
+    if [ -n "$RAW_INPUT" ]; then
+        POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}' | grep -Ff <(echo "$RAW_INPUT"))
+    fi
 fi
 
 if [ -z "$POD_LIST" ]; then
     exit 0
 fi
 
-# Count total pods to evaluate execution delay warning
+# Count total target items
 TOTAL_PODS=$(echo "$POD_LIST" | grep -c '^')
 
 if [ "$TOTAL_PODS" -gt 20 ]; then
     echo "# !!! Running checkdisk on more apps can take up to 40 sec"
 fi
 
-# Process pods cleanly
+# Process pods cleanly without hitting metadata API bottlenecks inside the loop
 echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
-    ns_pod="{}"
+    line="{}"
+    ns_pod="${line%/*}"
     ns="${ns_pod%/*}"
     pod="${ns_pod#*/}"
-
-    # Fetch all container names for the pod
-    containers=$(timeout 5s kubectl get pod "$pod" -n "$ns" -o jsonpath="{.spec.containers[*].name}" 2>/dev/null)
-
-    if [ -z "$containers" ]; then
-        echo -e "${ns}\t${pod}\t---\t[ERR: Pod specs/API timeout]\t-\t-\t-\t-\t-"
-        exit 0
-    fi
+    containers="${line##*/}"
 
     for container in $containers; do
         [ -z "$container" ] && continue
 
-        # Capture raw execution output
-        exec_output=$(timeout 5s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
+        # Capture raw execution output with a safe 6-second threshold
+        exec_output=$(timeout 6s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
 
-        # FIXED: Only fail if output is completely empty or explicitly contains a runtime error
+        # Handle explicit connectivity errors or empty responses
         if [ -z "$exec_output" ] || echo "$exec_output" | grep -qE "executable file not found|OCI runtime|Permission denied|Error from server"; then
             error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
             [ -z "$error_msg" ] && error_msg="Timeout/Empty response"
@@ -60,7 +61,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
             continue
         fi
 
-        # Filter out system paths and headers from execution
+        # Filter out system paths and headers from successful execution
         disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|overlay" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
 
         if [ -n "$disk_info" ]; then
