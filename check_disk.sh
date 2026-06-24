@@ -50,7 +50,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
         exec_output=$(timeout 15s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
 
         # Filter out system paths and headers from execution
-        disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|overlay" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
+        disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|overlay|/dev" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
 
         if [ -n "$disk_info" ]; then
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
