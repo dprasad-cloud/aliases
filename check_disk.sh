@@ -10,17 +10,15 @@ fi
 
 # Parse input pods safely into namespace/pod/containers format
 if [ -t 0 ] && [ ! -p /dev/stdin ]; then
-    # Single optimized API call pulling Namespace, Pod Name, and all Containers space-separated
     POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}')
 else
     # Incoming pipeline data from fpod (space-separated output)
-    # Filter out internal "kubectl/get" loop lines
     RAW_INPUT=$(awk '$1 && $2 && $1 != "NAMESPACE" && $1 !~ /kubectl|get/ {
         if ($1 ~ /\//) { print $1 }
         else { print $1"/"$2 }
     }')
 
-    # Resolve containers for piped pods using a single bulk query to avoid throttling
+    # Resolve containers for piped pods using a single bulk query
     if [ -n "$RAW_INPUT" ]; then
         POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}' | grep -Ff <(echo "$RAW_INPUT"))
     fi
@@ -51,19 +49,10 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
         # Capture raw execution output with a safe 6-second threshold
         exec_output=$(timeout 6s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
 
-        # Handle explicit connectivity errors or empty responses
-        if [ -z "$exec_output" ] || echo "$exec_output" | grep -qE "executable file not found|OCI runtime|Permission denied|Error from server"; then
-            error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
-            [ -z "$error_msg" ] && error_msg="Timeout/Empty response"
-            error_msg=$(echo "$error_msg" | awk '\''{print substr($0, 1, 30)}'\'')
-
-            echo -e "${ns}\t${pod}\t${container}\t[ERR: ${error_msg}]\t-\t-\t-\t-\t-"
-            continue
-        fi
-
         # Filter out system paths and headers from successful execution
         disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|overlay" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
 
+        # FIXED CONDITION: If we successfully extracted disk paths, bypass exit code validation entirely
         if [ -n "$disk_info" ]; then
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
                 BEGIN { OFS="\t" }
@@ -93,6 +82,13 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
                     print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
                 }
         	'\''
+        else
+            # No disk data found -> This is an actual error or timeout execution
+            error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
+            [ -z "$error_msg" ] && error_msg="Timeout/Empty response"
+            error_msg=$(echo "$error_msg" | awk '\''{print substr($0, 1, 30)}'\'')
+
+            echo -e "${ns}\t${pod}\t${container}\t[ERR: ${error_msg}]\t-\t-\t-\t-\t-"
         fi
     done
 ' | sort -t$'\t' -k8,8n 2>/dev/null | column -t -s $'\t'
