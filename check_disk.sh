@@ -12,7 +12,17 @@ fi
 if [ -t 0 ] && [ ! -p /dev/stdin ]; then
     POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"\n"}{end}')
 else
-    POD_LIST=$(awk '{if ($1 && $2 && $1 != "NAMESPACE") print $1"/"$2}')
+    # FIXED: Broadened to handle standard columns or pre-formatted namespace/pod inputs
+    POD_LIST=$(awk '{
+        if ($1 ~ /\//) { print $1 }
+        else if ($1 && $2 && $1 != "NAMESPACE") { print $1"/"$2 }
+    }')
+fi
+
+# Exit early if no pods were passed or found
+if [ -z "$POD_LIST" ]; then
+    echo "No matching pods found or passed to the script."
+    exit 0
 fi
 
 # Count total pods to evaluate execution delay warning
@@ -34,8 +44,8 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     for container in $running_containers; do
         [ -z "$container" ] && continue
 
-        # Execute df -h explicitly specifying the container via "-c"
-        disk_info=$(timeout 4s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>/dev/null | grep -iE "kafka|data|/dev/sd|/dev/nvme|helm" | grep -v "Filesystem")
+        # FIXED: Added "redis" and common container storage drivers ("overlay", "rbd") to the match pool
+        disk_info=$(timeout 4s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>/dev/null | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|/dev/rbd|overlay" | grep -v "Filesystem")
 
         if [ -n "$disk_info" ]; then
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
@@ -65,7 +75,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
 
                     print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
                 }
-            '\''
+        	'\''
         fi
     done
 ' | sort -t$'\t' -k8,8n 2>/dev/null | column -t -s $'\t'
