@@ -12,40 +12,35 @@ fi
 if [ -t 0 ] && [ ! -p /dev/stdin ]; then
     POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"\n"}{end}')
 else
-    # FIXED: Broadened to handle standard columns or pre-formatted namespace/pod inputs
     POD_LIST=$(awk '{
         if ($1 ~ /\//) { print $1 }
         else if ($1 && $2 && $1 != "NAMESPACE") { print $1"/"$2 }
     }')
 fi
 
-# Exit early if no pods were passed or found
 if [ -z "$POD_LIST" ]; then
-    echo "No matching pods found or passed to the script."
-    exit 0
+    echo "DEBUG: POD_LIST is empty. The input parser failed to read from fpod."
+    exit 1
 fi
 
-# Count total pods to evaluate execution delay warning
-TOTAL_PODS=$(echo "$POD_LIST" | grep -c '^')
-
-if [ "$TOTAL_PODS" -gt 20 ]; then
-    echo "# !!! Running checkdisk on more apps can take up to 40 sec"
-fi
-
-# Process pods with a hard Linux-level timeout
+# Process pods and show all filesystems without any filtering
 echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     ns_pod="{}"
     ns="${ns_pod%/*}"
     pod="${ns_pod#*/}"
 
-    # Get only the names of containers that are currently in a "running" state
-    running_containers=$(timeout 3s kubectl get pod "$pod" -n "$ns" -o jsonpath="{range .status.containerStatuses[?(@.state.running)]}{.name}{\"\n\"}{end}" 2>/dev/null)
+    # Fetch running containers
+    running_containers=$(timeout 5s kubectl get pod "$pod" -n "$ns" -o jsonpath="{range .status.containerStatuses[?(@.state.running)]}{.name}{\"\n\"}{end}" 2>/dev/null)
+
+    if [ -z "$running_containers" ]; then
+        echo "DEBUG: Could not fetch running containers for pod $ns/$pod"
+    fi
 
     for container in $running_containers; do
         [ -z "$container" ] && continue
 
-        # FIXED: Added "redis" and common container storage drivers ("overlay", "rbd") to the match pool
-        disk_info=$(timeout 4s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>/dev/null | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme|/dev/rbd|overlay" | grep -v "Filesystem")
+        # DIAGNOSTIC: Removed 2>/dev/null and removed the pattern matching grep completely
+        disk_info=$(timeout 5s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1 | grep -v "Filesystem")
 
         if [ -n "$disk_info" ]; then
             echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
@@ -73,7 +68,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
                         display_container = prefix_con ".*" suffix_con
                     }
 
-                    print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
+                    print ns, display_pod, display_container, $0
                 }
         	'\''
         fi
