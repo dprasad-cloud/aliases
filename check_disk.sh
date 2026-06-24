@@ -40,7 +40,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
     running_containers=$(timeout 3s kubectl get pod "$pod" -n "$ns" -o jsonpath="{range .status.containerStatuses[?(@.state.running)]}{.name}{\"\n\"}{end}" 2>/dev/null)
 
     if [ -z "$running_containers" ]; then
-        echo -e "${ns}\t${pod}\t---\t[DEBUG: Unable to fetch running containers or pod not ready]"
+        echo -e "${ns}\t${pod}\t---\t[ERR: No running containers]\t-\t-\t-\t-\t-"
         exit 0
     fi
 
@@ -51,11 +51,15 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
         exec_output=$(timeout 4s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
         exec_status=$?
 
-        # Handle errors or timeouts explicitly
+        # Handle errors or timeouts explicitly (Truncated to 30 chars max)
         if [ $exec_status -ne 0 ] || [ -z "$exec_output" ]; then
-            error_msg=$(echo "$exec_output" | tr "\n" " " | cut -c1-50)
-            [ -z "$error_msg" ] && error_msg="Timeout or empty response"
-            echo -e "${ns}\t${pod}\t${container}\t[DEBUG Exec Failed: ${error_msg}]"
+            error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
+            [ -z "$error_msg" ] && error_msg="Timeout/Empty response"
+
+            # FIXED: Hard truncate error message to 30 characters
+            error_msg=$(echo "$error_msg" | awk '\''{print substr($0, 1, 30)}'\'')
+
+            echo -e "${ns}\t${pod}\t${container}\t[ERR: ${error_msg}]\t-\t-\t-\t-\t-"
             continue
         fi
 
