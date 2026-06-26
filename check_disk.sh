@@ -48,50 +48,56 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
 
         # INCREASED TIMEOUT: Raised to 15 seconds to completely eliminate cluster/API latency drops
         exec_output=$(timeout 15s kubectl exec "$pod" -n "$ns" -c "$container" -- df -h 2>&1)
+        exit_code=$?
 
-        # Filter out system paths and headers from execution
-        disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
+        # --- Truncate Pod Name (Max 35) ---
+        display_pod="$pod"
+        if [ ${#pod} -gt 35 ]; then
+            suffix_pod="${pod: -4}"
+            prefix_pod="${pod:0:28}"
+            [[ "${prefix_pod: -1}" == "-" ]] && prefix_pod="${pod:0:27}"
+            display_pod="${prefix_pod}.*${suffix_pod}"
+        fi
 
-        if [ -n "$disk_info" ]; then
-            echo "$disk_info" | awk -v ns="$ns" -v pod="$pod" -v container="$container" '\''
-                BEGIN { OFS="\t" }
-                {
-                    # --- Truncate Pod Name (Max 33) ---
-                    display_pod = pod
-                    if (length(pod) > 33) {
-                        suffix_pod = substr(pod, length(pod) - 4)
-                        prefix_pod = substr(pod, 1, 26)
-                        if (substr(prefix_pod, length(prefix_pod)) == "-") {
-                            prefix_pod = substr(prefix_pod, 1, 25)
+        if [ $exit_code -eq 0 ]; then
+            # Filter out system paths and headers from execution
+            disk_info=$(echo "$exec_output" | grep -iE "kafka|data|redis|helm|/dev/sd|/dev/nvme" | grep -vE "Filesystem|/proc|/sys|/etc|termination-log")
+
+            if [ -n "$disk_info" ]; then
+                echo "$disk_info" | awk -v ns="$ns" -v pod="$display_pod" -v container="$container" '\''
+                    BEGIN { OFS="\t" }
+                    {
+                        # --- Truncate Container Name (Max 27) ---
+                        display_container = container
+                        if (length(container) > 27) {
+                            suffix_con = substr(container, length(container) - 4)
+                            prefix_con = substr(container, 1, 20)
+                            if (substr(prefix_con, length(prefix_con)) == "-") {
+                                prefix_con = substr(prefix_con, 1, 19)
+                            }
+                            display_container = prefix_con ".*" suffix_con
                         }
-                        display_pod = prefix_pod ".*" suffix_pod
-                    }
 
-                    # --- Truncate Container Name (Max 27) ---
-                    display_container = container
-                    if (length(container) > 27) {
-                        suffix_con = substr(container, length(container) - 4)
-                        prefix_con = substr(container, 1, 20)
-                        if (substr(prefix_con, length(prefix_con)) == "-") {
-                            prefix_con = substr(prefix_con, 1, 19)
-                        }
-                        display_container = prefix_con ".*" suffix_con
+                        print ns, pod, display_container, $1, $2, $3, $4, $5, $6
                     }
-
-                    print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
-                }
-          '\''
+                '\''
+            else
+                # Command succeeded, but matches were ignored by grep filters (Clamped to 35 chars)
+                msg="[No matching disks]"
+                echo -e "${ns}\t${display_pod}\t${container}\t${msg:0:35}\t-\t-\t-\t-\t-"
+            fi
         else
-            # FIXED: Explicitly catch empty strings caused by timeouts or silent drops
-            error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
-            if [ -z "$error_msg" ] || [ "${exec_output}" == "" ]; then
-                error_msg="Execution Timeout (15s)"
+            # True execution failure (Timeout or API drops)
+            if [ $exit_code -eq 124 ]; then
+                error_msg="[ERR: Execution Timeout (15s)]"
+            else
+                clean_err=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
+                [ -z "$clean_err" ] && clean_err="Unknown Exec Error"
+                error_msg="[ERR: ${clean_err}]"
             fi
 
-            # Clamp error text layout strictly to 30 characters
-            error_msg=$(echo "$error_msg" | awk '\''{print substr($0, 1, 30)}'\'')
-
-            echo -e "${ns}\t${pod}\t${container}\t[ERR: ${error_msg}]\t-\t-\t-\t-\t-"
+            # Clamp error text layout strictly to 35 characters
+            echo -e "${ns}\t${display_pod}\t${container}\t${error_msg:0:35}\t-\t-\t-\t-\t-"
         fi
     done
 ' | sort -t$'\t' -k8,8n 2>/dev/null | column -t -s $'\t'
