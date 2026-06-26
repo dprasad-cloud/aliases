@@ -130,10 +130,10 @@ hmcat_all() {
     return 1
   fi
 
-  for pod in $(fpod "$pod_pattern" | awk '{print $2}'); do
-    echo "-----------Processing pod: $pod"
+  for tmppod in $(fpod "$pod_pattern" | awk '{print $2}'); do
+    echo "-----------Processing pod: $tmppod"
     # Assuming hmcat handles the pod argument and outputs to stdout
-    hmcat "$pod" | grep -iE "$search_term"
+    hmcat "$tmppod" | grep -iE "$search_term"
   done
 }
 
@@ -146,10 +146,10 @@ logs_all() {
     return 1
   fi
 
-  for pod in $(fpod "$pod_pattern" | awk '{print $2}'); do
-    echo "-----------Processing pod: $pod"
+  for tmppod in $(fpod "$pod_pattern" | awk '{print $2}'); do
+    echo "-----------Processing pod: $tmppod"
     # Assuming hmcat handles the pod argument and outputs to stdout
-    logs "$pod" | grep -iE "$search_term"
+    logs "$tmppod" | grep -iE "$search_term"
   done
 }
 
