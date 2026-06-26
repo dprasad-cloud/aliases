@@ -8,9 +8,9 @@ if [ -n "$1" ]; then
     exit 0
 fi
 
-# Parse input pods safely into namespace/pod/containers format
+# Parse input pods safely into namespace/pod/containers format (Running only)
 if [ -t 0 ] && [ ! -p /dev/stdin ]; then
-    POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}')
+    POD_LIST=$(kubectl get pods -A --field-selector=status.phase=Running --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}')
 else
     # Incoming pipeline data from fpod (space-separated output)
     RAW_INPUT=$(awk '$1 && $2 && $1 != "NAMESPACE" && $1 !~ /kubectl|get/ {
@@ -18,9 +18,9 @@ else
         else { print $1"/"$2 }
     }')
 
-    # Resolve containers for piped pods using a single bulk query
+    # Resolve containers for piped pods using a single bulk query (Running only)
     if [ -n "$RAW_INPUT" ]; then
-        POD_LIST=$(kubectl get pods -A --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}' | grep -Ff <(echo "$RAW_INPUT"))
+        POD_LIST=$(kubectl get pods -A --field-selector=status.phase=Running --no-headers -o jsonpath='{range .items[*]}{.metadata.namespace}{"/"}{.metadata.name}{"/"}{range .spec.containers[*]}{.name}{" "}{end}{"\n"}{end}' | grep -Ff <(echo "$RAW_INPUT"))
     fi
 fi
 
@@ -80,7 +80,7 @@ echo "$POD_LIST" | xargs -I {} -P 5 bash -c '
 
                     print ns, display_pod, display_container, $1, $2, $3, $4, $5, $6
                 }
-        	'\''
+          '\''
         else
             # FIXED: Explicitly catch empty strings caused by timeouts or silent drops
             error_msg=$(echo "$exec_output" | tr "\n" " " | sed "s/  */ /g")
