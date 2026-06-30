@@ -265,6 +265,8 @@ export postgres="pg_isready -U postgres"
 export postgres_cluster="repmgr -f /opt/bitnami/repmgr/conf/repmgr.conf cluster show"
 export ckafka="common .*common-kafka"
 export ckafkagdc="gdc.*common-kafka"
+export kafka_cg="bin/kafka-consumer-groups.sh --list"
+export kafka_cg_detail="bin/kafka-consumer-groups.sh --describe --group "
 
 khelp() {
     if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
@@ -349,6 +351,14 @@ klist() {
     local my_bs=$(get_bs)
     if khelp "$1"; then return 0; fi
     local kafkalist="unset JMX_PORT; kafka-topics.sh --bootstrap-server $my_bs --list"
+    # Dynamically constructs the string and passes it directly to podexec
+    podexec "$pod_pattern" "$kafkalist"
+}
+kcgroups() {
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_bs=$(get_bs)
+    if khelp "$1"; then return 0; fi
+    local kafkalist="unset JMX_PORT;  bin/kafka-consumer-groups.sh --bootstrap-server $my_bs --list"
     # Dynamically constructs the string and passes it directly to podexec
     podexec "$pod_pattern" "$kafkalist"
 }
