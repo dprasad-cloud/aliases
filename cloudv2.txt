@@ -265,6 +265,7 @@ export postgres="pg_isready -U postgres"
 export postgres_cluster="repmgr -f /opt/bitnami/repmgr/conf/repmgr.conf cluster show"
 export ckafka="common .*common-kafka"
 export ckafkagdc="gdc.*common-kafka"
+export dkafka="default-kafka"
 export kafka_cg="bin/kafka-consumer-groups.sh --list"
 export kafka_cg_detail="bin/kafka-consumer-groups.sh --describe --group "
 
