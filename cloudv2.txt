@@ -451,8 +451,8 @@ sortby() {
         print;
         next
     }
-    # Ignore lines starting with # or a blank space, then sort the rest
-    !/^[# ]/ {
+    # Ignore lines starting with #, spaces/tabs, non-breaking spaces, or "command"
+    !/^[# \t]/ && !/^\xc2\xa0/ && !/^[cC][oO][mM][mM][aA][nN][dD]/ {
         print | "sort -r -h -k " args
     }'
 }
