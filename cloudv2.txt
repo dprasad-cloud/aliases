@@ -504,6 +504,8 @@ topcon() {
     ' | sort -rn | cut -f2-
 }
 alias psqlts='podexec common-postgresql-ha-postgresql-0 "psql -U postgres cs_timescaledb"'
+alias psqlguest='psqlrds -U cguestuser cguest_db'
+
 
 ups () {
     # Define the target file name inside the extracted directory
