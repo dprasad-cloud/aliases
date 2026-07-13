@@ -266,8 +266,10 @@ export postgres_cluster="repmgr -f /opt/bitnami/repmgr/conf/repmgr.conf cluster 
 export ckafka="common .*common-kafka"
 export ckafkagdc="gdc.*common-kafka"
 export dkafka="default-kafka"
+export hmelastic="hm-elastic"
 export kafka_cg="bin/kafka-consumer-groups.sh --list"
 export kafka_cg_detail="bin/kafka-consumer-groups.sh --describe --group "
+export elastic="curl -u \"elastic:elastic\" \"http://localhost:9200/_cluster/health?pretty\""
 
 khelp() {
     if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
