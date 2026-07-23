@@ -510,6 +510,7 @@ topcon() {
 }
 alias psqlts='podexec common-postgresql-ha-postgresql-0 "psql -U postgres cs_timescaledb"'
 alias psqlguest='podexec guest-postgresql-ha-postgresql-0 "psql -U cguestuser cguest_db"'
+alias psqlnvo='podexec nvo.*postgresql-ha-postgresql-0 "psql -U nvouser nvo_db"'
 
 
 ups () {
