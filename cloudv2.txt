@@ -462,7 +462,18 @@ sortby() {
     }'
 }
 
-grepie() { grep -iE "$@"; }
+#usage grepie -6 key
+grepie() {
+  local ctx=""
+  # If the first argument is a dash followed by numbers (e.g., -6), treat as context lines
+  if [[ "$1" =~ ^-([0-9]+)$ ]]; then
+    local num="${BASH_REMATCH[1]}"
+    ctx="-A $num -B $num"
+    shift
+  fi
+  grep -iE $ctx "$@"
+}
+
 cols() { awk '{for(i=1;i<=NF;i++) print "Column " i ": " $i; exit}'; }
 
 topcon() {
