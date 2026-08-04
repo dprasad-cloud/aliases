@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Run the below line on AIO to get the aliases installed. Remove # before executing
 # sudo yum install unzip # if unzip is not installed
 
@@ -14,6 +16,21 @@ for _a in klag kcgroups_describe_all fall kconsume kconsume_new kconsume_beginni
   unalias "$_a" 2>/dev/null || true
 done
 unset _a
+
+klag() {
+    local pod_pattern="${pod:-default-kafka-0}"
+    local my_bs
+    my_bs=$(get_bs)
+    if khelp "$1"; then return 0; fi
+
+    local kafkalist="unset JMX_PORT; bin/kafka-consumer-groups.sh --bootstrap-server $my_bs --describe --all-groups"
+
+    podexec "$pod_pattern" "$kafkalist" | awk '
+        BEGIN { print "GROUP", "TOPIC", "LAG" }
+        # Match numeric lag > 0 in column 6 (or adjust $6 to matching column)
+        $6 ~ /^[0-9]+$/ && $6 > 0 { print $1, $2, $6 }
+    ' | column -t
+}
 
 chmod +x /root/aliases-main/desc.sh
 _run_aliases_script() {
@@ -117,8 +134,8 @@ chmod +x /root/aliases-main/check_disk.sh
 checkdisk() { _run_aliases_script /root/aliases-main/check_disk.sh "$@"; }
 cdisk() { checkdisk "$@"; }
 
-chmod +x /root/aliases-main/klag.sh
-klag() { _run_aliases_script /root/aliases-main/klag.sh "$@"; }
+#chmod +x /root/aliases-main/klag.sh
+#klag() { _run_aliases_script /root/aliases-main/klag.sh "$@"; }
 
 chmod +x /root/aliases-main/dbug.sh
 dbug() { _run_aliases_script /root/aliases-main/dbug.sh "$@"; }
