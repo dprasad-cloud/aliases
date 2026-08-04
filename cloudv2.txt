@@ -376,19 +376,7 @@ kcgroups_describe_all() {
     # Dynamically constructs the string and passes it directly to podexec
     podexec "$pod_pattern" "$kafkalist"
 }
-klag() {
-    local pod_pattern="${pod:-default-kafka-0}"
-    local my_bs
-    my_bs=$(get_bs)
-    if khelp "$1"; then return 0; fi
 
-    local kafkalist="unset JMX_PORT; bin/kafka-consumer-groups.sh --bootstrap-server $my_bs --describe --all-groups"
-
-    podexec "$pod_pattern" "$kafkalist" 2>/dev/null | awk '
-        BEGIN { print "GROUP", "TOPIC", "LAG" }
-        $6 ~ /^[0-9]+$/ && $6 > 0 { print $1, $2, $6 }
-    ' | column -t
-}
 kcluster() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_bs=$(get_bs)
