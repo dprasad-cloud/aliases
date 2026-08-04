@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source /root/aliases-main/cloudv2.txt
 klag() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_bs
