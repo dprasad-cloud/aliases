@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function klag() {
+klag() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_bs
     my_bs=$(get_bs)
@@ -14,3 +14,5 @@ function klag() {
         $6 ~ /^[0-9]+$/ && $6 > 0 { print $1, $2, $6 }
     ' | column -t
 }
+
+klag
