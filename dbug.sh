@@ -1,6 +1,6 @@
 #!/bin/bash
 
-klag() {
+function klag() {
     local pod_pattern="${pod:-default-kafka-0}"
     local my_bs
     my_bs=$(get_bs)
